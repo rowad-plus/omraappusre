@@ -323,3 +323,39 @@ class FeatChips extends StatelessWidget {
 extension on String {
   String get firstLetter => isEmpty ? '' : this[0];
 }
+
+
+/// "مقترح" pill shown on trips of subscribed (featured) companies — same
+/// badge as `.suggested-badge` on omraway.com.
+class SuggestedBadge extends StatelessWidget {
+  const SuggestedBadge({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+            colors: [Color(0xFFB78B32), Color(0xFFE6C66F)]),
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+              color: const Color(0xFF785A1E).withValues(alpha: 0.25),
+              blurRadius: 6,
+              offset: const Offset(0, 2)),
+        ],
+      ),
+      child: Row(mainAxisSize: MainAxisSize.min, children: [
+        const FaIcon(FontAwesomeIcons.solidStar,
+            size: 8, color: Color(0xFF1A1408)),
+        const SizedBox(width: 3),
+        Text(tr('trip.card.suggested'),
+            style: const TextStyle(
+                color: Color(0xFF1A1408),
+                fontSize: 10,
+                fontWeight: FontWeight.w800,
+                height: 1.2)),
+      ]),
+    );
+  }
+}

@@ -732,6 +732,10 @@ class _ResultCard extends StatelessWidget {
                 child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      if (t.featured) ...[
+                        const SuggestedBadge(),
+                        const SizedBox(height: 4),
+                      ],
                       if (tier.badgeIcon != null) ...[
                         Row(mainAxisSize: MainAxisSize.min, children: [
                           FaIcon(tier.badgeIcon!, size: 9, color: accent),

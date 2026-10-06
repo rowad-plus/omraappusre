@@ -87,6 +87,10 @@ class TripCardUC extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        if (trip.featured) ...[
+                          const SuggestedBadge(),
+                          const SizedBox(height: 3),
+                        ],
                         if (tier.badgeIcon != null) ...[
                           Row(mainAxisSize: MainAxisSize.min, children: [
                             FaIcon(tier.badgeIcon!,

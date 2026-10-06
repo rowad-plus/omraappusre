@@ -4,6 +4,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../core/theme/app_colors.dart';
 import '../l10n/translations.dart';
 import '../models/trip.dart';
+import 'trip_card_parts.dart';
 
 /// Home-page trip card in the gold design shared with omraway.com
 /// (`_trip-card-gold.blade.php`): photo on top with the destination chip,
@@ -74,6 +75,9 @@ class TripCardGold extends StatelessWidget {
                 fit: StackFit.expand,
                 children: [
                   _image(),
+                  if (trip.featured)
+                    const PositionedDirectional(
+                        top: 10, start: 10, child: SuggestedBadge()),
                   PositionedDirectional(
                     bottom: 12,
                     start: 14,
