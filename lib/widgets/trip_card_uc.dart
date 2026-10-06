@@ -15,7 +15,15 @@ class TripCardUC extends StatelessWidget {
   final VoidCallback? onTap;
   final VoidCallback? onBook;
 
-  const TripCardUC({super.key, required this.trip, this.onTap, this.onBook});
+  /// "مقترح" badge for subscribed companies — only in search / all-trips lists.
+  final bool showSuggested;
+
+  const TripCardUC(
+      {super.key,
+      required this.trip,
+      this.onTap,
+      this.onBook,
+      this.showSuggested = false});
 
   /// The day-count badge sits 5px in from the card's physical top and
   /// left edges — no longer flush, so it doesn't need to fight the
@@ -87,7 +95,7 @@ class TripCardUC extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        if (trip.featured) ...[
+                        if (showSuggested && trip.featured) ...[
                           const SuggestedBadge(),
                           const SizedBox(height: 3),
                         ],

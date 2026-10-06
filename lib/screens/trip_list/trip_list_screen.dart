@@ -167,6 +167,7 @@ class _TripListScreenState extends State<TripListScreen> {
                   itemBuilder: (context, i) {
                     final t = list[i];
                     return TripCardUC(
+                      showSuggested: true,
                         trip: t,
                         onTap: () => _openDetail(t),
                         onBook: () => _openBooking(t));

@@ -4,7 +4,6 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../core/theme/app_colors.dart';
 import '../l10n/translations.dart';
 import '../models/trip.dart';
-import 'trip_card_parts.dart';
 
 /// Home-page trip card in the gold design shared with omraway.com
 /// (`_trip-card-gold.blade.php`): photo on top with the destination chip,
@@ -75,9 +74,7 @@ class TripCardGold extends StatelessWidget {
                 fit: StackFit.expand,
                 children: [
                   _image(),
-                  if (trip.featured)
-                    const PositionedDirectional(
-                        top: 10, start: 10, child: SuggestedBadge()),
+                  // No "مقترح" badge on home — only search / all-trips lists.
                   PositionedDirectional(
                     bottom: 12,
                     start: 14,
@@ -104,27 +101,42 @@ class TripCardGold extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(mainAxisSize: MainAxisSize.min, children: [
-                    if (trip.vip) ...[
-                      const FaIcon(FontAwesomeIcons.crown,
-                          size: 10, color: AppColors.brand),
-                      const SizedBox(width: 4),
-                    ],
-                    Text(tag,
-                        style: const TextStyle(
-                            fontSize: 11.5,
-                            fontWeight: FontWeight.w700,
-                            color: AppColors.brand)),
+                  // Title at the start (right in Arabic), trip type at the end.
+                  Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                    Expanded(
+                      child: Text(tr(trip.title),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                              fontSize: 17,
+                              fontWeight: FontWeight.w900,
+                              color: AppColors.text,
+                              height: 1.35)),
+                    ),
+                    const SizedBox(width: 8),
+                    Container(
+                      margin: const EdgeInsets.only(top: 2),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 9, vertical: 3),
+                      decoration: BoxDecoration(
+                        color: AppColors.brandSoft,
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(color: AppColors.brandLine),
+                      ),
+                      child: Row(mainAxisSize: MainAxisSize.min, children: [
+                        if (trip.vip) ...[
+                          const FaIcon(FontAwesomeIcons.crown,
+                              size: 9, color: AppColors.brand),
+                          const SizedBox(width: 4),
+                        ],
+                        Text(tag,
+                            style: const TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w700,
+                                color: AppColors.brand)),
+                      ]),
+                    ),
                   ]),
-                  const SizedBox(height: 4),
-                  Text(tr(trip.title),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                          fontSize: 17,
-                          fontWeight: FontWeight.w900,
-                          color: AppColors.text,
-                          height: 1.35)),
                   const SizedBox(height: 6),
                   Wrap(
                     spacing: 14,
