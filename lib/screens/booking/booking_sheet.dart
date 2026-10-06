@@ -626,7 +626,11 @@ class _BookingSheetState extends State<BookingSheet> {
           label: tr('booking.travelerDocs.documentTypeLabel'),
           value: entry.documentType,
           options: {
-            for (final t in _documentTypes) t: tr('booking.travelerDocs.$t'),
+            // API value `national_id` ↔ translation key `nationalId`.
+            for (final t in _documentTypes)
+              t: tr(t == 'national_id'
+                  ? 'booking.travelerDocs.nationalId'
+                  : 'booking.travelerDocs.$t'),
           },
           onChanged: (v) => setState(() => entry.documentType = v ?? entry.documentType),
         ),
