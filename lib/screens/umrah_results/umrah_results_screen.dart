@@ -20,6 +20,7 @@ import '../../widgets/bottom_nav_bar.dart';
 import '../../widgets/h_scroll_auto.dart';
 import '../../widgets/trip_card_parts.dart';
 import '../trip_detail/trip_detail_screen.dart';
+import '../booking/booking_sheet.dart';
 
 enum _SortMode {
   nearest,
@@ -164,7 +165,7 @@ class _UmrahResultsScreenState extends State<UmrahResultsScreen> {
       emoji: '🕋',
       bg: const LinearGradient(colors: [Color(0xFF8E6A28), Color(0xFFB8892F)]),
       networkImage: t.thumbnail ?? (t.images != null && t.images!.isNotEmpty ? t.images!.first : null),
-      hotel: t.hotelName ?? t.companyName,
+      hotel: t.hotelName ?? '',
       stars: stars,
       rating: t.hotelStars,
       type: switch (t.type) {
@@ -493,16 +494,23 @@ class _UmrahResultsScreenState extends State<UmrahResultsScreen> {
               : ListView.builder(
                   padding: const EdgeInsets.fromLTRB(14, 0, 14, 14),
                   itemCount: _results.length,
-                  itemBuilder: (context, i) => _ResultCard(
-                    result: _results[i],
-                    onTap: () => Navigator.of(context).push(MaterialPageRoute(
-                        builder: (_) => TripDetailScreen(
-                            trip: _results[i].toTrip(
-                                date: intl.DateFormat('d MMMM yyyy',
-                                        LocaleState.locale.value.languageCode)
-                                    .format(selectedDate)),
-                            initialDate: _selectedDate))),
-                  ),
+                  itemBuilder: (context, i) {
+                    final trip = _results[i].toTrip(
+                        date: intl.DateFormat('d MMMM yyyy',
+                                LocaleState.locale.value.languageCode)
+                            .format(selectedDate));
+                    return _ResultCard(
+                      result: _results[i],
+                      onTap: () => Navigator.of(context).push(
+                          MaterialPageRoute(
+                              builder: (_) => TripDetailScreen(
+                                  trip: trip, initialDate: _selectedDate))),
+                      onBook: () => Navigator.of(context).push(
+                          MaterialPageRoute(
+                              builder: (_) => BookingSheet(
+                                  trip: trip, initialDate: _selectedDate))),
+                    );
+                  },
                 ),
         ),
       ]),
@@ -678,7 +686,9 @@ class _UmrahResultsScreenState extends State<UmrahResultsScreen> {
 class _ResultCard extends StatelessWidget {
   final UmrahResult result;
   final VoidCallback onTap;
-  const _ResultCard({required this.result, required this.onTap});
+  final VoidCallback onBook;
+  const _ResultCard(
+      {required this.result, required this.onTap, required this.onBook});
 
   @override
   Widget build(BuildContext context) {
@@ -759,18 +769,21 @@ class _ResultCard extends StatelessWidget {
                           spacing: 5,
                           crossAxisAlignment: WrapCrossAlignment.center,
                           children: [
-                            FaIcon(FontAwesomeIcons.solidBuilding,
-                                size: 10, color: accent),
-                            Text(tr(t.hotel),
-                                style: const TextStyle(
-                                    fontSize: 11, color: AppColors.muted)),
-                            const Text('·',
-                                style: TextStyle(color: AppColors.muted)),
-                            Text(starRatingLabel(t.stars),
-                                style: const TextStyle(
-                                    fontSize: 11, color: AppColors.gold)),
-                            const Text('·',
-                                style: TextStyle(color: AppColors.muted)),
+                            // Hotel only — the company is in the footer.
+                            if (t.hotel.isNotEmpty) ...[
+                              FaIcon(FontAwesomeIcons.hotel,
+                                  size: 10, color: accent),
+                              Text(tr(t.hotel),
+                                  style: const TextStyle(
+                                      fontSize: 11, color: AppColors.muted)),
+                              const Text('·',
+                                  style: TextStyle(color: AppColors.muted)),
+                              Text(starRatingLabel(t.stars),
+                                  style: const TextStyle(
+                                      fontSize: 11, color: AppColors.gold)),
+                              const Text('·',
+                                  style: TextStyle(color: AppColors.muted)),
+                            ],
                             FaIcon(FontAwesomeIcons.solidCalendar,
                                 size: 10, color: accent),
                             Text(tr(t.days),
@@ -921,6 +934,23 @@ class _ResultCard extends StatelessWidget {
                           color: accent)),
                 ),
               ])),
+              const SizedBox(width: 8),
+              GestureDetector(
+                onTap: onBook,
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                  decoration: BoxDecoration(
+                      color: tier.gradient == null ? accent : null,
+                      gradient: tier.gradient,
+                      borderRadius: BorderRadius.circular(9)),
+                  child: Text(tr('trip.card.book'),
+                      style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 12.5,
+                          fontWeight: FontWeight.w800)),
+                ),
+              ),
             ]),
           ),
         ]),

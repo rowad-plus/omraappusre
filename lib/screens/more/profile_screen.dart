@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:provider/provider.dart';
@@ -77,14 +78,29 @@ class _ProfileScreenState extends State<ProfileScreen> {
             child: Container(
               width: 80,
               height: 80,
+              clipBehavior: Clip.antiAlias,
               decoration: BoxDecoration(
                   gradient: AppColors.blueGradient, shape: BoxShape.circle),
               alignment: Alignment.center,
-              child: Text(_nameCtrl.text.isNotEmpty ? _nameCtrl.text[0] : 'م',
-                  style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 32,
-                      fontWeight: FontWeight.w900)),
+              child: Builder(builder: (context) {
+                final initial = Text(
+                    _nameCtrl.text.isNotEmpty ? _nameCtrl.text[0] : 'م',
+                    style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 32,
+                        fontWeight: FontWeight.w900));
+                // Photo uploaded on the website, else the name's initial.
+                final url = context.watch<AppState>().userAvatarUrl;
+                if (url == null || url.isEmpty) return initial;
+                return CachedNetworkImage(
+                  imageUrl: url,
+                  fit: BoxFit.cover,
+                  width: 80,
+                  height: 80,
+                  placeholder: (_, __) => initial,
+                  errorWidget: (_, __, ___) => initial,
+                );
+              }),
             ),
           ),
           const SizedBox(height: 20),

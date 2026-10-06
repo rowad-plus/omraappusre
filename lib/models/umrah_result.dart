@@ -68,7 +68,7 @@ class UmrahResult {
         emoji: emoji,
         bg: bg,
         networkImage: networkImage,
-        hotel: hotel,
+        hotel: hotel.isEmpty ? provider : hotel,
         stars: stars,
         type: 'trip.type.umrah',
         days: days,

@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:provider/provider.dart';
@@ -79,6 +80,7 @@ class _MoreScreenState extends State<MoreScreen> with LiveReload<MoreScreen> {
                 Container(
                     width: 46,
                     height: 46,
+                    clipBehavior: Clip.antiAlias,
                     decoration: BoxDecoration(
                         color: Colors.white.withValues(alpha: 0.2),
                         shape: BoxShape.circle,
@@ -86,8 +88,19 @@ class _MoreScreenState extends State<MoreScreen> with LiveReload<MoreScreen> {
                             color: Colors.white.withValues(alpha: 0.4),
                             width: 2)),
                     alignment: Alignment.center,
-                    child: const FaIcon(FontAwesomeIcons.solidUser,
-                        color: Colors.white, size: 20)),
+                    child: (loggedIn &&
+                            (state.userAvatarUrl ?? '').isNotEmpty)
+                        ? CachedNetworkImage(
+                            imageUrl: state.userAvatarUrl!,
+                            fit: BoxFit.cover,
+                            width: 46,
+                            height: 46,
+                            errorWidget: (_, __, ___) => const FaIcon(
+                                FontAwesomeIcons.solidUser,
+                                color: Colors.white,
+                                size: 20))
+                        : const FaIcon(FontAwesomeIcons.solidUser,
+                            color: Colors.white, size: 20)),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Column(
