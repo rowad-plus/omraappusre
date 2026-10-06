@@ -501,8 +501,6 @@ class _TripDetailScreenState extends State<TripDetailScreen> {
           Flexible(
             child:
                 Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text(tr('trip.detail.price_from'),
-                  style: const TextStyle(fontSize: 10, color: AppColors.muted)),
               Text(tr(t.price),
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(

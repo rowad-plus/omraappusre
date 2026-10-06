@@ -911,9 +911,6 @@ class _ResultCard extends StatelessWidget {
                 child: Column(
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
-                Text(tr('trip.detail.price_from'),
-                    style:
-                        const TextStyle(fontSize: 9.5, color: AppColors.muted)),
                 FittedBox(
                   fit: BoxFit.scaleDown,
                   child: Text('${t.price} ${tr(t.currency)}',
