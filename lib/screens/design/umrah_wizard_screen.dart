@@ -8,12 +8,12 @@ import '../auth/login_sheet.dart';
 
 /// Mirrors `umrah_app_redesign.html` — the condensed 4-step "صمّم عمرتك"
 /// wizard (replaces the old 8-step flow).
-const _kHeaderBg = Color(0xFF0F3D38);
-const _kStepLabelColor = Color(0xFF9FD8C8);
+const _kHeaderBg = Color(0xFF1F1A10);
+const _kStepLabelColor = Color(0xFFD9B45F);
 const _kDotInactive = Color(0x2EFFFFFF);
-const _kDotActive = Color(0xFF5DCAA5);
-const _kAccent = Color(0xFF0F6E56);
-const _kAccentBg = Color(0xFFE1F5EE);
+const _kDotActive = Color(0xFFB8892F);
+const _kAccent = Color(0xFF8E6A28);
+const _kAccentBg = Color(0xFFEEDDB8);
 const _kText = Color(0xFF1A1A1A);
 const _kMuted = Color(0xFF6B6B68);
 const _kMuted2 = Color(0xFF999999);

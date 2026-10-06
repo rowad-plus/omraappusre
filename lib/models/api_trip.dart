@@ -143,7 +143,7 @@ class ApiTrip {
         apiId: id,
         title: title,
         emoji: '🕋',
-        bg: const LinearGradient(colors: [Color(0xFF0F6E56), Color(0xFF16A34A)]),
+        bg: const LinearGradient(colors: [Color(0xFF8E6A28), Color(0xFFB8892F)]),
         networkImage: thumbnail ?? (images != null && images!.isNotEmpty ? images!.first : null),
         hotel: hotelName ?? companyName,
         stars: _starGlyphs,

@@ -162,7 +162,7 @@ class _UmrahResultsScreenState extends State<UmrahResultsScreen> {
       id: '${t.id}',
       name: t.title,
       emoji: '🕋',
-      bg: const LinearGradient(colors: [Color(0xFF0F6E56), Color(0xFF16A34A)]),
+      bg: const LinearGradient(colors: [Color(0xFF8E6A28), Color(0xFFB8892F)]),
       networkImage: t.thumbnail ?? (t.images != null && t.images!.isNotEmpty ? t.images!.first : null),
       hotel: t.hotelName ?? t.companyName,
       stars: stars,

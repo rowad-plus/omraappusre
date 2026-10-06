@@ -16,7 +16,7 @@ class SeedData {
   static const gGreen = LinearGradient(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
-    colors: [Color(0xFF16A34A), Color(0xFF15803D)],
+    colors: [Color(0xFFB8892F), Color(0xFF8E6A28)],
   );
   static const gGold = LinearGradient(
     begin: Alignment.topLeft,
@@ -26,12 +26,12 @@ class SeedData {
   static const gTeal = LinearGradient(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
-    colors: [Color(0xFF0D9488), Color(0xFF0F766E)],
+    colors: [Color(0xFF8E6A28), Color(0xFF8E6A28)],
   );
   static const gSky = LinearGradient(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
-    colors: [Color(0xFF0EA5E9), Color(0xFF0369A1)],
+    colors: [Color(0xFFB8892F), Color(0xFF8E6A28)],
   );
   static const gPurple = LinearGradient(
     begin: Alignment.topLeft,
@@ -46,7 +46,7 @@ class SeedData {
   static const gEmerald = LinearGradient(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
-    colors: [Color(0xFF059669), Color(0xFF065F46)],
+    colors: [Color(0xFF8E6A28), Color(0xFF8E6A28)],
   );
   static const gViolet = LinearGradient(
     begin: Alignment.topLeft,
@@ -61,7 +61,7 @@ class SeedData {
   static const gCyan = LinearGradient(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
-    colors: [Color(0xFF0284C7), Color(0xFF0C4A6E)],
+    colors: [Color(0xFFB8892F), Color(0xFF8E6A28)],
   );
   static const gOrange = LinearGradient(
     begin: Alignment.topLeft,
@@ -737,7 +737,7 @@ class SeedData {
   static const List<ProviderCompany> umrahProviders = [
     ProviderCompany(
         name: 'company.alferdawsShort',
-        color: Color(0xFF16A34A),
+        color: Color(0xFFB8892F),
         letter: 'ف',
         stars: '★★★★★',
         trips: 48),
@@ -749,7 +749,7 @@ class SeedData {
         trips: 32),
     ProviderCompany(
         name: 'company.makkahtours',
-        color: Color(0xFF0D9488),
+        color: Color(0xFF8E6A28),
         letter: 'م',
         stars: '★★★★☆',
         trips: 26),
@@ -790,7 +790,7 @@ class SeedData {
   static const List<ProviderCompany> companies = [
     ProviderCompany(
         name: 'company.alferdawsFull',
-        color: Color(0xFF16A34A),
+        color: Color(0xFFB8892F),
         letter: 'ف',
         handle: 'alferdaws'),
     ProviderCompany(
@@ -815,12 +815,12 @@ class SeedData {
         handle: 'awj'),
     ProviderCompany(
         name: 'company.makkahtours',
-        color: Color(0xFF0D9488),
+        color: Color(0xFF8E6A28),
         letter: 'م',
         handle: 'makkahtours'),
     ProviderCompany(
         name: 'company.rahal',
-        color: Color(0xFF059669),
+        color: Color(0xFF8E6A28),
         letter: 'ر',
         handle: 'rahal'),
   ];
@@ -840,7 +840,7 @@ class SeedData {
       travelers: 'trip.travelers.groups',
       price: 25000,
       provider: 'trip.provider.alferdaws',
-      providerColor: const Color(0xFF16A34A),
+      providerColor: const Color(0xFFB8892F),
       providerLetter: 'ف',
       vip: true,
       feats: const [
@@ -893,7 +893,7 @@ class SeedData {
       travelers: 'trip.travelers.individualsAndGroups',
       price: 12000,
       provider: 'trip.provider.makkahtours',
-      providerColor: const Color(0xFF0D9488),
+      providerColor: const Color(0xFF8E6A28),
       providerLetter: 'م',
       feats: const [
         'feat.guide',
@@ -916,7 +916,7 @@ class SeedData {
       travelers: 'trip.travelers.groups',
       price: 38000,
       provider: 'trip.provider.alferdaws',
-      providerColor: const Color(0xFF16A34A),
+      providerColor: const Color(0xFFB8892F),
       providerLetter: 'ف',
       vip: true,
       feats: const [
@@ -939,7 +939,7 @@ class SeedData {
       bg: LinearGradient(
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,
-        colors: [AppColors.blue, const Color(0xFF0E3A9A)],
+        colors: [AppColors.blue, const Color(0xFF8E6A28)],
       ),
       hotel: 'result.u5.hotel',
       stars: '★★★★★',
@@ -973,7 +973,7 @@ class SeedData {
       travelers: 'trip.travelers.soloOrCouple',
       price: 65000,
       provider: 'company.rahal',
-      providerColor: const Color(0xFF059669),
+      providerColor: const Color(0xFF8E6A28),
       providerLetter: 'ر',
       vip: true,
       feats: const [
@@ -1098,7 +1098,7 @@ class SeedData {
     Post(
       id: 1,
       avatar: 'أح',
-      avatarBg: const Color(0xFF16A34A),
+      avatarBg: const Color(0xFFB8892F),
       name: 'post.p1.name',
       time: 'time.day2',
       company: 'company.alferdawsFull',
@@ -1134,7 +1134,7 @@ class SeedData {
         const PostComment(
             name: 'post.c.ahmedAli',
             avatar: 'أع',
-            avatarBg: Color(0xFF16A34A),
+            avatarBg: Color(0xFFB8892F),
             text: 'post.p2.c1.text'),
         const PostComment(
             name: 'post.c.hodaMohamed',
@@ -1144,7 +1144,7 @@ class SeedData {
         const PostComment(
             name: 'post.c.omarElsayed',
             avatar: 'عس',
-            avatarBg: Color(0xFF059669),
+            avatarBg: Color(0xFF8E6A28),
             text: 'post.p2.c3.text'),
       ],
     ),
@@ -1174,7 +1174,7 @@ class SeedData {
     Post(
       id: 4,
       avatar: 'مح',
-      avatarBg: const Color(0xFF059669),
+      avatarBg: const Color(0xFF8E6A28),
       name: 'post.p4.name',
       time: 'time.week2',
       company: 'company.awj',
@@ -1210,14 +1210,14 @@ class SeedData {
         const PostComment(
             name: 'post.c.emanReda',
             avatar: 'إر',
-            avatarBg: Color(0xFF16A34A),
+            avatarBg: Color(0xFFB8892F),
             text: 'post.p5.c1.text')
       ],
     ),
     Post(
       id: 6,
       avatar: 'رأ',
-      avatarBg: const Color(0xFF0EA5E9),
+      avatarBg: const Color(0xFFB8892F),
       name: 'post.p6.name',
       time: 'time.day4',
       company: 'company.safarplus',
@@ -1238,7 +1238,7 @@ class SeedData {
         const PostComment(
             name: 'post.p6.name',
             avatar: 'رأ',
-            avatarBg: Color(0xFF0EA5E9),
+            avatarBg: Color(0xFFB8892F),
             text: 'post.p6.c2.text'),
         const PostComment(
             name: 'post.c.nourEldin',
@@ -1261,7 +1261,7 @@ class SeedData {
         const PostComment(
             name: 'post.c.hassanTarek',
             avatar: 'حط',
-            avatarBg: Color(0xFF16A34A),
+            avatarBg: Color(0xFFB8892F),
             text: 'post.p7.c1.text'),
         const PostComment(
             name: 'post.p7.name',
@@ -1286,7 +1286,7 @@ class SeedData {
         const PostComment(
             name: 'post.c.tarekMansour',
             avatar: 'طم',
-            avatarBg: Color(0xFF059669),
+            avatarBg: Color(0xFF8E6A28),
             text: 'post.p8.c1.text'),
         const PostComment(
             name: 'post.c.salmaWaleed',
@@ -1303,7 +1303,7 @@ class SeedData {
     Post(
       id: 9,
       avatar: 'فع',
-      avatarBg: const Color(0xFF059669),
+      avatarBg: const Color(0xFF8E6A28),
       name: 'post.p9.name',
       time: 'time.week2',
       company: 'company.nasmaFull',
@@ -1344,7 +1344,7 @@ class SeedData {
         const PostComment(
             name: 'post.c.ahmedFares',
             avatar: 'أف',
-            avatarBg: Color(0xFF059669),
+            avatarBg: Color(0xFF8E6A28),
             text: 'post.p10.c1.text'),
         const PostComment(
             name: 'post.c.reemOmar',
@@ -1367,7 +1367,7 @@ class SeedData {
         const PostComment(
             name: 'post.c.souadReda',
             avatar: 'سر',
-            avatarBg: Color(0xFF16A34A),
+            avatarBg: Color(0xFFB8892F),
             text: 'post.p11.c1.text'),
         const PostComment(
             name: 'post.c.amrHassan',
@@ -1395,7 +1395,7 @@ class SeedData {
         const PostComment(
             name: 'post.c.mariamSayed',
             avatar: 'مس',
-            avatarBg: Color(0xFF059669),
+            avatarBg: Color(0xFF8E6A28),
             text: 'post.p12.c1.text'),
         const PostComment(
             name: 'post.c.karimWaleed',
@@ -1407,7 +1407,7 @@ class SeedData {
     Post(
       id: 13,
       avatar: 'طس',
-      avatarBg: const Color(0xFF059669),
+      avatarBg: const Color(0xFF8E6A28),
       name: 'post.p13.name',
       time: 'time.day3',
       company: 'company.makkahtours',
@@ -1453,7 +1453,7 @@ class SeedData {
         const PostComment(
             name: 'post.c.amiraSami',
             avatar: 'أس',
-            avatarBg: Color(0xFF059669),
+            avatarBg: Color(0xFF8E6A28),
             text: 'post.p14.c1.text'),
         const PostComment(
             name: 'post.c.mahmoudAli',
@@ -1476,7 +1476,7 @@ class SeedData {
         const PostComment(
             name: 'post.c.nadiaHassan',
             avatar: 'نح',
-            avatarBg: Color(0xFF16A34A),
+            avatarBg: Color(0xFFB8892F),
             text: 'post.p15.c1.text'),
         const PostComment(
             name: 'post.c.salwaOmar',
@@ -1493,7 +1493,7 @@ class SeedData {
     Post(
       id: 16,
       avatar: 'رن',
-      avatarBg: const Color(0xFF0EA5E9),
+      avatarBg: const Color(0xFFB8892F),
       name: 'post.p16.name',
       time: 'time.day10',
       company: 'company.safarplus',
@@ -1514,14 +1514,14 @@ class SeedData {
         const PostComment(
             name: 'post.p16.name',
             avatar: 'رن',
-            avatarBg: Color(0xFF0EA5E9),
+            avatarBg: Color(0xFFB8892F),
             text: 'post.p16.c2.text'),
       ],
     ),
     Post(
       id: 17,
       avatar: 'عر',
-      avatarBg: const Color(0xFF16A34A),
+      avatarBg: const Color(0xFFB8892F),
       name: 'post.p17.name',
       time: 'time.week2',
       company: 'company.nasmaFull',
@@ -1542,7 +1542,7 @@ class SeedData {
         const PostComment(
             name: 'post.c.emanWaleed',
             avatar: 'إو',
-            avatarBg: Color(0xFF059669),
+            avatarBg: Color(0xFF8E6A28),
             text: 'post.p17.c3.text'),
       ],
     ),
@@ -1585,7 +1585,7 @@ class SeedData {
         const PostComment(
             name: 'post.c.haniSalam',
             avatar: 'هس',
-            avatarBg: Color(0xFF16A34A),
+            avatarBg: Color(0xFFB8892F),
             text: 'post.p19.c1.text'),
         const PostComment(
             name: 'post.c.rihamAhmed',
@@ -1597,7 +1597,7 @@ class SeedData {
     Post(
       id: 20,
       avatar: 'مك',
-      avatarBg: const Color(0xFF059669),
+      avatarBg: const Color(0xFF8E6A28),
       name: 'post.p20.name',
       time: 'time.month1',
       company: 'company.dreamtravel',
@@ -1618,7 +1618,7 @@ class SeedData {
         const PostComment(
             name: 'post.p20.name',
             avatar: 'مك',
-            avatarBg: Color(0xFF059669),
+            avatarBg: Color(0xFF8E6A28),
             text: 'post.p20.c2.text'),
       ],
     ),
@@ -1627,13 +1627,13 @@ class SeedData {
   // ── Generated post pool (infinite feed beyond the 20 seeded posts) ──
   static const List<_ExtraName> _extraNames = [
     _ExtraName('نأ', Color(0xFFE11D48), 'extra.name1', 'company.safarplus'),
-    _ExtraName('طر', Color(0xFF0284C7), 'extra.name2', 'company.alferdawsFull'),
+    _ExtraName('طر', Color(0xFFB8892F), 'extra.name2', 'company.alferdawsFull'),
     _ExtraName('مص', Color(0xFF7C3AED), 'extra.name3', 'company.dreamtravel'),
-    _ExtraName('هن', Color(0xFF059669), 'extra.name4', 'company.nasmaFull'),
+    _ExtraName('هن', Color(0xFF8E6A28), 'extra.name4', 'company.nasmaFull'),
     _ExtraName('عف', Color(0xFFD97706), 'extra.name5', 'company.awj'),
     _ExtraName('سك', Color(0xFFDC2626), 'extra.name6', 'company.makkahtours'),
     _ExtraName('أب', Color(0xFF6D28D9), 'extra.name7', 'company.safarplus'),
-    _ExtraName('ره', Color(0xFF0D9488), 'extra.name8', 'company.alferdawsFull'),
+    _ExtraName('ره', Color(0xFF8E6A28), 'extra.name8', 'company.alferdawsFull'),
   ];
 
   static final List<_ExtraMedia> _extraMedia = [

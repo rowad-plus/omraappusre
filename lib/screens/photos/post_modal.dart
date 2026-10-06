@@ -274,7 +274,7 @@ class _PostModalState extends State<PostModal> {
                 Expanded(
                     child: _mediaBtn(
                         FontAwesomeIcons.solidCamera,
-                        const Color(0xFF0EA5E9),
+                        const Color(0xFFB8892F),
                         tr('photos.add_photos'),
                         _pickImage)),
                 const SizedBox(width: 8),

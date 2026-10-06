@@ -338,7 +338,7 @@ class _PhotosScreenState extends State<PhotosScreen> {
                               height: 90,
                               decoration: const BoxDecoration(
                                   gradient: LinearGradient(
-                                      colors: [Color(0xFF0F6E56), Color(0xFF16A34A)])),
+                                      colors: [Color(0xFF8E6A28), Color(0xFFB8892F)])),
                               alignment: Alignment.center,
                               child: t.thumbnail != null
                                   ? CachedNetworkImage(
@@ -451,7 +451,7 @@ class _PhotosScreenState extends State<PhotosScreen> {
               border: Border(top: BorderSide(color: AppColors.border))),
           child: Row(children: [
             Expanded(
-                child: _typeBtn(FontAwesomeIcons.solidImage, const Color(0xFF0EA5E9),
+                child: _typeBtn(FontAwesomeIcons.solidImage, const Color(0xFFB8892F),
                     tr('photos.type_photo'))),
             const SizedBox(width: 8),
             Expanded(

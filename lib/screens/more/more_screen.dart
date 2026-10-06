@@ -134,8 +134,8 @@ class _MoreScreenState extends State<MoreScreen> with LiveReload<MoreScreen> {
                 onTap: () => loggedIn
                     ? _push(context, const OrdersScreen())
                     : openLoginSheet(context)),
-            _MenuItem(FontAwesomeIcons.scaleBalanced, const Color(0xFFE0F2FE),
-                const Color(0xFF0284C7), tr('more_menu.comparisons'),
+            _MenuItem(FontAwesomeIcons.scaleBalanced, const Color(0xFFFBF5E8),
+                const Color(0xFFB8892F), tr('more_menu.comparisons'),
                 onTap: () => loggedIn
                     ? _push(context, const ComparisonsScreen())
                     : openLoginSheet(context)),

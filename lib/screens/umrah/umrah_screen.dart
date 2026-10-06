@@ -7,7 +7,8 @@ import '../../widgets/app_header.dart';
 import '../../widgets/search_bar_widget.dart';
 import '../../widgets/section_vip_header.dart';
 import '../../widgets/provider_scroller.dart';
-import '../../widgets/trip_card_uc.dart';
+import '../../widgets/trip_card_gold.dart';
+import '../../widgets/design_umrah_banner.dart';
 import '../../widgets/filter_chip_bar.dart';
 import '../../models/provider_company.dart';
 import '../auth/login_sheet.dart';
@@ -236,7 +237,7 @@ class _UmrahScreenState extends State<UmrahScreen> {
                                     vipTrips),
                               ),
                               for (final t in vipTrips)
-                                TripCardUC(
+                                TripCardGold(
                                     trip: t,
                                     onTap: () => _openDetail(t),
                                     onBook: () => _openBooking(t)),
@@ -256,18 +257,19 @@ class _UmrahScreenState extends State<UmrahScreen> {
                                 label: tr('trip.umrah.premium_section_title'),
                                 gradient: AppColors.premiumGradient,
                                 lineColor: const Color(0x80E5E9F2),
-                                moreColor: AppColors.purple,
+                                moreColor: AppColors.brand,
                                 onMoreTap: () => _openList(
                                     tr('trip.umrah.premium_section_title'),
                                     premiumTrips),
                               ),
                               for (final t in premiumTrips)
-                                TripCardUC(
+                                TripCardGold(
                                     trip: t,
                                     onTap: () => _openDetail(t),
                                     onBook: () => _openBooking(t)),
                             ]),
                       ),
+                    const DesignUmrahBanner(),
                     if (premiumTrips.isNotEmpty && economyTrips.isNotEmpty)
                       Container(height: 6, color: AppColors.bg),
                     if (economyTrips.isNotEmpty)
@@ -300,7 +302,7 @@ class _UmrahScreenState extends State<UmrahScreen> {
                               ]),
                               const SizedBox(height: 12),
                               for (final t in economyTrips)
-                                TripCardUC(
+                                TripCardGold(
                                     trip: t,
                                     onTap: () => _openDetail(t),
                                     onBook: () => _openBooking(t)),

@@ -377,7 +377,7 @@ class _TripDetailScreenState extends State<TripDetailScreen> {
             child: _circleBtn(
               FontAwesomeIcons.scaleBalanced,
               _toggleCompared,
-              color: _compared ? const Color(0xFF0284C7) : Colors.white,
+              color: _compared ? const Color(0xFFB8892F) : Colors.white,
             ),
           ),
           if (t.vip || t.premium)

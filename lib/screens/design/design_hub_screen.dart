@@ -28,7 +28,7 @@ class DesignHubScreen extends StatelessWidget {
                 gradient: LinearGradient(
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
-                    colors: [Color(0xFFEBF2FF), Color(0xFFE8F8EE)]),
+                    colors: [Color(0xFFFBF5E8), Color(0xFFFBF5E8)]),
               ),
               child: Column(children: [
                 Text(tr('design.hub.eyebrow'),
@@ -68,7 +68,7 @@ class DesignHubScreen extends StatelessWidget {
                 const SizedBox(height: 14),
                 _DesignCard(
                   emoji: '🕋',
-                  iconBg: const Color(0xFFE8F8EE),
+                  iconBg: const Color(0xFFFBF5E8),
                   title: tr('design.hub.card_title'),
                   desc: tr('design.hub.card_desc'),
                   tags: [

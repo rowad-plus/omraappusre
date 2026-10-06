@@ -50,13 +50,13 @@ class TripTierStyle {
   );
 
   static final premium = TripTierStyle._(
-    accent: AppColors.purple,
+    accent: AppColors.brandDark,
     gradient: AppColors.premiumGradient,
-    cardColor: const Color(0xFFFAF7FF),
-    borderColor: AppColors.purple.withValues(alpha: 0.35),
-    softBg: const Color(0xFFF1EBFF),
-    footerBg: const Color(0xFFF7F2FF),
-    footerBorder: AppColors.purple.withValues(alpha: 0.25),
+    cardColor: const Color(0xFFFFFCF5),
+    borderColor: AppColors.brand.withValues(alpha: 0.3),
+    softBg: AppColors.brandSoft,
+    footerBg: const Color(0xFFFFFAF0),
+    footerBorder: AppColors.brand.withValues(alpha: 0.22),
     badgeIcon: FontAwesomeIcons.gem,
     badgeLabelKey: 'trip.type.premium',
   );
