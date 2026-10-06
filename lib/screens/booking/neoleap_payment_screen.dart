@@ -29,6 +29,39 @@ class _NeoLeapPaymentScreenState extends State<NeoLeapPaymentScreen> {
   bool _loading = true;
   bool _resolved = false;
 
+  /// Paymob's return (`/payments/paymob/return?...&success=true`) is let
+  /// through once so the server can record it; the result is remembered
+  /// and the screen closes as soon as the server redirects anywhere else
+  /// on our site — the website itself must never render in here (it has
+  /// no web session and would bounce to the login page).
+  bool? _paymobSuccess;
+
+  static bool _isOurSite(Uri u) =>
+      u.host.endsWith('omraway.com') || u.host.endsWith('umrati.net');
+
+  /// Shared by navigation requests and page starts (Android doesn't send
+  /// POST form submissions — NeoLeap's return — through the delegate).
+  NavigationDecision _route(String url) {
+    final uri = Uri.tryParse(url);
+    if (uri == null || !_isOurSite(uri)) return NavigationDecision.navigate;
+    final path = uri.path;
+    if (path.contains('/payments/neoleap/return')) {
+      _finish(true);
+      return NavigationDecision.prevent;
+    }
+    if (path.contains('/payments/neoleap/error')) {
+      _finish(false);
+      return NavigationDecision.prevent;
+    }
+    if (path.contains('/payments/paymob/return')) {
+      _paymobSuccess = uri.queryParameters['success'] == 'true';
+      return NavigationDecision.navigate;
+    }
+    // Any other page of ours = the gateway flow is over.
+    _finish(_paymobSuccess ?? true);
+    return NavigationDecision.prevent;
+  }
+
   @override
   void initState() {
     super.initState();
@@ -36,23 +69,14 @@ class _NeoLeapPaymentScreenState extends State<NeoLeapPaymentScreen> {
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
       ..setNavigationDelegate(
         NavigationDelegate(
-          onPageStarted: (_) {
+          onPageStarted: (url) {
+            if (_route(url) == NavigationDecision.prevent) return;
             if (mounted) setState(() => _loading = true);
           },
           onPageFinished: (_) {
             if (mounted) setState(() => _loading = false);
           },
-          onNavigationRequest: (request) {
-            if (request.url.contains('/payments/neoleap/return')) {
-              _finish(true);
-              return NavigationDecision.prevent;
-            }
-            if (request.url.contains('/payments/neoleap/error')) {
-              _finish(false);
-              return NavigationDecision.prevent;
-            }
-            return NavigationDecision.navigate;
-          },
+          onNavigationRequest: (request) => _route(request.url),
         ),
       )
       ..loadRequest(Uri.parse(widget.paymentUrl));
