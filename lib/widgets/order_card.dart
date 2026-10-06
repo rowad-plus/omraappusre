@@ -148,7 +148,7 @@ class _OrderCardState extends State<OrderCard> {
                     Wrap(spacing: 14, runSpacing: 4, children: [
                       _meta(FontAwesomeIcons.user,
                           '${order.personsCount} ${order.personsCount == 1 ? tr('orders.person_singular') : tr('orders.persons_plural')}'),
-                      _meta(FontAwesomeIcons.dollarSign, tr(order.total)),
+                      _meta(FontAwesomeIcons.wallet, tr(order.total)),
                     ]),
                   ]),
             ),

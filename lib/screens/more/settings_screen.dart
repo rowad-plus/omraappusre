@@ -136,7 +136,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   setState(() => _darkMode = v);
                   _setPref(_kDarkMode, v);
                 }),
-            _valueRow(FontAwesomeIcons.dollarSign, tr('settings.currency'),
+            _valueRow(FontAwesomeIcons.coins, tr('settings.currency'),
                 tr('settings.currency_value')),
           ]),
           _section([
