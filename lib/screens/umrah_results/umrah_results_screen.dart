@@ -724,31 +724,7 @@ class _ResultCard extends StatelessWidget {
                                 Text(t.emoji, style: const TextStyle(fontSize: 28)))
                         : Text(t.emoji, style: const TextStyle(fontSize: 28)),
                   ),
-                  if (tier.badgeIcon != null)
-                    Positioned(
-                      top: 0,
-                      left: 0,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 6, vertical: 2),
-                        decoration: BoxDecoration(
-                            gradient: tier.gradient,
-                            borderRadius: const BorderRadius.only(
-                                bottomRight: Radius.circular(8))),
-                        child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              FaIcon(tier.badgeIcon!,
-                                  size: 7, color: Colors.white),
-                              const SizedBox(width: 2),
-                              Text(tr(tier.badgeLabelKey!),
-                                  style: const TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 8,
-                                      fontWeight: FontWeight.w800)),
-                            ]),
-                      ),
-                    ),
+                  // Tier badge lives above the title only (was duplicated here).
                 ]),
               ),
               const SizedBox(width: 12),
