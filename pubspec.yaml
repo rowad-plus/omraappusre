@@ -47,6 +47,9 @@ dependencies:
     sdk: flutter
   cached_network_image: ^3.4.1
   image_picker: ^1.2.3
+  flutter_paymob_sdk:
+    git:
+      url: https://github.com/PaymobAccept/flutter_sdk.git
   webview_flutter: ^4.10.0
   firebase_core: ^4.15.0
   firebase_messaging: ^16.7.0

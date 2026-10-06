@@ -13,7 +13,7 @@ import '../../utils/western_digits_formatter.dart';
 import '../../widgets/app_dropdown.dart';
 import '../../widgets/app_toast.dart';
 import '../../widgets/country_picker_sheet.dart';
-import 'neoleap_payment_screen.dart';
+import '../../services/payment_launcher.dart';
 
 const _monthShort = [
   '', 'يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو',
@@ -283,8 +283,8 @@ class _BookingSheetState extends State<BookingSheet> {
     showAppToast(context, '✅ ${tr('booking.success.requestSent')}');
   }
 
-  /// Opens the NeoLeap Bank-Hosted payment page for [bookingId] in an
-  /// in-app WebView (see `NeoLeapPaymentScreen`). The booking itself
+  /// Starts payment for [bookingId] via `launchPayment` (Paymob native SDK,
+  /// WebView fallback). The booking itself
   /// already exists as 'pending' regardless of the outcome here — a
   /// failed/cancelled payment does not lose the booking request, it just
   /// leaves it unpaid (matching how `PaymentController::initiate` is safe
@@ -302,12 +302,7 @@ class _BookingSheetState extends State<BookingSheet> {
     }
 
     setState(() => _submitting = false);
-    final paid = await Navigator.of(context).push<bool?>(
-      MaterialPageRoute(
-        fullscreenDialog: true,
-        builder: (_) => NeoLeapPaymentScreen(paymentUrl: paymentResult.paymentUrl!),
-      ),
-    );
+    final paid = await launchPayment(context, paymentResult.paymentUrl!);
     if (!mounted) return;
     Navigator.of(context).pop();
 

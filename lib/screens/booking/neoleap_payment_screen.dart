@@ -43,6 +43,11 @@ class _NeoLeapPaymentScreenState extends State<NeoLeapPaymentScreen> {
   /// POST form submissions — NeoLeap's return — through the delegate).
   NavigationDecision _route(String url) {
     final uri = Uri.tryParse(url);
+    // Paymob's own completion page (used for app payments).
+    if (uri != null && uri.path.contains('/api/acceptance/post_pay')) {
+      _finish(uri.queryParameters['success'] == 'true');
+      return NavigationDecision.prevent;
+    }
     if (uri == null || !_isOurSite(uri)) return NavigationDecision.navigate;
     final path = uri.path;
     if (path.contains('/payments/neoleap/return')) {

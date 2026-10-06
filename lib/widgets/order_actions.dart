@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 import '../core/theme/app_colors.dart';
 import '../l10n/translations.dart';
 import '../models/order.dart';
-import '../screens/booking/neoleap_payment_screen.dart';
+import '../services/payment_launcher.dart';
 import '../screens/trip_detail/trip_detail_screen.dart';
 import '../state/app_state.dart';
 import 'app_toast.dart';
@@ -29,12 +29,7 @@ Future<void> payForOrder(BuildContext context, Order order) async {
     return;
   }
 
-  final paid = await Navigator.of(context).push<bool?>(
-    MaterialPageRoute(
-      fullscreenDialog: true,
-      builder: (_) => NeoLeapPaymentScreen(paymentUrl: result.paymentUrl!),
-    ),
-  );
+  final paid = await launchPayment(context, result.paymentUrl!);
   if (!context.mounted) return;
 
   if (paid == true) {

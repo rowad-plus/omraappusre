@@ -17,6 +17,11 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
 
+    // Required by the Paymob native SDK (flutter_paymob_sdk).
+    buildFeatures {
+        dataBinding = true
+    }
+
     defaultConfig {
         applicationId = "omraway.com"
         minSdk = flutter.minSdkVersion
