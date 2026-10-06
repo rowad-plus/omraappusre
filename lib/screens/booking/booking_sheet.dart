@@ -135,10 +135,23 @@ class _BookingSheetState extends State<BookingSheet> {
       setState(() => _datesLoading = false);
       return;
     }
-    final detail = await context.read<AppState>().fetchTripDetail(tripId);
+    if (!_datesLoading) setState(() => _datesLoading = true);
+    final state = context.read<AppState>();
+    // One silent retry — a dropped request on mobile data shouldn't leave
+    // the customer without dates.
+    var detail = await state.fetchTripDetail(tripId);
+    detail ??= await state.fetchTripDetail(tripId);
     if (!mounted) return;
     setState(() {
       _dates = detail?.dates ?? [];
+      // Dates couldn't load, but the customer already picked one on the
+      // search page: keep that date (the booking API accepts a raw Y-m-d).
+      if (_dates.isEmpty && widget.initialDate != null) {
+        _dates = [
+          ApiTripDate(
+              id: widget.initialDate!, departureDate: widget.initialDate!)
+        ];
+      }
       _datesAreComputed = detail?.datesAreComputed ?? false;
       _datesLoading = false;
       if (_dates.length == 1) {
@@ -200,6 +213,10 @@ class _BookingSheetState extends State<BookingSheet> {
     if (_submitting) return;
 
     if (_datesLoading) return;
+    if (_dates.isEmpty) {
+      showAppToast(context, '⚠️ ${tr('booking.dateRoom.loadError')}');
+      return;
+    }
     if (_needsDateChoice && _selectedDate == null) {
       showAppToast(context, '⚠️ ${tr('booking.validation.selectDate')}');
       return;
@@ -503,8 +520,18 @@ class _BookingSheetState extends State<BookingSheet> {
       );
     }
     if (_dates.isEmpty) {
-      return Text(tr('booking.payment.loadError'),
-          style: const TextStyle(fontSize: 12.5, color: AppColors.muted));
+      return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Text(tr('booking.dateRoom.loadError'),
+            style: const TextStyle(fontSize: 12.5, color: AppColors.muted)),
+        const SizedBox(height: 8),
+        TextButton.icon(
+          onPressed: _loadDates,
+          icon: const Icon(Icons.refresh, size: 16, color: AppColors.brand),
+          label: Text(tr('booking.payment.retryButton'),
+              style: const TextStyle(
+                  color: AppColors.brand, fontWeight: FontWeight.w700)),
+        ),
+      ]);
     }
     if (!_needsDateChoice) {
       // A single possible date — same as the website's `isSingleFixedDate`
