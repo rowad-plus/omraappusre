@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:provider/provider.dart';
@@ -83,7 +84,9 @@ class _HeaderIconGroup extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final loggedIn = context.watch<AppState>().isLoggedIn;
+    final state = context.watch<AppState>();
+    final loggedIn = state.isLoggedIn;
+    final avatarUrl = loggedIn ? state.userAvatarUrl : null;
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -100,12 +103,31 @@ class _HeaderIconGroup extends StatelessWidget {
             width: 32,
             height: 32,
             alignment: Alignment.center,
-            decoration: const BoxDecoration(
-                color: AppColors.blue, shape: BoxShape.circle),
-            child: FaIcon(
-                loggedIn ? FontAwesomeIcons.userCheck : FontAwesomeIcons.solidUser,
-                color: Colors.white,
-                size: 13),
+            clipBehavior: Clip.antiAlias,
+            decoration: BoxDecoration(
+                color: AppColors.blue,
+                shape: BoxShape.circle,
+                border: avatarUrl != null
+                    ? Border.all(color: AppColors.brandLine, width: 1.5)
+                    : null),
+            // Profile photo uploaded on the website, else the person icon.
+            child: avatarUrl != null
+                ? CachedNetworkImage(
+                    imageUrl: avatarUrl,
+                    width: 32,
+                    height: 32,
+                    fit: BoxFit.cover,
+                    errorWidget: (_, __, ___) => const FaIcon(
+                        FontAwesomeIcons.userCheck,
+                        color: Colors.white,
+                        size: 13),
+                  )
+                : FaIcon(
+                    loggedIn
+                        ? FontAwesomeIcons.userCheck
+                        : FontAwesomeIcons.solidUser,
+                    color: Colors.white,
+                    size: 13),
           ),
         ),
       ],

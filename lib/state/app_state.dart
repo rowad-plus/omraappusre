@@ -54,11 +54,15 @@ class AppState extends ChangeNotifier {
   String? userEmail;
   String? userPhone;
 
+  /// Profile photo uploaded on the website (`avatar_url`), null if none.
+  String? userAvatarUrl;
+
   void _applyUserPayload(Map<String, dynamic> user) {
     userId = user['id'] as int?;
     userName = user['name'] as String? ?? '';
     userEmail = user['email'] as String?;
     userPhone = user['phone'] as String?;
+    userAvatarUrl = user['avatar_url'] as String?;
   }
 
   void _clearSession() {
@@ -67,6 +71,7 @@ class AppState extends ChangeNotifier {
     userName = '';
     userEmail = null;
     userPhone = null;
+    userAvatarUrl = null;
   }
 
   /// Checks for a saved token from a previous session and tries to restore
