@@ -229,9 +229,9 @@ class _UmrahScreenState extends State<UmrahScreen> {
                               SectionVipHeader(
                                 icon: FontAwesomeIcons.crown,
                                 label: tr('trip.umrah.vip_section_title'),
-                                gradient: AppColors.greenGradient,
+                                gradient: AppColors.vipGradient,
                                 lineColor: const Color(0x80E5E9F2),
-                                moreColor: AppColors.green,
+                                moreColor: AppColors.tierVip,
                                 onMoreTap: () => _openList(
                                     tr('trip.umrah.vip_section_title'),
                                     vipTrips),
@@ -257,7 +257,7 @@ class _UmrahScreenState extends State<UmrahScreen> {
                                 label: tr('trip.umrah.premium_section_title'),
                                 gradient: AppColors.premiumGradient,
                                 lineColor: const Color(0x80E5E9F2),
-                                moreColor: AppColors.brand,
+                                moreColor: AppColors.tierPremium,
                                 onMoreTap: () => _openList(
                                     tr('trip.umrah.premium_section_title'),
                                     premiumTrips),
@@ -297,7 +297,7 @@ class _UmrahScreenState extends State<UmrahScreen> {
                                       style: const TextStyle(
                                           fontSize: 11.5,
                                           fontWeight: FontWeight.w700,
-                                          color: AppColors.green)),
+                                          color: AppColors.tierEconomy)),
                                 ),
                               ]),
                               const SizedBox(height: 12),

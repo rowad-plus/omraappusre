@@ -2,6 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../core/theme/app_colors.dart';
+import '../core/theme/trip_tier_style.dart';
 import '../l10n/translations.dart';
 import '../models/trip.dart';
 
@@ -49,6 +50,15 @@ class TripCardGold extends StatelessWidget {
         ? 'VIP'
         : (trip.premium ? tr('trip.type.premium') : tr('trip.type.economy'));
 
+    // Each tier keeps its own colour (VIP gold, premium purple, economy
+    // green) for the tag, icons, price, outline and button.
+    final style = TripTierStyle.of(vip: trip.vip, premium: trip.premium);
+    final accent = style.accent;
+    final buttonGradient = trip.vip
+        ? _goldGradient
+        : (style.gradient ?? AppColors.economyGradient);
+    final buttonText = trip.vip ? const Color(0xFF1A1408) : Colors.white;
+
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -56,7 +66,7 @@ class TripCardGold extends StatelessWidget {
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(18),
-          border: Border.all(color: AppColors.border),
+          border: Border.all(color: style.borderColor ?? AppColors.border),
           boxShadow: [
             BoxShadow(
                 color: const Color(0xFF785A1E).withValues(alpha: 0.07),
@@ -119,21 +129,21 @@ class TripCardGold extends StatelessWidget {
                       padding: const EdgeInsets.symmetric(
                           horizontal: 9, vertical: 3),
                       decoration: BoxDecoration(
-                        color: AppColors.brandSoft,
+                        color: style.softBg,
                         borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: AppColors.brandLine),
+                        border: Border.all(
+                            color: accent.withValues(alpha: 0.35)),
                       ),
                       child: Row(mainAxisSize: MainAxisSize.min, children: [
-                        if (trip.vip) ...[
-                          const FaIcon(FontAwesomeIcons.crown,
-                              size: 9, color: AppColors.brand),
+                        if (style.badgeIcon != null) ...[
+                          FaIcon(style.badgeIcon!, size: 9, color: accent),
                           const SizedBox(width: 4),
                         ],
                         Text(tag,
-                            style: const TextStyle(
+                            style: TextStyle(
                                 fontSize: 11,
                                 fontWeight: FontWeight.w700,
-                                color: AppColors.brand)),
+                                color: accent)),
                       ]),
                     ),
                   ]),
@@ -144,11 +154,14 @@ class TripCardGold extends StatelessWidget {
                     children: [
                       if (destinations.isNotEmpty)
                         _meta(FontAwesomeIcons.locationDot,
-                            destinations.map((s) => tr(s.city)).join(' + ')),
+                            destinations.map((s) => tr(s.city)).join(' + '),
+                            accent),
                       _meta(FontAwesomeIcons.solidClock,
-                          '${_dayNumber(tr(trip.days))} ${tr('trip.days.unit')}'),
+                          '${_dayNumber(tr(trip.days))} ${tr('trip.days.unit')}',
+                          accent),
                       if (trip.provider.isNotEmpty)
-                        _meta(FontAwesomeIcons.solidBuilding, tr(trip.provider)),
+                        _meta(FontAwesomeIcons.solidBuilding, tr(trip.provider),
+                            accent),
                     ],
                   ),
                   const SizedBox(height: 14),
@@ -166,18 +179,18 @@ class TripCardGold extends StatelessWidget {
                               child: Text(amount,
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                       fontSize: 21,
                                       fontWeight: FontWeight.w900,
-                                      color: AppColors.brand)),
+                                      color: accent)),
                             ),
                             if (currency.isNotEmpty) ...[
                               const SizedBox(width: 4),
                               Text(currency,
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                       fontSize: 12,
                                       fontWeight: FontWeight.w700,
-                                      color: AppColors.brand)),
+                                      color: accent)),
                             ],
                           ],
                         ),
@@ -195,13 +208,13 @@ class TripCardGold extends StatelessWidget {
                       padding: const EdgeInsets.symmetric(vertical: 12),
                       alignment: Alignment.center,
                       decoration: BoxDecoration(
-                        gradient: _goldGradient,
+                        gradient: buttonGradient,
                         borderRadius: BorderRadius.circular(10),
-                        border: Border.all(color: AppColors.brand),
+                        border: Border.all(color: accent),
                       ),
                       child: Text(tr('trip.card.book_umrah'),
-                          style: const TextStyle(
-                              color: Color(0xFF1A1408),
+                          style: TextStyle(
+                              color: buttonText,
                               fontSize: 15,
                               fontWeight: FontWeight.w800)),
                     ),
@@ -225,9 +238,9 @@ class TripCardGold extends StatelessWidget {
         RegExp(r'\B(?=(\d{3})+(?!\d))'), (_) => ',');
   }
 
-  Widget _meta(FaIconData icon, String text) =>
+  Widget _meta(FaIconData icon, String text, Color color) =>
       Row(mainAxisSize: MainAxisSize.min, children: [
-        FaIcon(icon, size: 11, color: AppColors.brand),
+        FaIcon(icon, size: 11, color: color),
         const SizedBox(width: 4),
         Flexible(
           child: Text(text,

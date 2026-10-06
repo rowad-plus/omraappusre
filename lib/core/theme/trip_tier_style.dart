@@ -50,19 +50,19 @@ class TripTierStyle {
   );
 
   static final premium = TripTierStyle._(
-    accent: AppColors.brandDark,
+    accent: AppColors.tierPremium,
     gradient: AppColors.premiumGradient,
-    cardColor: const Color(0xFFFFFCF5),
-    borderColor: AppColors.brand.withValues(alpha: 0.3),
-    softBg: AppColors.brandSoft,
-    footerBg: const Color(0xFFFFFAF0),
-    footerBorder: AppColors.brand.withValues(alpha: 0.22),
+    cardColor: const Color(0xFFFAF7FF),
+    borderColor: AppColors.tierPremium.withValues(alpha: 0.35),
+    softBg: const Color(0xFFF1EBFF),
+    footerBg: const Color(0xFFF7F2FF),
+    footerBorder: AppColors.tierPremium.withValues(alpha: 0.25),
     badgeIcon: FontAwesomeIcons.gem,
     badgeLabelKey: 'trip.type.premium',
   );
 
   static const economy = TripTierStyle._(
-    accent: AppColors.green,
+    accent: AppColors.tierEconomy,
     cardColor: Colors.white,
     softBg: AppColors.bg,
     footerBg: Color(0xFFFAFBFF),

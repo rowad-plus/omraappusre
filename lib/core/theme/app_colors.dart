@@ -13,6 +13,16 @@ class AppColors {
   static const brandSoft = Color(0xFFFBF5E8);
   static const brandLine = Color(0xFFEEDDB8);
 
+  /// Trip-tier colours stay distinct from the brand gold so VIP / premium /
+  /// economy trips are told apart at a glance (VIP gold, premium purple,
+  /// economy green).
+  static const tierVip = Color(0xFFB8892F);
+  static const tierVipDark = Color(0xFF8E6A28);
+  static const tierPremium = Color(0xFF7C3AED);
+  static const tierPremiumDark = Color(0xFF6D28D9);
+  static const tierEconomy = Color(0xFF16A34A);
+  static const tierEconomyDark = Color(0xFF15803D);
+
   static const blue = brand;
   static const blueLight = brandSoft;
   static const green = brand;
@@ -47,7 +57,13 @@ class AppColors {
   static const premiumGradient = LinearGradient(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
-    colors: [brandDark, brand],
+    colors: [tierPremium, tierPremiumDark],
+  );
+
+  static const economyGradient = LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [tierEconomy, tierEconomyDark],
   );
 
   static const greenGradient = LinearGradient(
