@@ -71,20 +71,25 @@ class _ToastWidgetState extends State<_ToastWidget>
       right: 0,
       child: FadeTransition(
         opacity: _opacity,
-        child: Center(
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-            decoration: BoxDecoration(
-              color: const Color(0xFF1A1A1A),
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Text(
-              widget.message,
-              style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600),
-              textAlign: TextAlign.center,
+        // Overlay entries have no Material ancestor; without one Flutter
+        // draws its yellow double underline under the text.
+        child: Material(
+          type: MaterialType.transparency,
+          child: Center(
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+              decoration: BoxDecoration(
+                color: const Color(0xFF1A1A1A),
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Text(
+                widget.message,
+                style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600),
+                textAlign: TextAlign.center,
+              ),
             ),
           ),
         ),
