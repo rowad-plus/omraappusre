@@ -615,6 +615,21 @@ class AppState extends ChangeNotifier {
     }
   }
 
+  /// Asks the server to confirm a booking's payment directly with Paymob
+  /// (`POST /bookings/{id}/payment/verify`) — the native SDK never returns
+  /// through the website, so this records the payment without waiting for
+  /// the webhook. True once the booking is paid, false if not (yet), null
+  /// on a network/API error.
+  Future<bool?> verifyPayment(int bookingId) async {
+    try {
+      final res = await api.post('/bookings/$bookingId/payment/verify')
+          as Map<String, dynamic>;
+      return res['paid'] == true;
+    } catch (_) {
+      return null;
+    }
+  }
+
   /// Previews the payment plan (full / commission / unconfirmed) for a trip
   /// before the customer actually submits a booking — the payment path
   /// itself is always server-derived from the customer's country, never

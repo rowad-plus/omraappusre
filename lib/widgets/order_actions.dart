@@ -29,7 +29,7 @@ Future<void> payForOrder(BuildContext context, Order order) async {
     return;
   }
 
-  final paid = await launchPayment(context, result.paymentUrl!);
+  final paid = await launchPayment(context, result.paymentUrl!, bookingId: apiId);
   if (!context.mounted) return;
 
   if (paid == true) {

@@ -302,7 +302,7 @@ class _BookingSheetState extends State<BookingSheet> {
     }
 
     setState(() => _submitting = false);
-    final paid = await launchPayment(context, paymentResult.paymentUrl!);
+    final paid = await launchPayment(context, paymentResult.paymentUrl!, bookingId: bookingId);
     if (!mounted) return;
     Navigator.of(context).pop();
 
