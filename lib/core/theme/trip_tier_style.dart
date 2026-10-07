@@ -52,10 +52,10 @@ class TripTierStyle {
   static final premium = TripTierStyle._(
     accent: AppColors.tierPremium,
     gradient: AppColors.premiumGradient,
-    cardColor: const Color(0xFFFAF7FF),
+    cardColor: const Color(0xFFFAFAFA),
     borderColor: AppColors.tierPremium.withValues(alpha: 0.35),
-    softBg: const Color(0xFFF1EBFF),
-    footerBg: const Color(0xFFF7F2FF),
+    softBg: const Color(0xFFF0F0F0),
+    footerBg: const Color(0xFFF5F5F5),
     footerBorder: AppColors.tierPremium.withValues(alpha: 0.25),
     badgeIcon: FontAwesomeIcons.gem,
     badgeLabelKey: 'trip.type.premium',
