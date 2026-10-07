@@ -101,7 +101,11 @@ class ApiBooking {
     final d = departureDate;
     if (d == null) return false;
     final parsed = DateTime.tryParse(d);
-    return parsed != null && parsed.isBefore(DateTime.now());
+    // Compare calendar days: a trip departing today is still current
+    // ("2026-10-07" parses to midnight, which is already before "now").
+    final now = DateTime.now();
+    return parsed != null &&
+        parsed.isBefore(DateTime(now.year, now.month, now.day));
   }
 
   OrderStatus get _orderStatus {
