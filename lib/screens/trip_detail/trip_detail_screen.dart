@@ -281,12 +281,16 @@ class _TripDetailScreenState extends State<TripDetailScreen> {
                         tr('trip.detail.section_provider'), tr(t.provider),
                         isLast: true),
                   ),
+                  // Sections with no real data are hidden instead of
+                  // showing made-up sample dates/prices or itinerary.
+                  if (!_usingSampleDates)
                   _section(
                     icon: FontAwesomeIcons.solidCalendar,
                     title: tr('trip.detail.section_dates'),
                     sample: _usingSampleDates,
                     child: _loadingDetail ? _miniLoader() : _buildDatesScroll(),
                   ),
+                  if (!_usingSampleProgram)
                   _section(
                     icon: FontAwesomeIcons.solidMap,
                     title: tr('trip.detail.section_itinerary'),

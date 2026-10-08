@@ -44,6 +44,21 @@ const _sortLabels = {
 
 const _kAll = '__all__';
 
+/// Short currency label for the date strip, from the selected country
+/// (was a hard-coded Egyptian "ج" for every country).
+const _currencyShortAr = {
+  'SAR': 'ر.س', 'EGP': 'ج.م', 'AED': 'د.إ', 'KWD': 'د.ك', 'QAR': 'ر.ق',
+  'BHD': 'د.ب', 'OMR': 'ر.ع', 'JOD': 'د.أ', 'MAD': 'د.م', 'DZD': 'د.ج',
+  'TND': 'د.ت', 'IQD': 'د.ع', 'YER': 'ر.ي', 'SDG': 'ج.س',
+};
+String _currencyShort() {
+  final code = CountryState.selected.value?.currencyCode;
+  if (code == null) return '';
+  return LocaleState.locale.value.languageCode == 'ar'
+      ? (_currencyShortAr[code] ?? code)
+      : code;
+}
+
 // Best-effort city → country lookup, shared in spirit with TripListScreen's.
 const _cityCountry = {
   'city.makkah': 'country.saudi',
@@ -445,7 +460,7 @@ class _UmrahResultsScreenState extends State<UmrahResultsScreen> {
                               ),
                               Text(
                                   entry.minPrice != null
-                                      ? '${entry.minPrice!.toInt()} ${tr('trip.results.currency_short')}'
+                                      ? '${entry.minPrice!.toInt()} ${_currencyShort()}'
                                       : '—',
                                   style: TextStyle(
                                       fontSize: 10,
