@@ -54,6 +54,33 @@ class _UmrahWizardScreenState extends State<UmrahWizardScreen> {
   final _notesCtrl = TextEditingController();
   bool _submitting = false;
 
+  // Longest first so "+966…" isn't split as "+96…".
+  static const _dialCodes = ['+966', '+971', '+965', '+974', '+962', '+212', '+20'];
+
+  @override
+  void initState() {
+    super.initState();
+    _prefillFromAccount();
+  }
+
+  /// Contact step comes pre-filled from the signed-in account (like the
+  /// website's form); only empty fields are filled, so edits are kept.
+  void _prefillFromAccount() {
+    final app = context.read<AppState>();
+    if (!app.isLoggedIn) return;
+    if (_nameCtrl.text.trim().isEmpty) _nameCtrl.text = app.userName;
+    final phone = (app.userPhone ?? '').replaceAll(' ', '');
+    if (_phoneCtrl.text.trim().isEmpty && phone.isNotEmpty) {
+      final code = _dialCodes.firstWhere((c) => phone.startsWith(c), orElse: () => '');
+      if (code.isNotEmpty) {
+        _countryCode = code;
+        _phoneCtrl.text = phone.substring(code.length);
+      } else {
+        _phoneCtrl.text = phone;
+      }
+    }
+  }
+
   @override
   void dispose() {
     _departureCityCtrl.dispose();
@@ -96,6 +123,11 @@ class _UmrahWizardScreenState extends State<UmrahWizardScreen> {
       openLoginSheet(context);
       return;
     }
+    // Signed in from this screen (login sheet above): fill what's still
+    // empty and let the user see it before sending.
+    final before = '${_nameCtrl.text}|${_phoneCtrl.text}';
+    setState(_prefillFromAccount);
+    if ('${_nameCtrl.text}|${_phoneCtrl.text}' != before) return;
     if (_nameCtrl.text.trim().isEmpty || _phoneCtrl.text.trim().isEmpty) {
       showAppToast(context, tr('design.error.missing_contact'));
       return;
