@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:intl/intl.dart' show NumberFormat;
 import 'package:provider/provider.dart';
 import '../../core/theme/app_colors.dart';
 import '../../l10n/translations.dart';
@@ -482,7 +483,7 @@ class _BookingSheetState extends State<BookingSheet> {
     final rows = [
       (tr('booking.contact.fullNameLabel'), app.userName),
       (tr('booking.contact.phoneLabel'), app.userPhone ?? '—'),
-      ('Email', app.userEmail ?? '—'),
+      (tr('more_menu.profile.email_address'), app.userEmail ?? '—'),
     ];
     return Column(children: [
       for (final r in rows)
@@ -719,7 +720,8 @@ class _BookingSheetState extends State<BookingSheet> {
   Widget _priceSummaryCard() {
     final unitPrice =
         double.tryParse(widget.trip.price.replaceAll(RegExp(r'[^0-9.]'), '')) ?? 0;
-    final currency = widget.trip.price.replaceAll(RegExp(r'[0-9.,\s]'), '').trim();
+    // Keep the spaces inside the currency name ("ريال سعودي", "Saudi Riyal (SAR)").
+    final currency = widget.trip.price.replaceAll(RegExp(r'[0-9.,]'), '').trim();
     final usePrivate = _privateRoomApplies && _privateRoomTotal != null;
     final total = usePrivate ? _privateRoomTotal! : unitPrice * _personsCount;
     final label = usePrivate
@@ -743,7 +745,7 @@ class _BookingSheetState extends State<BookingSheet> {
               height: 18,
               child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.blue))
         else
-          Text('${total.toStringAsFixed(0)} $currency',
+          Text('${NumberFormat('#,##0', 'en').format(total)} $currency',
               style: const TextStyle(
                   fontSize: 17, fontWeight: FontWeight.w900, color: AppColors.blue)),
       ]),

@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import '../state/locale_state.dart';
 
 /// Uniform exception for API errors — carries a ready-to-display Arabic
 /// message (from Laravel's "message" field) and the HTTP status code.
@@ -31,8 +32,13 @@ class ApiClient {
 
   void setToken(String? token) => _token = token;
 
+  // The server (SetApiLocale) picks the language of trip titles, city names
+  // etc. from this header; without it every response came back in Arabic.
+  String get _lang => LocaleState.locale.value.languageCode;
+
   Map<String, String> get _headers => {
         'Accept': 'application/json',
+        'Accept-Language': _lang,
         'Content-Type': 'application/json',
         if (_token != null) 'Authorization': 'Bearer $_token',
       };
@@ -102,6 +108,7 @@ class ApiClient {
   }) async {
     final request = http.MultipartRequest('POST', _uri(path));
     request.headers['Accept'] = 'application/json';
+    request.headers['Accept-Language'] = _lang;
     if (_token != null) request.headers['Authorization'] = 'Bearer $_token';
     fields.forEach((k, v) {
       if (v != null) request.fields[k] = v.toString();
