@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart' show NumberFormat;
 import '../core/theme/trip_tier_style.dart';
 import '../l10n/translations.dart';
 import 'trip.dart';
@@ -70,10 +71,16 @@ class UmrahResult {
         networkImage: networkImage,
         hotel: hotel.isEmpty ? provider : hotel,
         stars: stars,
-        type: 'trip.type.umrah',
+        type: vip
+            ? 'trip.type.umrahVip'
+            : premium
+                ? 'trip.type.premium'
+                : travelers == 'economy'
+                    ? 'trip.type.economy'
+                    : 'trip.type.umrah',
         days: days,
         travelers: travelers,
-        price: '$price ${tr(currency)}',
+        price: '${NumberFormat('#,##0', 'en').format(price)} ${tr(currency)}',
         date: date,
         provider: provider,
         dest: 'city.makkah',
