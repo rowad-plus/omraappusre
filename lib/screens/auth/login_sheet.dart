@@ -55,6 +55,17 @@ class _LoginSheetState extends State<LoginSheet> {
     'JO': '🇯🇴 +962',
   };
 
+  // Example mobile number (without the trunk 0) shown as the field's hint,
+  // matching the chosen dial code.
+  static const _phoneHintByDial = {
+    '🇪🇬 +20': '1X XXXX XXXX',
+    '🇸🇦 +966': '5X XXX XXXX',
+    '🇦🇪 +971': '5X XXX XXXX',
+    '🇰🇼 +965': 'XXXX XXXX',
+    '🇶🇦 +974': 'XXXX XXXX',
+    '🇯🇴 +962': '7X XXX XXXX',
+  };
+
   @override
   void initState() {
     super.initState();
@@ -318,7 +329,7 @@ class _LoginSheetState extends State<LoginSheet> {
               textAlign: TextAlign.left,
               textDirection: TextDirection.ltr,
               decoration: InputDecoration(
-                hintText: tr('auth.login.phoneHint'),
+                hintText: _phoneHintByDial[_countryCode] ?? tr('auth.login.phoneHint'),
                 contentPadding:
                     const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
                 border: OutlineInputBorder(

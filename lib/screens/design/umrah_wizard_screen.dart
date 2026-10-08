@@ -740,6 +740,17 @@ class _PhoneField extends StatelessWidget {
 
   static const _codes = ['+20', '+966', '+971', '+965', '+974', '+962', '+212'];
 
+  // Example mobile number for the chosen dial code (without the trunk 0).
+  static const _hintByCode = {
+    '+20': '1X XXXX XXXX',
+    '+966': '5X XXX XXXX',
+    '+971': '5X XXX XXXX',
+    '+965': 'XXXX XXXX',
+    '+974': 'XXXX XXXX',
+    '+962': '7X XXX XXXX',
+    '+212': '6XX XXX XXX',
+  };
+
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -775,7 +786,7 @@ class _PhoneField extends StatelessWidget {
               textDirection: TextDirection.ltr,
               style: const TextStyle(fontSize: 14, color: _kText),
               decoration: InputDecoration(
-                hintText: tr('design.hint.phone_number'),
+                hintText: _hintByCode[countryCode] ?? tr('design.hint.phone_number'),
                 hintStyle: const TextStyle(color: _kMuted, fontSize: 14),
                 contentPadding:
                     const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
