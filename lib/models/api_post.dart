@@ -74,6 +74,7 @@ class ApiPost {
       id: id,
       avatar: userInit,
       avatarBg: _colorFromHex(userColor),
+      avatarUrl: userAvatar,
       name: userName,
       time: time,
       company: companyName ?? '',

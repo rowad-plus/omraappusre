@@ -151,7 +151,8 @@ class ApiTrip {
         days: '$durationDays',
         travelers: type,
         price: '${price.toStringAsFixed(0)} $currency',
-        date: nextDate ?? '',
+        // Daily trips have no next date — the cards tr() this key instead.
+        date: nextDate ?? (scheduleType == 'daily' ? 'trip.date.daily' : ''),
         provider: companyName,
         dest: visitsMadinah ? 'city.madinah' : 'city.makkah',
         vip: type == 'vip',

@@ -43,6 +43,8 @@ class Post {
   final int id;
   final String avatar;
   final Color avatarBg;
+  /// The author's uploaded photo; when null the initials in [avatar] show.
+  final String? avatarUrl;
   final String name;
   final String time;
   /// Empty when the post isn't a company review (real posts can be plain
@@ -64,6 +66,7 @@ class Post {
     required this.id,
     required this.avatar,
     required this.avatarBg,
+    this.avatarUrl,
     required this.name,
     required this.time,
     this.company = '',

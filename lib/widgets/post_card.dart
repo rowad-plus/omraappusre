@@ -40,11 +40,24 @@ class PostCard extends StatelessWidget {
             decoration:
                 BoxDecoration(color: post.avatarBg, shape: BoxShape.circle),
             alignment: Alignment.center,
-            child: Text(post.avatar,
-                style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 13,
-                    fontWeight: FontWeight.w800)),
+            clipBehavior: Clip.antiAlias,
+            child: post.avatarUrl != null
+                ? CachedNetworkImage(
+                    imageUrl: post.avatarUrl!,
+                    width: 40,
+                    height: 40,
+                    fit: BoxFit.cover,
+                    errorWidget: (_, __, ___) => Text(post.avatar,
+                        style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 13,
+                            fontWeight: FontWeight.w800)),
+                  )
+                : Text(post.avatar,
+                    style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w800)),
           ),
           const SizedBox(width: 10),
           Expanded(
