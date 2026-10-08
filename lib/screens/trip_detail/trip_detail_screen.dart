@@ -261,16 +261,20 @@ class _TripDetailScreenState extends State<TripDetailScreen> {
                     icon: FontAwesomeIcons.circleInfo,
                     title: tr('trip.detail.section_details'),
                     child: Column(children: [
-                      _infoRow(FontAwesomeIcons.solidBuilding,
-                          tr('trip.detail.label_hotel'), tr(t.hotel)),
+                      // Without a hotel name the model falls back to the
+                      // company name — don't present that as the hotel.
+                      if (t.hotel.isNotEmpty && t.hotel != t.provider)
+                        _infoRow(FontAwesomeIcons.solidBuilding,
+                            tr('trip.detail.label_hotel'), tr(t.hotel)),
                       _infoRow(FontAwesomeIcons.locationDot,
                           tr('trip.detail.label_location'), tr(t.dest)),
                       _infoRow(FontAwesomeIcons.solidCalendar,
-                          tr('trip.detail.label_trip_date'), t.date),
+                          tr('trip.detail.label_trip_date'), tr(t.date)),
                       _infoRow(FontAwesomeIcons.solidClock,
-                          tr('trip.detail.label_duration'), t.days),
+                          tr('trip.detail.label_duration'),
+                          '${t.days} ${tr('trip.days.unit')}'),
                       _infoRow(FontAwesomeIcons.users, tr('trip.filter.type'),
-                          t.travelers,
+                          tr(t.type),
                           isLast: true),
                     ]),
                   ),

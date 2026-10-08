@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart' show NumberFormat;
 import '../core/theme/trip_tier_style.dart';
 import 'trip.dart';
 
@@ -150,7 +151,7 @@ class ApiTrip {
         type: _typeKey,
         days: '$durationDays',
         travelers: type,
-        price: '${price.toStringAsFixed(0)} $currency',
+        price: '${NumberFormat('#,##0', 'en').format(price)} $currency',
         // Daily trips have no next date — the cards tr() this key instead.
         date: nextDate ?? (scheduleType == 'daily' ? 'trip.date.daily' : ''),
         provider: companyName,
