@@ -1,11 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../../core/theme/app_colors.dart';
-import '../../data/seed_data.dart';
 import '../../l10n/translations.dart';
-import '../../models/design_request.dart';
 import '../../widgets/sub_page_header.dart';
-import 'design_request_detail_sheet.dart';
 import 'umrah_wizard_screen.dart';
 
 /// Mirrors `#pg-design` — the "صمّم عمرتك بنفسك" entry point into the
@@ -64,8 +61,6 @@ class DesignHubScreen extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.fromLTRB(14, 16, 14, 0),
               child: Column(children: [
-                _PreviousRequestCard(request: SeedData.umrahDesignRequest),
-                const SizedBox(height: 14),
                 _DesignCard(
                   emoji: '🕋',
                   iconBg: const Color(0xFFFBF5E8),
@@ -112,99 +107,6 @@ class DesignHubScreen extends StatelessWidget {
             ),
           ],
         ),
-      ),
-    );
-  }
-}
-
-class _PreviousRequestCard extends StatelessWidget {
-  final UmrahDesignRequest request;
-  const _PreviousRequestCard({required this.request});
-
-  static Map<DesignRequestStage, String> get _stageLabel => {
-        DesignRequestStage.accepted: tr('design.hub.status_in_progress'),
-        DesignRequestStage.contacted: tr('design.hub.status_in_progress'),
-        DesignRequestStage.prepared: tr('design.hub.status_in_progress'),
-        DesignRequestStage.completed: tr('design.hub.status_completed'),
-      };
-
-  void _openDetail(BuildContext context) => showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (_) => DesignRequestDetailSheet(request: request));
-
-  @override
-  Widget build(BuildContext context) {
-    final completed = request.stage == DesignRequestStage.completed;
-    final badgeBg = completed ? AppColors.greenLight : const Color(0xFFFEF3C7);
-    final badgeColor = completed ? AppColors.green : const Color(0xFFD97706);
-    return GestureDetector(
-      onTap: () => _openDetail(context),
-      child: Container(
-        padding: const EdgeInsets.all(14),
-        decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: AppColors.border, width: 2)),
-        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Row(children: [
-            const FaIcon(FontAwesomeIcons.solidFileLines,
-                size: 13, color: AppColors.blue),
-            const SizedBox(width: 6),
-            Text(tr('design.hub.previous_request'),
-                style: const TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.blue)),
-            const Spacer(),
-            Container(
-                padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 3),
-                decoration: BoxDecoration(
-                    color: badgeBg, borderRadius: BorderRadius.circular(20)),
-                child: Text(_stageLabel[request.stage]!,
-                    style: TextStyle(
-                        fontSize: 10,
-                        fontWeight: FontWeight.w700,
-                        color: badgeColor))),
-          ]),
-          const SizedBox(height: 12),
-          Row(children: [
-            const Text('🕋', style: TextStyle(fontSize: 30)),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(tr('design.hub.request_type_label'),
-                        style: const TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w800,
-                            color: AppColors.text)),
-                    Text('${request.id} · ${request.date}',
-                        style: const TextStyle(
-                            fontSize: 11, color: AppColors.muted)),
-                  ]),
-            ),
-          ]),
-          const SizedBox(height: 12),
-          SizedBox(
-            width: double.infinity,
-            child: OutlinedButton(
-              onPressed: () => _openDetail(context),
-              style: OutlinedButton.styleFrom(
-                  side: const BorderSide(color: AppColors.blue, width: 1.5),
-                  padding: const EdgeInsets.symmetric(vertical: 11),
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10))),
-              child: Text(tr('design.hub.view_request'),
-                  style: const TextStyle(
-                      color: AppColors.blue,
-                      fontSize: 13,
-                      fontWeight: FontWeight.w800)),
-            ),
-          ),
-        ]),
       ),
     );
   }
