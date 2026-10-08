@@ -44,6 +44,19 @@ class _PostModalState extends State<PostModal> {
     'photos.rating.amazing',
   ];
 
+  @override
+  void initState() {
+    super.initState();
+    _preselectBookedCompany();
+  }
+
+  /// Pre-selects the company of the user's latest booking (still removable).
+  Future<void> _preselectBookedCompany() async {
+    final booked = await context.read<AppState>().fetchBookedCompanies();
+    if (!mounted || booked.isEmpty || _companyId != null) return;
+    _selectCompany(booked.first);
+  }
+
   void _onCompanyQueryChanged(String query) {
     _companyDebounce?.cancel();
     _companyDebounce =
@@ -110,12 +123,13 @@ class _PostModalState extends State<PostModal> {
 
     setState(() => _submitting = true);
     final error = await context.read<AppState>().createTimelinePost(
-          type: _companyId != null
-              ? 'review'
-              : _videoBytes != null
-                  ? 'video'
-                  : _imageBytes != null
-                      ? 'photos'
+          // Media type wins so a tagged video still renders as a video.
+          type: _videoBytes != null
+              ? 'video'
+              : _imageBytes != null
+                  ? 'photos'
+                  : _companyId != null
+                      ? 'review'
                       : 'text',
           content: text,
           companyId: _companyId,

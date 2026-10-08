@@ -306,6 +306,19 @@ class AppState extends ChangeNotifier {
     }
   }
 
+  /// Companies the signed-in user has booked with, latest booking first
+  /// (the `booked` list of `/companies`). Empty when signed out or on error.
+  Future<List<ApiFeaturedCompany>> fetchBookedCompanies() async {
+    try {
+      final res = await api.get('/companies') as Map<String, dynamic>;
+      return ((res['booked'] as List<dynamic>?) ?? const [])
+          .map((c) => ApiFeaturedCompany.fromJson(c as Map<String, dynamic>))
+          .toList();
+    } catch (_) {
+      return [];
+    }
+  }
+
   /// A provider company's public profile — powers the company profile page
   /// opened from a featured-company card or the provider scroller. Returns
   /// null on any failure (missing/inactive company, network error) so the
@@ -343,7 +356,13 @@ class AppState extends ChangeNotifier {
   /// on any failure, so the feed just stops loading rather than erroring.
   Future<(List<ApiPost>, bool)> fetchTimelinePosts(int page) async {
     try {
-      final res = await api.get('/timeline/posts', {'page': page}) as Map<String, dynamic>;
+      // The selected country lets the server rank same-day posts about local
+      // companies (based in / departing from that country) higher.
+      final country = CountryState.selected.value?.code;
+      final res = await api.get('/timeline/posts', {
+        'page': page,
+        if (country != null) 'country': country,
+      }) as Map<String, dynamic>;
       final posts = (res['posts'] as List<dynamic>)
           .map((p) => ApiPost.fromJson(p as Map<String, dynamic>))
           .toList();

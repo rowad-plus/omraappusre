@@ -58,7 +58,8 @@ class PostCard extends StatelessWidget {
               Text(tr(post.time),
                   style:
                       const TextStyle(fontSize: 10.5, color: AppColors.muted)),
-              if (post.company.isNotEmpty) ...[
+              // With media the company sits on the photo instead (_CompanyBadge).
+              if (post.company.isNotEmpty && post.media == null) ...[
                 const SizedBox(height: 3),
                 Row(mainAxisSize: MainAxisSize.min, children: [
                   if (post.companyLogo != null) ...[
@@ -124,8 +125,20 @@ class PostCard extends StatelessWidget {
                   gradient: post.media!.bg,
                   borderRadius: BorderRadius.circular(10)),
               clipBehavior: Clip.antiAlias,
-              child: _PostMediaBox(
-                  media: post.media!, visibilityKey: 'post-media-${post.id}'),
+              child: Stack(children: [
+                Positioned.fill(
+                  child: _PostMediaBox(
+                      media: post.media!,
+                      visibilityKey: 'post-media-${post.id}'),
+                ),
+                if (post.company.isNotEmpty)
+                  PositionedDirectional(
+                    top: 8,
+                    start: 8,
+                    child: _CompanyBadge(
+                        name: tr(post.company), logo: post.companyLogo),
+                  ),
+              ]),
             ),
           ),
         ],
@@ -181,6 +194,53 @@ class PostCard extends StatelessWidget {
           Text(label,
               style: TextStyle(
                   fontSize: 12, fontWeight: FontWeight.w600, color: color)),
+        ]),
+      ),
+    );
+  }
+}
+
+/// White pill with the tagged company's logo + name, laid over the post's
+/// photo/video (mirrors `.media-co-badge` on the site).
+class _CompanyBadge extends StatelessWidget {
+  final String name;
+  final String? logo;
+  const _CompanyBadge({required this.name, this.logo});
+
+  @override
+  Widget build(BuildContext context) {
+    return ConstrainedBox(
+      constraints: BoxConstraints(
+          maxWidth: MediaQuery.of(context).size.width * 0.6),
+      child: Container(
+        padding: const EdgeInsetsDirectional.fromSTEB(5, 4, 10, 4),
+        decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: 0.94),
+          borderRadius: BorderRadius.circular(999),
+          boxShadow: [
+            BoxShadow(
+                color: Colors.black.withValues(alpha: 0.18), blurRadius: 8),
+          ],
+        ),
+        child: Row(mainAxisSize: MainAxisSize.min, children: [
+          if (logo != null)
+            ClipOval(
+              child: CachedNetworkImage(
+                  imageUrl: logo!, width: 20, height: 20, fit: BoxFit.cover),
+            )
+          else
+            const FaIcon(FontAwesomeIcons.solidBuilding,
+                size: 11, color: AppColors.green),
+          const SizedBox(width: 6),
+          Flexible(
+            child: Text(name,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.text)),
+          ),
         ]),
       ),
     );
