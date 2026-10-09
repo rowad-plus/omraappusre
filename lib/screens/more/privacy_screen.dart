@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../../core/theme/app_colors.dart';
-import '../../widgets/sub_page_header.dart';
+import '../../widgets/server_legal_page.dart';
 import '../../widgets/legal_section.dart';
 import '../../l10n/translations.dart';
 
@@ -11,12 +11,12 @@ class PrivacyScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.bg,
-      appBar: SubPageHeader(title: tr('legal.privacy.title_page')),
-      body: ListView(
-        padding: const EdgeInsets.all(14),
-        children: [
+    // Text comes from Admin → Pages (same as the website); the built-in
+    // text below is only shown until it loads / when offline.
+    return ServerLegalPage(
+      type: 'privacy',
+      title: tr('legal.privacy.title_page'),
+      fallback: [
           Padding(
               padding: const EdgeInsets.only(bottom: 12),
               child: Text(tr('legal.privacy.last_updated'),
@@ -90,8 +90,7 @@ class PrivacyScreen extends StatelessWidget {
             title: tr('legal.privacy.contact.title'),
             text: tr('legal.privacy.contact.body'),
           ),
-        ],
-      ),
+      ],
     );
   }
 }

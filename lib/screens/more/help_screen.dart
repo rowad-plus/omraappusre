@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../core/theme/app_colors.dart';
 import '../../l10n/translations.dart';
+import '../../state/app_state.dart';
 import '../../widgets/sub_page_header.dart';
 
 List<(String, String)> _faqs() => [
@@ -22,6 +24,29 @@ class _HelpScreenState extends State<HelpScreen> {
   int? _open;
   final _searchCtrl = TextEditingController();
   String _query = '';
+  // Admin → FAQs (same list as the website); the built-in questions are
+  // only shown until it loads / when offline.
+  List<(String, String)>? _serverFaqs;
+
+  @override
+  void initState() {
+    super.initState();
+    context.read<AppState>().fetchFaqs().then((list) {
+      if (!mounted || list.isEmpty) return;
+      setState(() => _serverFaqs = [
+            for (final f in list) (_plain(f.question), _plain(f.answer)),
+          ]);
+    });
+  }
+
+  /// FAQ answers may be rich text from the admin editor.
+  static String _plain(String s) => s
+      .replaceAll(RegExp(r'<br\s*/?>|</p>\s*<p[^>]*>', caseSensitive: false), '\n')
+      .replaceAll(RegExp(r'<[^>]*>'), '')
+      .replaceAll('&nbsp;', ' ')
+      .replaceAll('&quot;', '"')
+      .replaceAll('&amp;', '&')
+      .trim();
 
   @override
   void dispose() {
@@ -31,7 +56,7 @@ class _HelpScreenState extends State<HelpScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final allFaqs = _faqs();
+    final allFaqs = _serverFaqs ?? _faqs();
     final q = _query.trim().toLowerCase();
     final faqs = q.isEmpty
         ? allFaqs

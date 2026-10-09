@@ -306,6 +306,36 @@ class AppState extends ChangeNotifier {
     }
   }
 
+  /// An admin-managed page (privacy / terms / refund) as (title, HTML), in
+  /// the app's language. Null when unavailable or empty — callers then fall
+  /// back to the text built into the app.
+  Future<({String title, String html})?> fetchContentPage(String type) async {
+    try {
+      final res = await api.get('/pages/$type') as Map<String, dynamic>;
+      final html = (res['content'] as String?)?.trim() ?? '';
+      if (html.replaceAll(RegExp(r'<[^>]*>'), '').trim().isEmpty) return null;
+      return (title: res['title'] as String? ?? '', html: html);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /// Admin → FAQs as (question, answer) pairs; empty on failure.
+  Future<List<({String question, String answer})>> fetchFaqs() async {
+    try {
+      final res = await api.get('/faqs') as Map<String, dynamic>;
+      return (res['faqs'] as List<dynamic>)
+          .map((f) => (
+                question: (f['question'] as String? ?? '').trim(),
+                answer: (f['answer'] as String? ?? '').trim(),
+              ))
+          .where((f) => f.question.isNotEmpty)
+          .toList();
+    } catch (_) {
+      return [];
+    }
+  }
+
   /// Support phone / email / WhatsApp from Admin → Settings
   /// (`/contact-info`); a missing or empty value comes back null.
   Future<({String? phone, String? email, String? whatsapp})> fetchContactInfo() async {
