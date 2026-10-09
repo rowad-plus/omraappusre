@@ -39,10 +39,26 @@ class _CountryPickerSheetState extends State<_CountryPickerSheet> {
   bool _loadingCities = false;
   List<CityOption> _cities = const [];
 
-  Future<void> _selectCountry(Country country) async {
-    CountryState.selected.value = country;
-    CountryState.selectedCityId.value = null;
-    CountryState.selectedCityName.value = null;
+  @override
+  void initState() {
+    super.initState();
+    // Open straight on the current (detected / chosen) country's cities,
+    // like the website; the back arrow still leads to the country list.
+    final current = CountryState.selected.value;
+    if (current != null) {
+      _stepTwoCountry = current;
+      _loadingCities = true;
+      WidgetsBinding.instance.addPostFrameCallback(
+          (_) => _selectCountry(current, keepCity: true));
+    }
+  }
+
+  Future<void> _selectCountry(Country country, {bool keepCity = false}) async {
+    if (!keepCity) {
+      CountryState.selected.value = country;
+      CountryState.selectedCityId.value = null;
+      CountryState.selectedCityName.value = null;
+    }
     setState(() {
       _stepTwoCountry = country;
       _loadingCities = true;
@@ -51,9 +67,16 @@ class _CountryPickerSheetState extends State<_CountryPickerSheet> {
     final cities = await context.read<AppState>().fetchDepartureCities(country.code);
     if (!mounted) return;
     if (cities.isEmpty) {
-      // Nothing to narrow down to — same as before, just close on the
-      // country pick.
-      Navigator.of(context).pop();
+      // Nothing to narrow down to: on a pick, close; when the sheet just
+      // opened on the current country, show the country list instead.
+      if (keepCity) {
+        setState(() {
+          _stepTwoCountry = null;
+          _loadingCities = false;
+        });
+      } else {
+        Navigator.of(context).pop();
+      }
       return;
     }
     setState(() {
@@ -128,10 +151,16 @@ class _CountryPickerSheetState extends State<_CountryPickerSheet> {
     return ValueListenableBuilder<Country?>(
       valueListenable: CountryState.selected,
       builder: (context, selected, _) {
+        // The current country first, then the rest in catalog order.
+        final countries = [
+          if (selected != null) selected,
+          for (final c in CountryCatalog.all)
+            if (c.code != selected?.code) c,
+        ];
         return ListView(
           shrinkWrap: true,
           children: [
-            for (final country in CountryCatalog.all)
+            for (final country in countries)
               ListTile(
                 leading:
                     Text(country.flagEmoji, style: const TextStyle(fontSize: 20)),
@@ -164,8 +193,6 @@ class _CountryPickerSheetState extends State<_CountryPickerSheet> {
                 child: CircularProgressIndicator(strokeWidth: 2))),
       );
     }
-    final mainCities = _cities.where((c) => c.isFeatured).toList();
-    final otherCities = _cities.where((c) => !c.isFeatured).toList();
     return ValueListenableBuilder<int?>(
       valueListenable: CountryState.selectedCityId,
       builder: (context, selectedId, _) {
@@ -188,30 +215,9 @@ class _CountryPickerSheetState extends State<_CountryPickerSheet> {
                   : null,
               onTap: () => _selectCity(null),
             ),
-            // Mirrors the website's own picker exactly: featured cities
-            // under "المدينة الرئيسية", everything else under "مدن أخرى".
-            if (mainCities.isNotEmpty) ...[
-              Padding(
-                padding: const EdgeInsets.fromLTRB(16, 10, 16, 4),
-                child: Text(tr('country.picker.main_city'),
-                    style: const TextStyle(
-                        fontSize: 11.5,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.muted)),
-              ),
-              for (final city in mainCities) cityTile(city),
-            ],
-            if (otherCities.isNotEmpty) ...[
-              Padding(
-                padding: const EdgeInsets.fromLTRB(16, 10, 16, 4),
-                child: Text(tr('country.picker.other_cities'),
-                    style: const TextStyle(
-                        fontSize: 11.5,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.muted)),
-              ),
-              for (final city in otherCities) cityTile(city),
-            ],
+            // One list, like the website: the server orders it capital
+            // first, then featured cities, then the rest.
+            for (final city in _cities) cityTile(city),
           ],
         );
       },
