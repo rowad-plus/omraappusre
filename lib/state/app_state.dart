@@ -306,6 +306,21 @@ class AppState extends ChangeNotifier {
     }
   }
 
+  /// Support phone / email / WhatsApp from Admin → Settings
+  /// (`/contact-info`); a missing or empty value comes back null.
+  Future<({String? phone, String? email, String? whatsapp})> fetchContactInfo() async {
+    try {
+      final res = await api.get('/contact-info') as Map<String, dynamic>;
+      String? v(String k) {
+        final s = (res[k] as String?)?.trim();
+        return (s == null || s.isEmpty) ? null : s;
+      }
+      return (phone: v('phone'), email: v('email'), whatsapp: v('whatsapp'));
+    } catch (_) {
+      return (phone: null, email: null, whatsapp: null);
+    }
+  }
+
   /// Companies the signed-in user has booked with, latest booking first
   /// (the `booked` list of `/companies`). Empty when signed out or on error.
   Future<List<ApiFeaturedCompany>> fetchBookedCompanies() async {

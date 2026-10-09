@@ -14,7 +14,7 @@ const Map<String, Map<String, String>> settingsTranslations = {
     'settings.clear_data_confirm_title': 'مسح بيانات التطبيق؟',
     'settings.clear_data_confirm_body':
         'هيرجع كل إعدادات الإشعارات والوضع الليلي للوضع الافتراضي. حسابك وحجوزاتك مش هيتأثروا.',
-    'settings.footer': 'عمرتي v1.0.0 · © 2025',
+    'settings.footer': 'عمرة واي v1.0.0 · © 2025',
   },
   'en': {
     'settings.title': 'Settings',
@@ -30,7 +30,7 @@ const Map<String, Map<String, String>> settingsTranslations = {
     'settings.clear_data_confirm_title': 'Clear app data?',
     'settings.clear_data_confirm_body':
         'This resets notification and dark mode settings to their defaults. Your account and bookings are not affected.',
-    'settings.footer': 'عمرتي v1.0.0 · © 2025',
+    'settings.footer': 'عمرة واي v1.0.0 · © 2025',
   },
   'fr': {
     'settings.title': 'Paramètres',
@@ -47,7 +47,7 @@ const Map<String, Map<String, String>> settingsTranslations = {
         "Effacer les données de l'application ?",
     'settings.clear_data_confirm_body':
         'Cela réinitialise les paramètres de notification et du mode sombre. Votre compte et vos réservations ne sont pas affectés.',
-    'settings.footer': 'عمرتي v1.0.0 · © 2025',
+    'settings.footer': 'عمرة واي v1.0.0 · © 2025',
   },
   'tr': {
     'settings.title': 'Ayarlar',
@@ -63,7 +63,7 @@ const Map<String, Map<String, String>> settingsTranslations = {
     'settings.clear_data_confirm_title': 'Uygulama verileri temizlensin mi?',
     'settings.clear_data_confirm_body':
         'Bildirim ve karanlık mod ayarları varsayılana döner. Hesabınız ve rezervasyonlarınız etkilenmez.',
-    'settings.footer': 'عمرتي v1.0.0 · © 2025',
+    'settings.footer': 'عمرة واي v1.0.0 · © 2025',
   },
   'id': {
     'settings.title': 'Pengaturan',
@@ -79,7 +79,7 @@ const Map<String, Map<String, String>> settingsTranslations = {
     'settings.clear_data_confirm_title': 'Hapus data aplikasi?',
     'settings.clear_data_confirm_body':
         'Pengaturan notifikasi dan mode gelap akan dikembalikan ke default. Akun dan pemesanan Anda tidak terpengaruh.',
-    'settings.footer': 'عمرتي v1.0.0 · © 2025',
+    'settings.footer': 'عمرة واي v1.0.0 · © 2025',
   },
   'ur': {
     'settings.title': 'ترتیبات',
@@ -95,7 +95,7 @@ const Map<String, Map<String, String>> settingsTranslations = {
     'settings.clear_data_confirm_title': 'ایپ کا ڈیٹا صاف کریں؟',
     'settings.clear_data_confirm_body':
         'اطلاعات اور ڈارک موڈ کی ترتیبات ڈیفالٹ پر واپس آ جائیں گی۔ آپ کا اکاؤنٹ اور بکنگز متاثر نہیں ہوں گی۔',
-    'settings.footer': 'عمرتي v1.0.0 · © 2025',
+    'settings.footer': 'عمرة واي v1.0.0 · © 2025',
   },
   'ms': {
     'settings.title': 'Tetapan',
@@ -111,6 +111,6 @@ const Map<String, Map<String, String>> settingsTranslations = {
     'settings.clear_data_confirm_title': 'Kosongkan data aplikasi?',
     'settings.clear_data_confirm_body':
         'Tetapan pemberitahuan dan mod gelap akan kembali kepada lalai. Akaun dan tempahan anda tidak terjejas.',
-    'settings.footer': 'عمرتي v1.0.0 · © 2025',
+    'settings.footer': 'عمرة واي v1.0.0 · © 2025',
   },
 };

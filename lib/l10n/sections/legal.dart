@@ -5,7 +5,7 @@ const Map<String, Map<String, String>> legalTranslations = {
     'legal.terms.last_updated': '📅 آخر تحديث: ١ يناير ٢٠٢٥',
     'legal.terms.intro.title': 'مقدمة وقبول الشروط',
     'legal.terms.intro.body':
-        'مرحباً بك في منصة عمرتي. باستخدامك لهذه المنصة أو أي من خدماتها، فإنك توافق على الالتزام بهذه الشروط والأحكام. إذا كنت لا توافق على أي جزء منها، يُرجى عدم استخدام المنصة.',
+        'مرحباً بك في منصة عمرة واي. باستخدامك لهذه المنصة أو أي من خدماتها، فإنك توافق على الالتزام بهذه الشروط والأحكام. إذا كنت لا توافق على أي جزء منها، يُرجى عدم استخدام المنصة.',
     'legal.terms.eligibility.title': 'أهلية الاستخدام',
     'legal.terms.eligibility.body': 'يجب أن يكون المستخدم:',
     'legal.terms.eligibility.bullet1':
@@ -15,7 +15,7 @@ const Map<String, Map<String, String>> legalTranslations = {
         'غير محظور من استخدام الخدمة وفق القوانين المعمول بها',
     'legal.terms.nature.title': 'طبيعة الخدمة',
     'legal.terms.nature.body':
-        'عمرتي منصة وسيطة تربط المسافرين بشركات العمرة. نحن لسنا شركة عمرة مباشرة، وإنما:',
+        'عمرة واي منصة وسيطة تربط المسافرين بشركات العمرة. نحن لسنا شركة عمرة مباشرة، وإنما:',
     'legal.terms.nature.bullet1': 'نعرض عروض شركات عمرة موثقة ومرخصة',
     'legal.terms.nature.bullet2': 'نسهّل التواصل بين المسافر ومزود الخدمة',
     'legal.terms.nature.bullet3': 'نوفر منصة لمقارنة الأسعار والخدمات',
@@ -49,10 +49,10 @@ const Map<String, Map<String, String>> legalTranslations = {
     'legal.terms.ratings.bullet1': 'التقييمات يجب أن تعكس تجربة حقيقية',
     'legal.terms.ratings.bullet2': 'للمنصة الحق في حذف أي تقييم مخالف للسياسات',
     'legal.terms.ratings.bullet3':
-        'المحتوى المنشور يمنح عمرتي ترخيصاً باستخدامه تسويقياً',
+        'المحتوى المنشور يمنح عمرة واي ترخيصاً باستخدامه تسويقياً',
     'legal.terms.liability.title': 'المسؤولية القانونية',
     'legal.terms.liability.body':
-        'تُقدَّم خدمات عمرتي "كما هي" دون أي ضمانات صريحة أو ضمنية. لا تتحمل المنصة المسؤولية عن أي أضرار مباشرة أو غير مباشرة ناتجة عن استخدام الخدمة أو عدم القدرة على استخدامها.',
+        'تُقدَّم خدمات عمرة واي "كما هي" دون أي ضمانات صريحة أو ضمنية. لا تتحمل المنصة المسؤولية عن أي أضرار مباشرة أو غير مباشرة ناتجة عن استخدام الخدمة أو عدم القدرة على استخدامها.',
     'legal.terms.law.title': 'القانون المطبق',
     'legal.terms.law.body':
         'تخضع هذه الشروط للقوانين المعمول بها في جمهورية مصر العربية. أي نزاع يُحل أمام المحاكم المختصة في القاهرة.',
@@ -63,7 +63,7 @@ const Map<String, Map<String, String>> legalTranslations = {
     'legal.privacy.last_updated': '📅 آخر تحديث: ١ يناير ٢٠٢٥',
     'legal.privacy.commitment.title': 'التزامنا بخصوصيتك',
     'legal.privacy.commitment.body':
-        'نحن في عمرتي نولي خصوصية بياناتك أهمية قصوى. توضح هذه السياسة كيفية جمع بياناتك واستخدامها وحمايتها.',
+        'نحن في عمرة واي نولي خصوصية بياناتك أهمية قصوى. توضح هذه السياسة كيفية جمع بياناتك واستخدامها وحمايتها.',
     'legal.privacy.data_collected.title': 'البيانات التي نجمعها',
     'legal.privacy.data_collected.bullet1':
         'بيانات الحساب: الاسم، رقم الهاتف، البريد الإلكتروني',
@@ -105,12 +105,12 @@ const Map<String, Map<String, String>> legalTranslations = {
     'legal.privacy.contact.title': 'التواصل معنا',
     'legal.privacy.contact.body':
         'لأي استفسار حول خصوصيتك: privacy@rehlaty.app',
-    'legal.about.title_page': 'عن عمرتي',
+    'legal.about.title_page': 'عن عمرة واي',
     'legal.about.app_name': 'طريق العمرة',
     'legal.about.version': 'الإصدار ١.٠.٠',
     'legal.about.who_we_are.title': 'من نحن',
     'legal.about.who_we_are.body':
-        'عمرتي منصة رقمية متكاملة تهدف إلى تسهيل تجربة العمرة للمسافرين العرب. نربط المسافرين بأفضل شركات العمرة الموثقة في مكان واحد.',
+        'عمرة واي منصة رقمية متكاملة تهدف إلى تسهيل تجربة العمرة للمسافرين العرب. نربط المسافرين بأفضل شركات العمرة الموثقة في مكان واحد.',
     'legal.about.vision.title': 'رؤيتنا',
     'legal.about.vision.body':
         'أن نكون المنصة الأولى والأكثر ثقة في العالم العربي لتنظيم رحلات العمرة، بجودة لا تُضاهى وتجربة مستخدم استثنائية.',
@@ -124,7 +124,7 @@ const Map<String, Map<String, String>> legalTranslations = {
     'legal.about.stat_travelers_label': 'مسافر سعيد',
     'legal.about.stat_trips_label': 'رحلة منظمة',
     'legal.about.stat_rating_label': 'متوسط التقييم',
-    'legal.about.copyright': 'جميع الحقوق محفوظة © عمرتي ٢٠٢٥',
+    'legal.about.copyright': 'جميع الحقوق محفوظة © عمرة واي ٢٠٢٥',
   },
   'en': {
     'legal.terms.title_page': 'Terms & Conditions',
@@ -248,7 +248,7 @@ const Map<String, Map<String, String>> legalTranslations = {
     'legal.privacy.contact.title': 'Contact Us',
     'legal.privacy.contact.body':
         'For any inquiries about your privacy: privacy@rehlaty.app',
-    'legal.about.title_page': 'About My Umrah',
+    'legal.about.title_page': 'About Omraway',
     'legal.about.app_name': 'Omraway',
     'legal.about.version': 'Version 1.0.0',
     'legal.about.who_we_are.title': 'Who We Are',
@@ -271,7 +271,7 @@ const Map<String, Map<String, String>> legalTranslations = {
     'legal.about.stat_travelers_label': 'Happy travelers',
     'legal.about.stat_trips_label': 'Organized trips',
     'legal.about.stat_rating_label': 'Average rating',
-    'legal.about.copyright': 'All rights reserved © My Umrah 2025',
+    'legal.about.copyright': 'All rights reserved © Omraway 2025',
   },
   'fr': {
     'legal.terms.title_page': 'Conditions générales',
@@ -401,7 +401,7 @@ const Map<String, Map<String, String>> legalTranslations = {
     'legal.privacy.contact.title': 'Nous contacter',
     'legal.privacy.contact.body':
         'Pour toute question concernant votre vie privée : privacy@rehlaty.app',
-    'legal.about.title_page': 'À propos de Mon Omra',
+    'legal.about.title_page': 'À propos de Omraway',
     'legal.about.app_name': 'Omraway',
     'legal.about.version': 'Version 1.0.0',
     'legal.about.who_we_are.title': 'Qui sommes-nous',
@@ -424,14 +424,14 @@ const Map<String, Map<String, String>> legalTranslations = {
     'legal.about.stat_travelers_label': 'Voyageurs satisfaits',
     'legal.about.stat_trips_label': 'Voyages organisés',
     'legal.about.stat_rating_label': 'Note moyenne',
-    'legal.about.copyright': 'Tous droits réservés © Mon Omra 2025',
+    'legal.about.copyright': 'Tous droits réservés © Omraway 2025',
   },
   'tr': {
     'legal.terms.title_page': 'Şartlar ve Koşullar',
     'legal.terms.last_updated': '📅 Son güncelleme: 1 Ocak 2025',
     'legal.terms.intro.title': 'Giriş ve Şartların Kabulü',
     'legal.terms.intro.body':
-        'Umrem platformuna hoş geldiniz. Bu platformu veya hizmetlerinden herhangi birini kullanarak, bu Şartlar ve Koşullara bağlı kalmayı kabul etmiş olursunuz. Herhangi bir bölümünü kabul etmiyorsanız, lütfen platformu kullanmayın.',
+        'Omraway platformuna hoş geldiniz. Bu platformu veya hizmetlerinden herhangi birini kullanarak, bu Şartlar ve Koşullara bağlı kalmayı kabul etmiş olursunuz. Herhangi bir bölümünü kabul etmiyorsanız, lütfen platformu kullanmayın.',
     'legal.terms.eligibility.title': 'Kullanım Uygunluğu',
     'legal.terms.eligibility.body':
         'Kullanıcının aşağıdaki şartları taşıması gerekir:',
@@ -443,7 +443,7 @@ const Map<String, Map<String, String>> legalTranslations = {
         'Yürürlükteki kanunlara göre hizmeti kullanmaktan men edilmemiş olmalı',
     'legal.terms.nature.title': 'Hizmetin Niteliği',
     'legal.terms.nature.body':
-        'Umrem, yolcuları umre şirketleriyle buluşturan aracı bir platformdur. Doğrudan bir umre şirketi değiliz; bunun yerine:',
+        'Omraway, yolcuları umre şirketleriyle buluşturan aracı bir platformdur. Doğrudan bir umre şirketi değiliz; bunun yerine:',
     'legal.terms.nature.bullet1':
         'Doğrulanmış ve lisanslı umre şirketlerinin tekliflerini sunarız',
     'legal.terms.nature.bullet2':
@@ -487,10 +487,10 @@ const Map<String, Map<String, String>> legalTranslations = {
     'legal.terms.ratings.bullet2':
         'Platform, politikalarına aykırı herhangi bir değerlendirmeyi silme hakkına sahiptir',
     'legal.terms.ratings.bullet3':
-        "Yayınlanan içerik, Umrem'e pazarlama amacıyla kullanım lisansı verir",
+        "Yayınlanan içerik, Omraway'e pazarlama amacıyla kullanım lisansı verir",
     'legal.terms.liability.title': 'Yasal Sorumluluk',
     'legal.terms.liability.body':
-        'Umrem hizmetleri, açık veya zımni herhangi bir garanti olmaksızın "olduğu gibi" sunulur. Platform, hizmetin kullanılmasından veya kullanılamamasından kaynaklanan doğrudan veya dolaylı zararlardan sorumlu değildir.',
+        'Omraway hizmetleri, açık veya zımni herhangi bir garanti olmaksızın "olduğu gibi" sunulur. Platform, hizmetin kullanılmasından veya kullanılamamasından kaynaklanan doğrudan veya dolaylı zararlardan sorumlu değildir.',
     'legal.terms.law.title': 'Geçerli Hukuk',
     'legal.terms.law.body':
         "Bu şartlar, Mısır Arap Cumhuriyeti'nde yürürlükte olan kanunlara tabidir. Herhangi bir uyuşmazlık Kahire'deki yetkili mahkemeler önünde çözülür.",
@@ -501,7 +501,7 @@ const Map<String, Map<String, String>> legalTranslations = {
     'legal.privacy.last_updated': '📅 Son güncelleme: 1 Ocak 2025',
     'legal.privacy.commitment.title': 'Gizliliğinize Bağlılığımız',
     'legal.privacy.commitment.body':
-        'Umrem olarak, verilerinizin gizliliğine büyük önem veriyoruz. Bu politika, verilerinizi nasıl topladığımızı, kullandığımızı ve koruduğumuzu açıklar.',
+        'Omraway olarak, verilerinizin gizliliğine büyük önem veriyoruz. Bu politika, verilerinizi nasıl topladığımızı, kullandığımızı ve koruduğumuzu açıklar.',
     'legal.privacy.data_collected.title': 'Topladığımız Veriler',
     'legal.privacy.data_collected.bullet1':
         'Hesap verileri: ad, telefon numarası, e-posta adresi',
@@ -552,12 +552,12 @@ const Map<String, Map<String, String>> legalTranslations = {
     'legal.privacy.contact.title': 'Bize Ulaşın',
     'legal.privacy.contact.body':
         'Gizliliğinizle ilgili herhangi bir soru için: privacy@rehlaty.app',
-    'legal.about.title_page': 'Umrem Hakkında',
+    'legal.about.title_page': 'Omraway Hakkında',
     'legal.about.app_name': 'Omraway',
     'legal.about.version': 'Sürüm 1.0.0',
     'legal.about.who_we_are.title': 'Biz Kimiz',
     'legal.about.who_we_are.body':
-        'Umrem, Arap yolcular için umre deneyimini kolaylaştırmayı amaçlayan kapsamlı bir dijital platformdur. Yolcuları en iyi doğrulanmış umre şirketleriyle tek bir yerde buluşturuyoruz.',
+        'Omraway, Arap yolcular için umre deneyimini kolaylaştırmayı amaçlayan kapsamlı bir dijital platformdur. Yolcuları en iyi doğrulanmış umre şirketleriyle tek bir yerde buluşturuyoruz.',
     'legal.about.vision.title': 'Vizyonumuz',
     'legal.about.vision.body':
         'Eşsiz kalite ve olağanüstü kullanıcı deneyimiyle, umre seyahatlerini organize etmede Arap dünyasındaki en önde gelen ve en güvenilir platform olmak.',
@@ -574,14 +574,14 @@ const Map<String, Map<String, String>> legalTranslations = {
     'legal.about.stat_travelers_label': 'Mutlu yolcu',
     'legal.about.stat_trips_label': 'Organize edilen seyahat',
     'legal.about.stat_rating_label': 'Ortalama değerlendirme',
-    'legal.about.copyright': 'Tüm hakları saklıdır © Umrem 2025',
+    'legal.about.copyright': 'Tüm hakları saklıdır © Omraway 2025',
   },
   'id': {
     'legal.terms.title_page': 'Syarat dan Ketentuan',
     'legal.terms.last_updated': '📅 Terakhir diperbarui: 1 Januari 2025',
     'legal.terms.intro.title': 'Pendahuluan dan Penerimaan Ketentuan',
     'legal.terms.intro.body':
-        'Selamat datang di platform Umrahku. Dengan menggunakan platform ini atau salah satu layanannya, Anda setuju untuk terikat oleh Syarat dan Ketentuan ini. Jika Anda tidak menyetujui bagian mana pun dari ketentuan ini, mohon untuk tidak menggunakan platform ini.',
+        'Selamat datang di platform Omraway. Dengan menggunakan platform ini atau salah satu layanannya, Anda setuju untuk terikat oleh Syarat dan Ketentuan ini. Jika Anda tidak menyetujui bagian mana pun dari ketentuan ini, mohon untuk tidak menggunakan platform ini.',
     'legal.terms.eligibility.title': 'Kelayakan Penggunaan',
     'legal.terms.eligibility.body': 'Pengguna harus:',
     'legal.terms.eligibility.bullet1':
@@ -592,7 +592,7 @@ const Map<String, Map<String, String>> legalTranslations = {
         'Tidak dilarang menggunakan layanan berdasarkan hukum yang berlaku',
     'legal.terms.nature.title': 'Sifat Layanan',
     'legal.terms.nature.body':
-        'Umrahku adalah platform perantara yang menghubungkan pelancong dengan perusahaan umrah. Kami bukan perusahaan umrah secara langsung, melainkan:',
+        'Omraway adalah platform perantara yang menghubungkan pelancong dengan perusahaan umrah. Kami bukan perusahaan umrah secara langsung, melainkan:',
     'legal.terms.nature.bullet1':
         'Menampilkan penawaran dari perusahaan umrah yang terverifikasi dan berizin',
     'legal.terms.nature.bullet2':
@@ -637,10 +637,10 @@ const Map<String, Map<String, String>> legalTranslations = {
     'legal.terms.ratings.bullet2':
         'Platform berhak menghapus ulasan apa pun yang melanggar kebijakannya',
     'legal.terms.ratings.bullet3':
-        'Konten yang dipublikasikan memberi Umrahku lisensi untuk digunakan dalam pemasaran',
+        'Konten yang dipublikasikan memberi Omraway lisensi untuk digunakan dalam pemasaran',
     'legal.terms.liability.title': 'Tanggung Jawab Hukum',
     'legal.terms.liability.body':
-        'Layanan Umrahku disediakan "apa adanya" tanpa jaminan tersurat maupun tersirat. Platform tidak bertanggung jawab atas kerugian langsung maupun tidak langsung yang timbul dari penggunaan layanan atau ketidakmampuan untuk menggunakannya.',
+        'Layanan Omraway disediakan "apa adanya" tanpa jaminan tersurat maupun tersirat. Platform tidak bertanggung jawab atas kerugian langsung maupun tidak langsung yang timbul dari penggunaan layanan atau ketidakmampuan untuk menggunakannya.',
     'legal.terms.law.title': 'Hukum yang Berlaku',
     'legal.terms.law.body':
         'Ketentuan ini tunduk pada hukum yang berlaku di Republik Arab Mesir. Setiap sengketa akan diselesaikan di pengadilan yang berwenang di Kairo.',
@@ -651,7 +651,7 @@ const Map<String, Map<String, String>> legalTranslations = {
     'legal.privacy.last_updated': '📅 Terakhir diperbarui: 1 Januari 2025',
     'legal.privacy.commitment.title': 'Komitmen Kami terhadap Privasi Anda',
     'legal.privacy.commitment.body':
-        'Di Umrahku, kami sangat mengutamakan privasi data Anda. Kebijakan ini menjelaskan bagaimana kami mengumpulkan, menggunakan, dan melindungi data Anda.',
+        'Di Omraway, kami sangat mengutamakan privasi data Anda. Kebijakan ini menjelaskan bagaimana kami mengumpulkan, menggunakan, dan melindungi data Anda.',
     'legal.privacy.data_collected.title': 'Data yang Kami Kumpulkan',
     'legal.privacy.data_collected.bullet1':
         'Data akun: nama, nomor telepon, alamat email',
@@ -704,12 +704,12 @@ const Map<String, Map<String, String>> legalTranslations = {
     'legal.privacy.contact.title': 'Hubungi Kami',
     'legal.privacy.contact.body':
         'Untuk pertanyaan apa pun mengenai privasi Anda: privacy@rehlaty.app',
-    'legal.about.title_page': 'Tentang Umrahku',
+    'legal.about.title_page': 'Tentang Omraway',
     'legal.about.app_name': 'Omraway',
     'legal.about.version': 'Versi 1.0.0',
     'legal.about.who_we_are.title': 'Tentang Kami',
     'legal.about.who_we_are.body':
-        'Umrahku adalah platform digital terpadu yang bertujuan memudahkan pengalaman umrah bagi para pelancong Arab. Kami menghubungkan pelancong dengan perusahaan umrah terverifikasi terbaik dalam satu tempat.',
+        'Omraway adalah platform digital terpadu yang bertujuan memudahkan pengalaman umrah bagi para pelancong Arab. Kami menghubungkan pelancong dengan perusahaan umrah terverifikasi terbaik dalam satu tempat.',
     'legal.about.vision.title': 'Visi Kami',
     'legal.about.vision.body':
         'Menjadi platform terdepan dan paling terpercaya di dunia Arab dalam mengatur perjalanan umrah, dengan kualitas tak tertandingi dan pengalaman pengguna yang luar biasa.',
@@ -727,14 +727,14 @@ const Map<String, Map<String, String>> legalTranslations = {
     'legal.about.stat_travelers_label': 'Pelancong yang puas',
     'legal.about.stat_trips_label': 'Perjalanan terorganisir',
     'legal.about.stat_rating_label': 'Rating rata-rata',
-    'legal.about.copyright': 'Hak cipta dilindungi © Umrahku 2025',
+    'legal.about.copyright': 'Hak cipta dilindungi © Omraway 2025',
   },
   'ur': {
     'legal.terms.title_page': 'شرائط و ضوابط',
     'legal.terms.last_updated': '📅 آخری تازہ کاری: 1 جنوری 2025',
     'legal.terms.intro.title': 'تعارف اور شرائط کی منظوری',
     'legal.terms.intro.body':
-        'میرا عمرہ پلیٹ فارم میں خوش آمدید۔ اس پلیٹ فارم یا اس کی کسی بھی خدمت کو استعمال کرکے، آپ ان شرائط و ضوابط کی پابندی کرنے پر رضامند ہوتے ہیں۔ اگر آپ ان کے کسی بھی حصے سے متفق نہیں ہیں تو براہ کرم پلیٹ فارم استعمال نہ کریں۔',
+        'Omraway پلیٹ فارم میں خوش آمدید۔ اس پلیٹ فارم یا اس کی کسی بھی خدمت کو استعمال کرکے، آپ ان شرائط و ضوابط کی پابندی کرنے پر رضامند ہوتے ہیں۔ اگر آپ ان کے کسی بھی حصے سے متفق نہیں ہیں تو براہ کرم پلیٹ فارم استعمال نہ کریں۔',
     'legal.terms.eligibility.title': 'استعمال کی اہلیت',
     'legal.terms.eligibility.body': 'صارف کا ہونا ضروری ہے:',
     'legal.terms.eligibility.bullet1':
@@ -745,7 +745,7 @@ const Map<String, Map<String, String>> legalTranslations = {
         'نافذ العمل قوانین کے تحت خدمت استعمال کرنے سے ممنوع نہ ہو',
     'legal.terms.nature.title': 'خدمت کی نوعیت',
     'legal.terms.nature.body':
-        'میرا عمرہ ایک واسطہ پلیٹ فارم ہے جو مسافروں کو عمرہ کمپنیوں سے جوڑتا ہے۔ ہم براہ راست عمرہ کمپنی نہیں ہیں، بلکہ:',
+        'Omraway ایک واسطہ پلیٹ فارم ہے جو مسافروں کو عمرہ کمپنیوں سے جوڑتا ہے۔ ہم براہ راست عمرہ کمپنی نہیں ہیں، بلکہ:',
     'legal.terms.nature.bullet1':
         'ہم تصدیق شدہ اور لائسنس یافتہ عمرہ کمپنیوں کی پیشکشیں دکھاتے ہیں',
     'legal.terms.nature.bullet2':
@@ -789,10 +789,10 @@ const Map<String, Map<String, String>> legalTranslations = {
     'legal.terms.ratings.bullet2':
         'پلیٹ فارم کو پالیسیوں کی خلاف ورزی کرنے والا کوئی بھی جائزہ حذف کرنے کا حق ہے',
     'legal.terms.ratings.bullet3':
-        'شائع کردہ مواد میرا عمرہ کو مارکیٹنگ کے مقصد کے لیے استعمال کرنے کا لائسنس دیتا ہے',
+        'شائع کردہ مواد Omraway کو مارکیٹنگ کے مقصد کے لیے استعمال کرنے کا لائسنس دیتا ہے',
     'legal.terms.liability.title': 'قانونی ذمہ داری',
     'legal.terms.liability.body':
-        'میرا عمرہ کی خدمات کسی واضح یا مضمر ضمانت کے بغیر "جیسی ہیں ویسی ہی" فراہم کی جاتی ہیں۔ پلیٹ فارم خدمت کے استعمال یا اسے استعمال نہ کر سکنے سے پیدا ہونے والے کسی بھی براہ راست یا بالواسطہ نقصان کی ذمہ داری قبول نہیں کرتا۔',
+        'Omraway کی خدمات کسی واضح یا مضمر ضمانت کے بغیر "جیسی ہیں ویسی ہی" فراہم کی جاتی ہیں۔ پلیٹ فارم خدمت کے استعمال یا اسے استعمال نہ کر سکنے سے پیدا ہونے والے کسی بھی براہ راست یا بالواسطہ نقصان کی ذمہ داری قبول نہیں کرتا۔',
     'legal.terms.law.title': 'قابلِ اطلاق قانون',
     'legal.terms.law.body':
         'یہ شرائط جمہوریہ عرب مصر میں نافذ العمل قوانین کے تابع ہیں۔ کسی بھی تنازعے کا فیصلہ قاہرہ کی متعلقہ عدالتوں میں کیا جائے گا۔',
@@ -803,7 +803,7 @@ const Map<String, Map<String, String>> legalTranslations = {
     'legal.privacy.last_updated': '📅 آخری تازہ کاری: 1 جنوری 2025',
     'legal.privacy.commitment.title': 'آپ کی رازداری سے ہماری وابستگی',
     'legal.privacy.commitment.body':
-        'میرا عمرہ میں، ہم آپ کے ڈیٹا کی رازداری کو انتہائی اہمیت دیتے ہیں۔ یہ پالیسی بتاتی ہے کہ ہم آپ کا ڈیٹا کیسے جمع کرتے، استعمال کرتے اور محفوظ رکھتے ہیں۔',
+        'Omraway میں، ہم آپ کے ڈیٹا کی رازداری کو انتہائی اہمیت دیتے ہیں۔ یہ پالیسی بتاتی ہے کہ ہم آپ کا ڈیٹا کیسے جمع کرتے، استعمال کرتے اور محفوظ رکھتے ہیں۔',
     'legal.privacy.data_collected.title': 'وہ ڈیٹا جو ہم جمع کرتے ہیں',
     'legal.privacy.data_collected.bullet1':
         'اکاؤنٹ کا ڈیٹا: نام، فون نمبر، ای میل ایڈریس',
@@ -853,12 +853,12 @@ const Map<String, Map<String, String>> legalTranslations = {
     'legal.privacy.contact.title': 'ہم سے رابطہ کریں',
     'legal.privacy.contact.body':
         'آپ کی رازداری کے بارے میں کسی بھی سوال کے لیے: privacy@rehlaty.app',
-    'legal.about.title_page': 'میرا عمرہ کے بارے میں',
+    'legal.about.title_page': 'Omraway کے بارے میں',
     'legal.about.app_name': 'Omraway',
     'legal.about.version': 'ورژن 1.0.0',
     'legal.about.who_we_are.title': 'ہم کون ہیں',
     'legal.about.who_we_are.body':
-        'میرا عمرہ ایک جامع ڈیجیٹل پلیٹ فارم ہے جس کا مقصد عرب مسافروں کے لیے عمرہ کے تجربے کو آسان بنانا ہے۔ ہم مسافروں کو ایک ہی جگہ پر بہترین تصدیق شدہ عمرہ کمپنیوں سے جوڑتے ہیں۔',
+        'Omraway ایک جامع ڈیجیٹل پلیٹ فارم ہے جس کا مقصد عرب مسافروں کے لیے عمرہ کے تجربے کو آسان بنانا ہے۔ ہم مسافروں کو ایک ہی جگہ پر بہترین تصدیق شدہ عمرہ کمپنیوں سے جوڑتے ہیں۔',
     'legal.about.vision.title': 'ہمارا وژن',
     'legal.about.vision.body':
         'بے مثال معیار اور شاندار صارف تجربے کے ساتھ، عمرہ کے سفر منظم کرنے کے لیے عرب دنیا کا پہلا اور سب سے قابلِ اعتماد پلیٹ فارم بننا۔',
@@ -873,14 +873,14 @@ const Map<String, Map<String, String>> legalTranslations = {
     'legal.about.stat_travelers_label': 'خوش مسافر',
     'legal.about.stat_trips_label': 'منظم سفر',
     'legal.about.stat_rating_label': 'اوسط درجہ بندی',
-    'legal.about.copyright': 'جملہ حقوق محفوظ ہیں © میرا عمرہ 2025',
+    'legal.about.copyright': 'جملہ حقوق محفوظ ہیں © Omraway 2025',
   },
   'ms': {
     'legal.terms.title_page': 'Terma dan Syarat',
     'legal.terms.last_updated': '📅 Kemas kini terakhir: 1 Januari 2025',
     'legal.terms.intro.title': 'Pengenalan dan Penerimaan Terma',
     'legal.terms.intro.body':
-        'Selamat datang ke platform Umrahku. Dengan menggunakan platform ini atau mana-mana perkhidmatannya, anda bersetuju untuk terikat dengan Terma dan Syarat ini. Jika anda tidak bersetuju dengan mana-mana bahagiannya, sila jangan gunakan platform ini.',
+        'Selamat datang ke platform Omraway. Dengan menggunakan platform ini atau mana-mana perkhidmatannya, anda bersetuju untuk terikat dengan Terma dan Syarat ini. Jika anda tidak bersetuju dengan mana-mana bahagiannya, sila jangan gunakan platform ini.',
     'legal.terms.eligibility.title': 'Kelayakan Penggunaan',
     'legal.terms.eligibility.body': 'Pengguna mestilah:',
     'legal.terms.eligibility.bullet1':
@@ -891,7 +891,7 @@ const Map<String, Map<String, String>> legalTranslations = {
         'Tidak dilarang daripada menggunakan perkhidmatan mengikut undang-undang yang berkuat kuasa',
     'legal.terms.nature.title': 'Sifat Perkhidmatan',
     'legal.terms.nature.body':
-        'Umrahku ialah platform perantara yang menghubungkan pengembara dengan syarikat umrah. Kami bukan syarikat umrah secara langsung, sebaliknya kami:',
+        'Omraway ialah platform perantara yang menghubungkan pengembara dengan syarikat umrah. Kami bukan syarikat umrah secara langsung, sebaliknya kami:',
     'legal.terms.nature.bullet1':
         'Memaparkan tawaran daripada syarikat umrah yang disahkan dan berlesen',
     'legal.terms.nature.bullet2':
@@ -936,10 +936,10 @@ const Map<String, Map<String, String>> legalTranslations = {
     'legal.terms.ratings.bullet2':
         'Platform berhak memadam mana-mana penilaian yang melanggar dasarnya',
     'legal.terms.ratings.bullet3':
-        'Kandungan yang disiarkan memberikan Umrahku lesen untuk menggunakannya bagi tujuan pemasaran',
+        'Kandungan yang disiarkan memberikan Omraway lesen untuk menggunakannya bagi tujuan pemasaran',
     'legal.terms.liability.title': 'Tanggungjawab Undang-Undang',
     'legal.terms.liability.body':
-        'Perkhidmatan Umrahku disediakan "seadanya" tanpa sebarang jaminan tersurat atau tersirat. Platform tidak menanggung tanggungjawab terhadap sebarang kerosakan langsung atau tidak langsung akibat penggunaan perkhidmatan atau ketidakupayaan untuk menggunakannya.',
+        'Perkhidmatan Omraway disediakan "seadanya" tanpa sebarang jaminan tersurat atau tersirat. Platform tidak menanggung tanggungjawab terhadap sebarang kerosakan langsung atau tidak langsung akibat penggunaan perkhidmatan atau ketidakupayaan untuk menggunakannya.',
     'legal.terms.law.title': 'Undang-Undang yang Terpakai',
     'legal.terms.law.body':
         'Terma ini tertakluk kepada undang-undang yang berkuat kuasa di Republik Arab Mesir. Sebarang pertikaian akan diselesaikan di mahkamah yang berwibawa di Kaherah.',
@@ -950,7 +950,7 @@ const Map<String, Map<String, String>> legalTranslations = {
     'legal.privacy.last_updated': '📅 Kemas kini terakhir: 1 Januari 2025',
     'legal.privacy.commitment.title': 'Komitmen Kami terhadap Privasi Anda',
     'legal.privacy.commitment.body':
-        'Di Umrahku, kami amat mengutamakan privasi data anda. Dasar ini menerangkan cara kami mengumpul, menggunakan dan melindungi data anda.',
+        'Di Omraway, kami amat mengutamakan privasi data anda. Dasar ini menerangkan cara kami mengumpul, menggunakan dan melindungi data anda.',
     'legal.privacy.data_collected.title': 'Data yang Kami Kumpulkan',
     'legal.privacy.data_collected.bullet1':
         'Data akaun: nama, nombor telefon, alamat e-mel',
@@ -1002,12 +1002,12 @@ const Map<String, Map<String, String>> legalTranslations = {
     'legal.privacy.contact.title': 'Hubungi Kami',
     'legal.privacy.contact.body':
         'Untuk sebarang pertanyaan mengenai privasi anda: privacy@rehlaty.app',
-    'legal.about.title_page': 'Mengenai Umrahku',
+    'legal.about.title_page': 'Mengenai Omraway',
     'legal.about.app_name': 'Omraway',
     'legal.about.version': 'Versi 1.0.0',
     'legal.about.who_we_are.title': 'Siapa Kami',
     'legal.about.who_we_are.body':
-        'Umrahku ialah platform digital menyeluruh yang bertujuan memudahkan pengalaman umrah bagi pengembara Arab. Kami menghubungkan pengembara dengan syarikat umrah terbaik yang disahkan di satu tempat.',
+        'Omraway ialah platform digital menyeluruh yang bertujuan memudahkan pengalaman umrah bagi pengembara Arab. Kami menghubungkan pengembara dengan syarikat umrah terbaik yang disahkan di satu tempat.',
     'legal.about.vision.title': 'Visi Kami',
     'legal.about.vision.body':
         'Untuk menjadi platform terkemuka dan paling dipercayai di dunia Arab bagi menganjurkan perjalanan umrah, dengan kualiti tiada tandingan dan pengalaman pengguna yang luar biasa.',
@@ -1025,6 +1025,6 @@ const Map<String, Map<String, String>> legalTranslations = {
     'legal.about.stat_travelers_label': 'Pengembara gembira',
     'legal.about.stat_trips_label': 'Perjalanan dianjurkan',
     'legal.about.stat_rating_label': 'Penilaian purata',
-    'legal.about.copyright': 'Hak cipta terpelihara © Umrahku 2025',
+    'legal.about.copyright': 'Hak cipta terpelihara © Omraway 2025',
   },
 };

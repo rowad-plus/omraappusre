@@ -22,8 +22,23 @@ class ContactScreen extends StatefulWidget {
 }
 
 class _ContactScreenState extends State<ContactScreen> {
-  static const _supportPhone = '+201001234567';
-  static const _supportEmail = 'info@rihlaty.com';
+  // From Admin → Settings via /contact-info; null = not set, tile hidden.
+  String? _phone;
+  String? _email;
+  String? _whatsapp;
+
+  @override
+  void initState() {
+    super.initState();
+    context.read<AppState>().fetchContactInfo().then((info) {
+      if (!mounted) return;
+      setState(() {
+        _phone = info.phone;
+        _email = info.email;
+        _whatsapp = info.whatsapp ?? info.phone;
+      });
+    });
+  }
 
   late String _subject;
   final _messageCtrl = TextEditingController();
@@ -83,36 +98,41 @@ class _ContactScreenState extends State<ContactScreen> {
       body: ListView(
         padding: const EdgeInsets.all(14),
         children: [
-          Row(children: [
-            Expanded(
-                child: _way(
-                    context,
-                    FontAwesomeIcons.whatsapp,
-                    AppColors.whatsapp,
-                    tr('more_menu.contact.whatsapp'),
-                    tr('more_menu.contact.whatsapp_hours'),
-                    () => _launch(Uri.parse(
-                        'https://wa.me/${_supportPhone.replaceAll('+', '')}')))),
-            const SizedBox(width: 10),
-            Expanded(
-                child: _way(
-                    context,
-                    FontAwesomeIcons.phone,
-                    AppColors.blue,
-                    tr('more_menu.contact.call'),
-                    tr('more_menu.contact.call_hours'),
-                    () => _launch(Uri.parse('tel:$_supportPhone')))),
-            const SizedBox(width: 10),
-            Expanded(
-                child: _way(
-                    context,
-                    FontAwesomeIcons.solidEnvelope,
-                    const Color(0xFF7C3AED),
-                    tr('more_menu.contact.email'),
-                    tr('more_menu.contact.email_hours'),
-                    () => _launch(Uri.parse('mailto:$_supportEmail')))),
-          ]),
-          const SizedBox(height: 14),
+          if (_whatsapp != null || _phone != null || _email != null) ...[
+            Row(children: [
+              for (final w in [
+                if (_whatsapp != null)
+                  _way(
+                      context,
+                      FontAwesomeIcons.whatsapp,
+                      AppColors.whatsapp,
+                      tr('more_menu.contact.whatsapp'),
+                      tr('more_menu.contact.whatsapp_hours'),
+                      () => _launch(Uri.parse(
+                          'https://wa.me/${_whatsapp!.replaceAll(RegExp(r'[^0-9]'), '')}'))),
+                if (_phone != null)
+                  _way(
+                      context,
+                      FontAwesomeIcons.phone,
+                      AppColors.blue,
+                      tr('more_menu.contact.call'),
+                      tr('more_menu.contact.call_hours'),
+                      () => _launch(Uri.parse('tel:${_phone!.replaceAll(' ', '')}'))),
+                if (_email != null)
+                  _way(
+                      context,
+                      FontAwesomeIcons.solidEnvelope,
+                      const Color(0xFF7C3AED),
+                      tr('more_menu.contact.email'),
+                      tr('more_menu.contact.email_hours'),
+                      () => _launch(Uri.parse('mailto:$_email'))),
+              ].indexed) ...[
+                if (w.$1 > 0) const SizedBox(width: 10),
+                Expanded(child: w.$2),
+              ],
+            ]),
+            const SizedBox(height: 14),
+          ],
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
