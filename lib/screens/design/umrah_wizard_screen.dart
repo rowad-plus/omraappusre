@@ -33,9 +33,9 @@ class UmrahWizardScreen extends StatefulWidget {
 
 class _UmrahWizardScreenState extends State<UmrahWizardScreen> {
   // Same steps and fields as the website's "صمّم عمرتك" form; the last
-  // step is the review. Hotel preferences, transport, extras and room types
+  // step is the review. Hotel preferences, transport and room types
   // come from Admin → خيارات صمّم عمرتك (shared with the website).
-  static const _totalSteps = 8;
+  static const _totalSteps = 7;
   int _step = 0;
 
   // Values are the ones the website stores on a request.
@@ -57,7 +57,6 @@ class _UmrahWizardScreenState extends State<UmrahWizardScreen> {
   String? _flightClass;
   DateTime? _travelDate;
   bool _flexDates = false;
-  final _extras = <String>{};
   String _countryCode = '+20';
   final _nameCtrl = TextEditingController();
   final _phoneCtrl = TextEditingController();
@@ -145,7 +144,7 @@ class _UmrahWizardScreenState extends State<UmrahWizardScreen> {
   /// Required parts of a step, checked before moving on (like the website).
   String? _stepError(int step) {
     if (step == 0 && _startPoint == null) return tr('design.error.missing_start');
-    if (step == 4 && (_nameCtrl.text.trim().isEmpty || _phoneCtrl.text.trim().isEmpty)) {
+    if (step == 3 && (_nameCtrl.text.trim().isEmpty || _phoneCtrl.text.trim().isEmpty)) {
       return tr('design.error.missing_contact');
     }
     return null;
@@ -180,7 +179,7 @@ class _UmrahWizardScreenState extends State<UmrahWizardScreen> {
     final before = '${_nameCtrl.text}|${_phoneCtrl.text}';
     setState(_prefillFromAccount);
     if ('${_nameCtrl.text}|${_phoneCtrl.text}' != before) {
-      setState(() => _step = 4);
+      setState(() => _step = 3);
       return;
     }
     for (var s = 0; s < _totalSteps; s++) {
@@ -209,7 +208,6 @@ class _UmrahWizardScreenState extends State<UmrahWizardScreen> {
       adults: _adults,
       children: _children,
       infants: _infants,
-      extras: _extras.toList(),
       contactName: _nameCtrl.text.trim(),
       contactPhone: '$_countryCode${_phoneCtrl.text.trim()}',
       contactEmail: _emailCtrl.text.trim(),
@@ -357,10 +355,9 @@ class _UmrahWizardScreenState extends State<UmrahWizardScreen> {
         0 => _stepBasics(),
         1 => _stepStay(),
         2 => _stepFlight(),
-        3 => _stepExtras(),
-        4 => _stepContact(),
-        5 => _stepRoom(),
-        6 => _stepNotes(),
+        3 => _stepContact(),
+        4 => _stepRoom(),
+        5 => _stepNotes(),
         _ => _stepReview(),
       };
 
@@ -580,14 +577,6 @@ class _UmrahWizardScreenState extends State<UmrahWizardScreen> {
     ]);
   }
 
-  Widget _stepExtras() {
-    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      _StepHeader(
-          title: tr('design.stepx.extras'), subtitle: ''),
-      _multiPills('extra', _extras),
-    ]);
-  }
-
   Widget _stepContact() {
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       _StepHeader(
@@ -670,7 +659,6 @@ class _UmrahWizardScreenState extends State<UmrahWizardScreen> {
         ('الدرجة الأولى', 'design.option.first_class'),
       ])),
       if (_travelDate != null) (tr('design.field.travel_date'), _isoDate(_travelDate!)),
-      if (_extras.isNotEmpty) (tr('design.stepx.extras'), labels('extra', _extras)),
       if (_roomType != null) (tr('design.field.room_type'), labels('room_type', {_roomType!})),
       (tr('design.hint.full_name'), _nameCtrl.text.trim()),
       (tr('design.hint.phone_number'), '$_countryCode ${_phoneCtrl.text.trim()}'),
