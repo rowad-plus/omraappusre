@@ -3,6 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../models/api_booking.dart';
 import '../models/api_company.dart';
 import '../models/api_notification.dart';
+import '../models/design_option.dart';
 import '../models/api_post.dart';
 import '../models/api_trip.dart';
 import '../models/country.dart';
@@ -761,6 +762,28 @@ class AppState extends ChangeNotifier {
     }
   }
 
+  /// "صمّم عمرتك" options from Admin → خيارات صمّم عمرتك, by group
+  /// (hotel_pref / transport / extra / room_type). Null on failure.
+  Future<Map<String, List<DesignOption>>?> fetchDesignOptions() async {
+    try {
+      final res = await api.get('/design-umrah/options') as Map<String, dynamic>;
+      return {
+        for (final e in res.entries)
+          e.key: [
+            for (final o in (e.value as List<dynamic>))
+              DesignOption(
+                value: o['value'] as String? ?? '',
+                label: o['label'] as String? ?? '',
+                description: o['description'] as String?,
+                icon: o['icon'] as String?,
+              ),
+          ],
+      };
+    } catch (_) {
+      return null;
+    }
+  }
+
   /// Submits the "صمم رحلتك" custom-trip design request. Returns null on
   /// success, or a display-ready error message on failure. Mirrors
   /// createBooking's error-handling shape.
@@ -769,33 +792,51 @@ class AppState extends ChangeNotifier {
     required int daysInMakkah,
     required int daysInMadinah,
     String? hotelStarsMakkah,
+    String? hotelStarsMadinah,
     List<String>? hotelPrefs,
+    List<String>? transport,
+    String? departureCountry,
     String? departureCity,
+    String? flightType,
     String? flightClass,
+    String? travelDate, // yyyy-MM-dd
+    bool flexDates = false,
     required int adults,
+    int children = 0,
+    int infants = 0,
     List<String>? extras,
     required String contactName,
     required String contactPhone,
+    String? contactEmail,
     String? roomType,
     String? specialRequests,
   }) async {
+    bool has(String? v) => v != null && v.trim().isNotEmpty;
     try {
+      // Same fields as the website form (StoreDesignUmrahRequest).
       await api.post('/design-umrah', {
         'start_city': startCity,
         'days_in_makkah': daysInMakkah,
         'days_in_madinah': daysInMadinah,
-        if (hotelStarsMakkah != null) 'hotel_stars_makkah': hotelStarsMakkah,
-        if (hotelPrefs != null) 'hotel_prefs': hotelPrefs,
-        if (departureCity != null && departureCity.isNotEmpty)
-          'departure_city': departureCity,
-        if (flightClass != null) 'flight_class': flightClass,
+        if (has(hotelStarsMakkah)) 'hotel_stars_makkah': hotelStarsMakkah,
+        if (has(hotelStarsMadinah)) 'hotel_stars_madinah': hotelStarsMadinah,
+        if (hotelPrefs != null && hotelPrefs.isNotEmpty) 'hotel_prefs': hotelPrefs,
+        if (transport != null && transport.isNotEmpty) 'transport': transport,
+        if (has(departureCountry)) 'departure_country': departureCountry,
+        if (has(departureCity)) 'departure_city': departureCity,
+        if (has(flightType)) 'flight_type': flightType,
+        if (has(flightClass)) 'flight_class': flightClass,
+        if (has(travelDate)) 'travel_date': travelDate,
+        'flex_dates': flexDates ? 1 : 0,
         'adults': adults,
-        if (extras != null) 'extras': extras,
+        'children': children,
+        'infants': infants,
+        if (extras != null && extras.isNotEmpty) 'extras': extras,
         'contact_name': contactName,
         'contact_phone': contactPhone,
-        if (roomType != null) 'room_type': roomType,
-        if (specialRequests != null && specialRequests.isNotEmpty)
-          'special_requests': specialRequests,
+        if (has(contactEmail)) 'contact_email': contactEmail,
+        if (has(roomType)) 'room_type': roomType,
+        if (has(specialRequests)) 'special_requests': specialRequests,
       });
       return null;
     } on ApiException catch (e) {
