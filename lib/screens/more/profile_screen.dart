@@ -214,9 +214,45 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
             ),
           ),
+          const SizedBox(height: 18),
+          // Account deletion (Google Play / App Store requirement).
+          Center(
+            child: TextButton.icon(
+              onPressed: _confirmDelete,
+              icon: const FaIcon(FontAwesomeIcons.trashCan, size: 13, color: AppColors.muted),
+              label: Text(tr('more_menu.profile.delete_account'),
+                  style: const TextStyle(fontSize: 12.5, color: AppColors.muted, decoration: TextDecoration.underline)),
+            ),
+          ),
         ],
       ),
     );
+  }
+
+  Future<void> _confirmDelete() async {
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(tr('more_menu.profile.delete_title')),
+        content: Text(tr('more_menu.profile.delete_body')),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(tr('more_menu.profile.delete_no'))),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text(tr('more_menu.profile.delete_yes'), style: const TextStyle(color: Color(0xFFE84040), fontWeight: FontWeight.w800)),
+          ),
+        ],
+      ),
+    );
+    if (ok != true || !mounted) return;
+    final err = await context.read<AppState>().deleteAccount();
+    if (!mounted) return;
+    if (err != null) {
+      showAppToast(context, '⚠️ $err');
+      return;
+    }
+    Navigator.of(context).pop();
+    showAppToast(context, tr('more_menu.profile.delete_done'));
   }
 
   Widget _viewRow(FaIconData icon, String label, String value,

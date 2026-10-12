@@ -858,6 +858,24 @@ class AppState extends ChangeNotifier {
     }
   }
 
+  /// Deletes the account on the server ("حذف الحساب" — store requirement),
+  /// then clears the local session. Returns null on success, else a message.
+  Future<String?> deleteAccount() async {
+    try {
+      await api.delete('/me');
+    } on ApiException catch (e) {
+      return e.message;
+    } catch (_) {
+      return 'تعذّر الاتصال بالخادم، تحقق من الإنترنت وحاول مجددًا';
+    }
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_tokenPrefsKey);
+    api.setToken(null);
+    _clearSession();
+    notifyListeners();
+    return null;
+  }
+
   Future<void> logout() async {
     await PushService.instance.unregister((token) => api.delete('/device-tokens', {'token': token}));
     try {
