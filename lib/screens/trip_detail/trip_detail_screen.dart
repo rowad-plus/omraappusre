@@ -517,12 +517,9 @@ class _TripDetailScreenState extends State<TripDetailScreen> {
               const Text('·', style: TextStyle(color: AppColors.muted)),
               const FaIcon(FontAwesomeIcons.solidCalendar,
                   size: 10, color: AppColors.muted),
-              Text(tr(t.days),
-                  style: const TextStyle(fontSize: 11, color: AppColors.muted)),
-              const Text('·', style: TextStyle(color: AppColors.muted)),
-              const FaIcon(FontAwesomeIcons.users,
-                  size: 10, color: AppColors.muted),
-              Text(tr(t.travelers),
+              // "7 أيام" — the bare number read like a stray digit, and the
+              // old third item showed the raw trip type ("vip").
+              Text('${tr(t.days)} ${tr('trip.days.unit')}',
                   style: const TextStyle(fontSize: 11, color: AppColors.muted)),
             ],
           ),
