@@ -23,6 +23,10 @@ class ApiTrip {
   final bool hasVisits;
   final String scheduleType;
   final String? nextDate;
+  /// Weekly recurring trips: departure weekdays (0 = Sunday … 6 = Saturday).
+  final List<int> recurrenceDays;
+  /// Monthly recurring trips: day of the month they depart on.
+  final int? recurrenceDayOfMonth;
   final String? thumbnail;
   final int? companyId;
   final String companyName;
@@ -66,6 +70,8 @@ class ApiTrip {
     required this.hasVisits,
     required this.scheduleType,
     this.nextDate,
+    this.recurrenceDays = const [],
+    this.recurrenceDayOfMonth,
     this.thumbnail,
     this.companyId,
     required this.companyName,
@@ -103,6 +109,11 @@ class ApiTrip {
       hasVisits: j['has_visits'] as bool? ?? false,
       scheduleType: j['schedule_type'] as String? ?? 'fixed',
       nextDate: j['next_date'] as String?,
+      recurrenceDays: (j['recurrence_days'] as List<dynamic>?)
+              ?.map((d) => (d as num).toInt())
+              .toList() ??
+          const [],
+      recurrenceDayOfMonth: (j['recurrence_day_of_month'] as num?)?.toInt(),
       thumbnail: j['thumbnail'] as String?,
       companyId: company?['id'] as int?,
       companyName: company?['name'] as String? ?? '',
@@ -129,6 +140,32 @@ class ApiTrip {
     );
   }
 
+  /// Departure city then the trip's real destination stops in order
+  /// (e.g. Riyadh → Makkah → Madinah). Falls back to Makkah [+ Madinah]
+  /// when the API sent no routes.
+  List<TripStop> get routeStops {
+    String key(String name) => name.contains('مكة')
+        ? 'city.makkah'
+        : name.contains('المدينة')
+            ? 'city.madinah'
+            : name;
+    final dests = (routeCityNames ?? [])
+        .where((n) => n.isNotEmpty)
+        .map(key)
+        .toList();
+    final cities = [
+      if (departureCityName != null) departureCityName!,
+      ...(dests.isNotEmpty
+          ? dests
+          : ['city.makkah', if (visitsMadinah) 'city.madinah']),
+    ];
+    return [
+      for (var i = 0; i < cities.length; i++)
+        TripStop(cities[i],
+            transportToNext: i < cities.length - 1 ? RouteTransport.flight : null),
+    ];
+  }
+
   bool get visitsMadinah => (routeCityNames ?? []).any((c) => c.contains('المدينة'));
 
   String get _typeKey => switch (type) {
@@ -153,8 +190,18 @@ class ApiTrip {
         travelers: type,
         price: '${NumberFormat('#,##0', 'en').format(price)} $currency',
         // Daily trips have no next date — the cards tr() this key instead.
-        date: nextDate ?? (scheduleType == 'daily' ? 'trip.date.daily' : ''),
+        // Weekly / monthly recurring trips get an encoded key that tr()
+        // turns into the weekday name(s) / day of month at render time.
+        date: nextDate ??
+            (scheduleType == 'daily'
+                ? 'trip.date.daily'
+                : recurrenceDays.isNotEmpty
+                    ? 'trip.date.weekly:${recurrenceDays.join(',')}'
+                    : recurrenceDayOfMonth != null
+                        ? 'trip.date.monthly:$recurrenceDayOfMonth'
+                        : ''),
         provider: companyName,
+        providerLogo: companyLogo,
         dest: visitsMadinah ? 'city.madinah' : 'city.makkah',
         vip: type == 'vip',
         premium: type == 'premium',
@@ -173,11 +220,7 @@ class ApiTrip {
         // to `CardRouteRow`'s own hardcoded "Cairo" placeholder regardless
         // of the trip's actual departure city (a Saudi-departing trip would
         // still show "القاهرة ← مكة المكرمة").
-        stops: [
-          if (departureCityName != null) TripStop(departureCityName!),
-          const TripStop('city.makkah'),
-          if (visitsMadinah) const TripStop('city.madinah', transportToNext: null),
-        ],
+        stops: routeStops,
         feats: [
           if (hasFlight) 'feat.flight',
           if (hasTransport) 'feat.transport',

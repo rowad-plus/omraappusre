@@ -5,6 +5,7 @@ import '../models/api_company.dart';
 import '../models/api_notification.dart';
 import '../models/design_option.dart';
 import '../models/api_post.dart';
+import '../models/api_tracking.dart';
 import '../models/api_trip.dart';
 import '../models/country.dart';
 import '../models/schedule_result.dart';
@@ -605,6 +606,17 @@ class AppState extends ChangeNotifier {
     try {
       final res = await api.get('/bookings/$id') as Map<String, dynamic>;
       return ApiBooking.fromJson(res);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /// "تتبع الرحلة" stages for one booking — same payload as the website's
+  /// /bookings/{id}/track page.
+  Future<ApiTracking?> fetchTracking(int id) async {
+    try {
+      final res = await api.get('/bookings/$id/tracking') as Map<String, dynamic>;
+      return ApiTracking.fromJson(res);
     } catch (_) {
       return null;
     }

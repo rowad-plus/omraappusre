@@ -28,6 +28,8 @@ class UmrahResult {
   final String provider;
   final Color providerColor;
   final String providerLetter;
+  /// Company logo URL — shown instead of the letter tile when present.
+  final String? providerLogo;
   final bool vip;
   final bool premium;
   final bool featured;
@@ -54,6 +56,7 @@ class UmrahResult {
     required this.provider,
     required this.providerColor,
     required this.providerLetter,
+    this.providerLogo,
     this.vip = false,
     this.premium = false,
     this.featured = false,

@@ -15,6 +15,8 @@ import '../../widgets/app_dropdown.dart';
 import '../../widgets/app_toast.dart';
 import '../../widgets/country_picker_sheet.dart';
 import '../../services/payment_launcher.dart';
+import 'trip_tracking_screen.dart';
+import '../../widgets/instant_date_picker.dart';
 
 const _monthShort = [
   '', 'يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو',
@@ -81,7 +83,10 @@ class _BookingSheetState extends State<BookingSheet> {
   bool _quoteLoading = false;
   int _quoteSeq = 0;
 
-  int get _personsCount => _adults + _children;
+  int get _personsCount => _adults + (_showChildren ? _children : 0);
+
+  /// Children counter only outside Saudi Arabia.
+  bool get _showChildren => CountryState.selected.value?.code.toUpperCase() != 'SA';
   bool get _privateRoomApplies => _privateRoom && _personsCount > 1;
 
   void _onPersonsChanged() {
@@ -280,8 +285,20 @@ class _BookingSheetState extends State<BookingSheet> {
     }
 
     setState(() => _submitting = false);
-    Navigator.of(context).pop();
-    showAppToast(context, '✅ ${tr('booking.success.requestSent')}');
+    if (bookingId != null) {
+      _openTracking(bookingId);
+    } else {
+      Navigator.of(context).pop();
+      showAppToast(context, '✅ ${tr('booking.success.requestSent')}');
+    }
+  }
+
+  /// Every successful booking lands on "تتبع الرحلة" — replacing this form,
+  /// so back from tracking returns to the trip, not to a spent form.
+  void _openTracking(int bookingId, {bool paid = false}) {
+    Navigator.of(context).pushReplacement(MaterialPageRoute(
+      builder: (_) => TripTrackingScreen(bookingId: bookingId, justBooked: true, justPaid: paid),
+    ));
   }
 
   /// Starts payment for [bookingId] via `launchPayment` (Paymob native SDK,
@@ -296,24 +313,23 @@ class _BookingSheetState extends State<BookingSheet> {
 
     if (paymentResult.paymentUrl == null) {
       setState(() => _submitting = false);
-      Navigator.of(context).pop();
       showAppToast(context,
           '⚠️ ${paymentResult.error ?? tr('booking.payment.startError')}');
+      // The booking exists (unpaid) — tracking shows its "ادفع الآن" step.
+      _openTracking(bookingId);
       return;
     }
 
     setState(() => _submitting = false);
     final paid = await launchPayment(context, paymentResult.paymentUrl!, bookingId: bookingId);
     if (!mounted) return;
-    Navigator.of(context).pop();
 
     if (paid == true) {
       showAppToast(context, '✅ ${tr('booking.payment.success')}');
     } else if (paid == false) {
       showAppToast(context, '⚠️ ${tr('booking.payment.failed')}');
-    } else {
-      showAppToast(context, '✅ ${tr('booking.success.requestSent')}');
     }
+    _openTracking(bookingId, paid: paid == true);
   }
 
   @override
@@ -344,23 +360,28 @@ class _BookingSheetState extends State<BookingSheet> {
                 icon: FontAwesomeIcons.users,
                 title: tr('booking.step.travelers'),
                 child: Column(children: [
+                  // Inside Saudi Arabia there is no children split (same as
+                  // the website): one "number of people" counter only.
                   _counterRow(
-                      tr('booking.travelers.adultsLabel'),
-                      tr('booking.travelers.adultsHint'),
+                      _showChildren
+                          ? tr('booking.travelers.adultsLabel')
+                          : tr('orders.field.people_count'),
+                      _showChildren ? tr('booking.travelers.adultsHint') : '',
                       _adults,
                       (v) => setState(() {
                             _adults = v;
                             _onPersonsChanged();
                           }),
                       min: 1),
-                  _counterRow(
-                      tr('booking.travelers.childrenLabel'),
-                      tr('booking.travelers.childrenHint'),
-                      _children,
-                      (v) => setState(() {
-                            _children = v;
-                            _onPersonsChanged();
-                          })),
+                  if (_showChildren)
+                    _counterRow(
+                        tr('booking.travelers.childrenLabel'),
+                        tr('booking.travelers.childrenHint'),
+                        _children,
+                        (v) => setState(() {
+                              _children = v;
+                              _onPersonsChanged();
+                            })),
                   if (_personsCount > 1) _privateRoomRow(),
                 ]),
               ),
@@ -556,8 +577,9 @@ class _BookingSheetState extends State<BookingSheet> {
     return GestureDetector(
       onTap: () async {
         final now = DateTime.now();
-        final picked = await showDatePicker(
+        final picked = await showInstantDatePicker(
           context: context,
+          title: tr('booking.dateRoom.chooseDate'),
           initialDate: selected ?? now,
           firstDate: now.subtract(const Duration(days: 1)),
           lastDate: validDates.isEmpty
@@ -632,6 +654,8 @@ class _BookingSheetState extends State<BookingSheet> {
 
   Widget _travelerEntryCard(int index) {
     final entry = _travelerEntries[index];
+    // API value `national_id` ↔ translation key `nationalId`.
+    final typeKey = entry.documentType == 'national_id' ? 'nationalId' : entry.documentType;
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
@@ -662,9 +686,10 @@ class _BookingSheetState extends State<BookingSheet> {
         const SizedBox(height: 6),
         _textField(entry.nameCtrl, tr('booking.travelerDocs.nameHint')),
         const SizedBox(height: 10),
-        _fieldLabel(tr('booking.travelerDocs.numberLabel')),
+        // Label + hint follow the chosen type: "رقم جواز السفر", not "رقم المستند".
+        _fieldLabel(tr('booking.travelerDocs.numberLabel.$typeKey')),
         const SizedBox(height: 6),
-        _textField(entry.numberCtrl, tr('booking.travelerDocs.numberHint'),
+        _textField(entry.numberCtrl, tr('booking.travelerDocs.numberHint.$typeKey'),
             keyboardType: entry.documentType == 'passport'
                 ? TextInputType.text
                 : TextInputType.number,
@@ -802,9 +827,10 @@ class _BookingSheetState extends State<BookingSheet> {
                       fontSize: 13,
                       fontWeight: FontWeight.w700,
                       color: AppColors.text)),
-              Text(hint,
-                  style:
-                      const TextStyle(fontSize: 10.5, color: AppColors.muted)),
+              if (hint.isNotEmpty)
+                Text(hint,
+                    style:
+                        const TextStyle(fontSize: 10.5, color: AppColors.muted)),
             ]),
           ),
           _stepperBtn('−', () => onChanged(value > min ? value - 1 : value)),

@@ -2,12 +2,14 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:provider/provider.dart';
+import 'package:share_plus/share_plus.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/trip_tier_style.dart';
 import '../../l10n/translations.dart';
 import '../../models/api_trip.dart';
 import '../../models/trip.dart';
 import '../../state/app_state.dart';
+import '../../state/locale_state.dart';
 import '../../widgets/app_toast.dart';
 import '../../widgets/h_scroll_auto.dart';
 import '../../widgets/trip_card_parts.dart';
@@ -280,10 +282,8 @@ class _TripDetailScreenState extends State<TripDetailScreen> {
                   ),
                   _section(
                     icon: FontAwesomeIcons.solidBuilding,
-                    title: tr('trip.detail.section_provider'),
-                    child: _infoRow(FontAwesomeIcons.solidBuilding,
-                        tr('trip.detail.section_provider'), tr(t.provider),
-                        isLast: true),
+                    title: tr('trip.detail.section_office'),
+                    child: _officeRow(t),
                   ),
                   // Sections with no real data are hidden instead of
                   // showing made-up sample dates/prices or itinerary.
@@ -388,6 +388,17 @@ class _TripDetailScreenState extends State<TripDetailScreen> {
               color: _compared ? const Color(0xFFB8892F) : Colors.white,
             ),
           ),
+          if (t.apiId != null)
+            PositionedDirectional(
+              top: 10,
+              end: 110,
+              child: Builder(
+                builder: (btnContext) => _circleBtn(
+                  FontAwesomeIcons.shareNodes,
+                  () => _shareTrip(t, btnContext),
+                ),
+              ),
+            ),
           if (t.vip || t.premium)
             PositionedDirectional(
               top: 90,
@@ -415,6 +426,31 @@ class _TripDetailScreenState extends State<TripDetailScreen> {
         ],
       ),
     );
+  }
+
+  /// Opens the phone's share sheet (WhatsApp, messages, copy link…) with
+  /// the trip's name, price and its page on omraway.com — in the app's
+  /// current language, so the link opens the same trip on the website.
+  Future<void> _shareTrip(Trip t, BuildContext btnContext) async {
+    final lang = LocaleState.locale.value.languageCode;
+    final link = 'https://omraway.com/$lang/trip/umrah/${t.apiId}';
+    final title = tr(t.title);
+    final price = t.price.trim();
+    final text = [title, if (price.isNotEmpty) price, link].join('\n');
+    // iPad needs an anchor rectangle for the share popover.
+    final box = btnContext.findRenderObject() as RenderBox?;
+    final origin = box != null && box.hasSize
+        ? box.localToGlobal(Offset.zero) & box.size
+        : null;
+    try {
+      await SharePlus.instance.share(ShareParams(
+        text: text,
+        subject: title,
+        sharePositionOrigin: origin,
+      ));
+    } catch (_) {
+      if (mounted) showAppToast(context, link);
+    }
   }
 
   Widget _circleBtn(FaIconData icon, VoidCallback onTap,
@@ -586,6 +622,45 @@ class _TripDetailScreenState extends State<TripDetailScreen> {
         ],
       ),
     );
+  }
+
+  /// "مكتب العمرة": the office's 40×40 logo with its name beside it
+  /// (first letter when it has no logo).
+  Widget _officeRow(Trip t) {
+    final name = tr(t.provider);
+    final initial = name.trim().isEmpty ? '؟' : name.trim().characters.first;
+    final fallback = Container(
+      color: AppColors.brandSoft,
+      alignment: Alignment.center,
+      child: Text(initial,
+          style: const TextStyle(
+              fontSize: 17, fontWeight: FontWeight.w900, color: AppColors.brand)),
+    );
+    return Row(children: [
+      ClipRRect(
+        borderRadius: BorderRadius.circular(10),
+        child: SizedBox(
+          width: 40,
+          height: 40,
+          child: (t.providerLogo ?? '').isNotEmpty
+              ? CachedNetworkImage(
+                  imageUrl: t.providerLogo!,
+                  fit: BoxFit.cover,
+                  placeholder: (_, __) => fallback,
+                  errorWidget: (_, __, ___) => fallback,
+                )
+              : fallback,
+        ),
+      ),
+      const SizedBox(width: 12),
+      Expanded(
+        child: Text(name,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(
+                fontSize: 14.5, fontWeight: FontWeight.w800, color: AppColors.text)),
+      ),
+    ]);
   }
 
   Widget _infoRow(FaIconData icon, String label, String value,

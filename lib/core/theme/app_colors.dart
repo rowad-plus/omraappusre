@@ -15,13 +15,13 @@ class AppColors {
 
   /// Trip-tier colours stay distinct from the brand gold so VIP / premium /
   /// economy trips are told apart at a glance (VIP gold, premium black,
-  /// economy green).
+  /// economy light blue).
   static const tierVip = Color(0xFFB8892F);
   static const tierVipDark = Color(0xFF8E6A28);
   static const tierPremium = Color(0xFF1F1F1F);
   static const tierPremiumDark = Color(0xFF000000);
-  static const tierEconomy = Color(0xFF16A34A);
-  static const tierEconomyDark = Color(0xFF15803D);
+  static const tierEconomy = Color(0xFF0EA5E9);
+  static const tierEconomyDark = Color(0xFF0284C7);
 
   static const blue = brand;
   static const blueLight = brandSoft;

@@ -4,6 +4,7 @@ import 'package:intl/intl.dart' as intl;
 import '../core/theme/app_colors.dart';
 import '../l10n/translations.dart';
 import '../state/locale_state.dart';
+import 'instant_date_picker.dart';
 
 /// Umrah trip types offered in the search bar, as the API's `trip_type`
 /// values — same choices as the website's `/umrah` search dropdown.
@@ -42,8 +43,9 @@ class _SearchBarWidgetState extends State<SearchBarWidget> {
       };
 
   Future<void> _pickDate() async {
-    final picked = await showDatePicker(
+    final picked = await showInstantDatePicker(
       context: context,
+      title: tr('search.pick_date'),
       initialDate: DateTime.now(),
       firstDate: DateTime.now(),
       lastDate: DateTime.now().add(const Duration(days: 730)),

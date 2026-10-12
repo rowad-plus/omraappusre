@@ -164,6 +164,33 @@ class _UmrahScreenState extends State<UmrahScreen> {
         .push(MaterialPageRoute(builder: (_) => BookingSheet(trip: trip)));
   }
 
+  /// Home gold cards: one per row on phones, two side by side on wide
+  /// screens (tablets / iPad / an unfolded Galaxy Fold, 600px+).
+  Widget _goldCardGrid(List<Trip> trips) {
+    return LayoutBuilder(builder: (context, c) {
+      Widget card(Trip t) => TripCardGold(
+          trip: t,
+          onTap: () => _openDetail(t),
+          onBook: () => _openBooking(t));
+      if (c.maxWidth < 600) {
+        return Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [for (final t in trips) card(t)]);
+      }
+      return Column(children: [
+        for (var i = 0; i < trips.length; i += 2)
+          Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Expanded(child: card(trips[i])),
+            const SizedBox(width: 12),
+            Expanded(
+                child: i + 1 < trips.length
+                    ? card(trips[i + 1])
+                    : const SizedBox.shrink()),
+          ]),
+      ]);
+    });
+  }
+
   void _openList(String title, List<Trip> trips) {
     Navigator.of(context).push(MaterialPageRoute(
       builder: (_) =>
@@ -236,11 +263,7 @@ class _UmrahScreenState extends State<UmrahScreen> {
                                     tr('trip.umrah.vip_section_title'),
                                     vipTrips),
                               ),
-                              for (final t in vipTrips)
-                                TripCardGold(
-                                    trip: t,
-                                    onTap: () => _openDetail(t),
-                                    onBook: () => _openBooking(t)),
+                              _goldCardGrid(vipTrips),
                             ]),
                       ),
                     if (vipTrips.isNotEmpty &&
@@ -262,11 +285,7 @@ class _UmrahScreenState extends State<UmrahScreen> {
                                     tr('trip.umrah.premium_section_title'),
                                     premiumTrips),
                               ),
-                              for (final t in premiumTrips)
-                                TripCardGold(
-                                    trip: t,
-                                    onTap: () => _openDetail(t),
-                                    onBook: () => _openBooking(t)),
+                              _goldCardGrid(premiumTrips),
                             ]),
                       ),
                     const DesignUmrahBanner(),
@@ -301,11 +320,7 @@ class _UmrahScreenState extends State<UmrahScreen> {
                                 ),
                               ]),
                               const SizedBox(height: 12),
-                              for (final t in economyTrips)
-                                TripCardGold(
-                                    trip: t,
-                                    onTap: () => _openDetail(t),
-                                    onBook: () => _openBooking(t)),
+                              _goldCardGrid(economyTrips),
                             ]),
                       ),
                     if (_providers.isNotEmpty)

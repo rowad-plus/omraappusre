@@ -4,6 +4,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../core/theme/app_colors.dart';
 import '../l10n/translations.dart';
 import '../models/order.dart';
+import '../screens/booking/trip_tracking_screen.dart';
 import '../screens/more/order_detail_sheet.dart';
 import 'app_toast.dart';
 import 'order_actions.dart';
@@ -59,6 +60,15 @@ class _OrderCardState extends State<OrderCard> {
     if (!mounted) return;
     setState(() => _cancelling = false);
     if (cancelled) widget.onChanged?.call();
+  }
+
+  Future<void> _openTracking() async {
+    final id = order.apiId;
+    if (id == null) return;
+    await Navigator.of(context).push(MaterialPageRoute(
+        builder: (_) => TripTrackingScreen(bookingId: id)));
+    // Tracking can pay too — refresh the list behind it.
+    widget.onChanged?.call();
   }
 
   Future<void> _viewTrip() async {
@@ -230,6 +240,14 @@ class _OrderCardState extends State<OrderCard> {
 
   Widget _actions() {
     return Wrap(spacing: 6, runSpacing: 6, children: [
+      if (order.apiId != null)
+        _actionBtn(
+          label: tr('orders.track_trip'),
+          icon: FontAwesomeIcons.route,
+          fg: const Color(0xFFB8892F),
+          bg: const Color(0xFFFBF5E8),
+          onTap: _openTracking,
+        ),
       if (order.needsPayment)
         _actionBtn(
           label: tr('orders.pay_now'),

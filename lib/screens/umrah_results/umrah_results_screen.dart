@@ -21,6 +21,7 @@ import '../../widgets/h_scroll_auto.dart';
 import '../../widgets/trip_card_parts.dart';
 import '../trip_detail/trip_detail_screen.dart';
 import '../booking/booking_sheet.dart';
+import '../../widgets/vip_ribbon.dart';
 
 enum _SortMode {
   nearest,
@@ -57,6 +58,31 @@ String _currencyShort() {
   return LocaleState.locale.value.languageCode == 'ar'
       ? (_currencyShortAr[code] ?? code)
       : code;
+}
+
+/// Arabic currency names as the API sends them → ISO code.
+const _currencyCodeByName = {
+  'ريال سعودي': 'SAR', 'جنيه مصري': 'EGP', 'درهم إماراتي': 'AED',
+  'دينار كويتي': 'KWD', 'ريال قطري': 'QAR', 'دينار بحريني': 'BHD',
+  'ريال عماني': 'OMR', 'دينار أردني': 'JOD', 'درهم مغربي': 'MAD',
+  'دينار جزائري': 'DZD', 'دينار تونسي': 'TND', 'دينار عراقي': 'IQD',
+  'ريال يمني': 'YER', 'جنيه سوداني': 'SDG', 'دولار أمريكي': 'USD',
+};
+
+/// Currency label on a result card: Arabic UI shows the short Arabic form
+/// ("ريال سعودي" → "ر.س", "جنيه مصري" → "ج.م"); other languages show the
+/// ISO code ("SAR", "EGP").
+String _cardCurrency(String raw) {
+  final name = tr(raw).trim();
+  if (name.isEmpty) return '';
+  final inParens = RegExp(r'\(([A-Za-z]{3})\)').firstMatch(name)?.group(1);
+  final code = inParens?.toUpperCase() ??
+      (RegExp(r'^[A-Za-z]{3}$').hasMatch(name) ? name.toUpperCase() : null) ??
+      _currencyCodeByName[name];
+  if (LocaleState.locale.value.languageCode == 'ar') {
+    return _currencyShortAr[code] ?? name.split(RegExp(r'\s+')).first;
+  }
+  return code ?? CountryState.selected.value?.currencyCode ?? name;
 }
 
 // Best-effort city → country lookup, shared in spirit with TripListScreen's.
@@ -171,7 +197,6 @@ class _UmrahResultsScreenState extends State<UmrahResultsScreen> {
   }
 
   UmrahResult _fromApiTrip(ApiTrip t, String countryCode) {
-    final visitsMadinah = t.visitsMadinah;
     final stars = '★' * t.hotelStars.clamp(0, 5) + '☆' * (5 - t.hotelStars.clamp(0, 5));
     return UmrahResult(
       apiId: t.id,
@@ -195,6 +220,7 @@ class _UmrahResultsScreenState extends State<UmrahResultsScreen> {
       provider: t.companyName,
       providerColor: AppColors.green,
       providerLetter: t.companyName.isNotEmpty ? t.companyName[0] : '؟',
+      providerLogo: t.companyLogo,
       vip: t.type == 'vip',
       premium: t.type == 'premium',
       featured: t.companyFeatured,
@@ -205,10 +231,7 @@ class _UmrahResultsScreenState extends State<UmrahResultsScreen> {
         if (t.hasVisits) 'feat.sightseeing',
         if (t.hotelStars >= 5) 'feat.hotel5star',
       ],
-      stops: [
-        const TripStop('city.makkah'),
-        if (visitsMadinah) const TripStop('city.madinah', transportToNext: null),
-      ],
+      stops: t.routeStops,
       countryCode: countryCode,
     );
   }
@@ -258,7 +281,10 @@ class _UmrahResultsScreenState extends State<UmrahResultsScreen> {
       case _SortMode.starsLowToHigh:
         list.sort((a, b) => _starCount(a).compareTo(_starCount(b)));
       case _SortMode.nearest:
-        break;
+        // Keep the server's order as-is: the chosen departure city's trips
+        // first, then the nearest cities (featured companies already lead
+        // inside each city group there).
+        return list;
     }
     // Featured companies always lead, whatever the chosen sort — a stable
     // partition so the sort order still holds inside each group.
@@ -711,14 +737,25 @@ class _ResultCard extends StatelessWidget {
     // Same per-tier treatment as the home screen's TripCardUC.
     final tier = TripTierStyle.of(vip: t.vip, premium: t.premium);
     final accent = tier.accent;
+    final stops = t.stops.length >= 2
+        ? t.stops
+        : const [TripStop('city.cairo'), TripStop('city.makkah')];
     return GestureDetector(
       onTap: onTap,
       child: Container(
         margin: const EdgeInsets.only(bottom: 12),
         decoration: AppDims.card(
             color: tier.cardColor, borderColor: tier.borderColor),
+        // The border is also painted on top of the content: the footer's
+        // own background otherwise covers the bottom stroke and its
+        // rounded corners (the clip alone can't fix that).
+        foregroundDecoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(AppDims.radius),
+          border: Border.all(color: tier.borderColor ?? AppColors.border),
+        ),
         clipBehavior: Clip.antiAlias,
-        child: Column(children: [
+        child: Stack(children: [
+          Column(children: [
           Padding(
             padding: const EdgeInsets.all(14),
             child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -761,19 +798,7 @@ class _ResultCard extends StatelessWidget {
                         const SuggestedBadge(),
                         const SizedBox(height: 4),
                       ],
-                      if (tier.badgeIcon != null) ...[
-                        Row(mainAxisSize: MainAxisSize.min, children: [
-                          FaIcon(tier.badgeIcon!, size: 9, color: accent),
-                          const SizedBox(width: 4),
-                          Text(tr(tier.badgeLabelKey!),
-                              style: TextStyle(
-                                  color: accent,
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.w900,
-                                  letterSpacing: 0.5)),
-                        ]),
-                        const SizedBox(height: 3),
-                      ],
+                      // Tier shown only by the corner ribbon.
                       Text(tr(t.name),
                           style: const TextStyle(
                               fontSize: 14,
@@ -834,71 +859,43 @@ class _ResultCard extends StatelessWidget {
               decoration: BoxDecoration(
                   color: tier.softBg,
                   borderRadius: BorderRadius.circular(9)),
+              // Every stop in order (Riyadh → Makkah → Madinah). City
+              // labels take only their own width, so the lines absorb the
+              // rest and the destination sits at the far end (left in RTL).
               child: Row(children: [
-                Flexible(
-                  child: FittedBox(
-                    fit: BoxFit.scaleDown,
-                    alignment: AlignmentDirectional.centerStart,
-                    child: Text(
-                        tr(t.stops.isNotEmpty
-                            ? t.stops.first.city
-                            : 'city.cairo'),
+                for (var i = 0; i < stops.length; i++) ...[
+                  ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 110),
+                    child: Text(tr(stops[i].city),
                         maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
                             fontSize: 11.5,
                             fontWeight: FontWeight.w700,
                             color: AppColors.text)),
                   ),
-                ),
-                const SizedBox(width: 6),
-                Expanded(
-                    child: Container(
-                        height: 1.5,
-                        decoration: const BoxDecoration(
-                            border: Border(
-                                top: BorderSide(
-                                    color: AppColors.border,
-                                    width: 1.5,
-                                    style: BorderStyle.solid))))),
-                Container(
-                    width: 22,
-                    height: 22,
-                    decoration: BoxDecoration(
-                        color: tier.gradient == null ? accent : null,
-                        gradient: tier.gradient,
-                        shape: BoxShape.circle),
-                    alignment: Alignment.center,
-                    child: Transform.scale(
-                        scaleX: Directionality.of(context) == TextDirection.rtl
-                            ? -1
-                            : 1,
-                        child: const FaIcon(FontAwesomeIcons.plane,
-                            size: 8, color: Colors.white))),
-                Expanded(
-                    child: Container(
-                        height: 1.5,
-                        decoration: const BoxDecoration(
-                            border: Border(
-                                top: BorderSide(
-                                    color: AppColors.border,
-                                    width: 1.5,
-                                    style: BorderStyle.solid))))),
-                const SizedBox(width: 6),
-                Flexible(
-                  child: FittedBox(
-                    fit: BoxFit.scaleDown,
-                    alignment: AlignmentDirectional.centerEnd,
-                    child: Text(
-                        t.stops.isNotEmpty
-                            ? tr(t.stops.last.city)
-                            : tr('city.makkah'),
-                        maxLines: 1,
-                        style: const TextStyle(
-                            fontSize: 11.5,
-                            fontWeight: FontWeight.w700,
-                            color: AppColors.text)),
-                  ),
-                ),
+                  if (i < stops.length - 1) ...[
+                    const SizedBox(width: 6),
+                    const Expanded(child: _RouteDash()),
+                    Container(
+                        width: 22,
+                        height: 22,
+                        decoration: BoxDecoration(
+                            color: tier.gradient == null ? accent : null,
+                            gradient: tier.gradient,
+                            shape: BoxShape.circle),
+                        alignment: Alignment.center,
+                        child: Transform.scale(
+                            scaleX: Directionality.of(context) ==
+                                    TextDirection.rtl
+                                ? -1
+                                : 1,
+                            child: const FaIcon(FontAwesomeIcons.plane,
+                                size: 8, color: Colors.white))),
+                    const Expanded(child: _RouteDash()),
+                    const SizedBox(width: 6),
+                  ],
+                ],
               ]),
             ),
           ),
@@ -910,18 +907,21 @@ class _ResultCard extends StatelessWidget {
             child: Row(children: [
               Expanded(
                 child: Row(children: [
-                  Container(
-                      width: 26,
-                      height: 26,
-                      decoration: BoxDecoration(
-                          color: t.providerColor,
-                          borderRadius: BorderRadius.circular(7)),
-                      alignment: Alignment.center,
-                      child: Text(t.providerLetter,
-                          style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 11,
-                              fontWeight: FontWeight.w900))),
+                  // Company logo, same 26×26 rounded box as the letter
+                  // tile it replaces (the tile stays as the fallback).
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(7),
+                    child: t.providerLogo != null
+                        ? CachedNetworkImage(
+                            imageUrl: t.providerLogo!,
+                            width: 26,
+                            height: 26,
+                            fit: BoxFit.cover,
+                            placeholder: (_, __) => _letterTile(),
+                            errorWidget: (_, __, ___) => _letterTile(),
+                          )
+                        : _letterTile(),
+                  ),
                   const SizedBox(width: 6),
                   Flexible(
                     child: Text(tr(t.provider),
@@ -934,22 +934,43 @@ class _ResultCard extends StatelessWidget {
                   ),
                 ]),
               ),
-              const SizedBox(width: 10),
-              Flexible(
-                child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.end,
+              const SizedBox(width: 8),
+              // Company name takes all the free space (full name when it
+              // fits, ellipsis otherwise); price sits 10px before the book
+              // button, which is at the row's far end (left edge in RTL).
+              Column(
+                    mainAxisSize: MainAxisSize.min,
                     children: [
                 FittedBox(
                   fit: BoxFit.scaleDown,
-                  child: Text('${t.price} ${tr(t.currency)}',
+                  // Bold amount + a smaller currency word: in Arabic only
+                  // the first word ("ريال" / "جنيه"), otherwise the ISO code.
+                  child: Text.rich(
+                      // Arabic reads RTL: amount then currency ("110 ر.س");
+                      // other languages put the code first ("SAR 110").
+                      TextSpan(children: [
+                        for (final part in (LocaleState
+                                    .locale.value.languageCode ==
+                                'ar'
+                            ? ['amount', 'currency']
+                            : ['currency', 'amount']))
+                          part == 'amount'
+                              ? TextSpan(
+                                  text: '${t.price}',
+                                  style: const TextStyle(
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.w900))
+                              : TextSpan(
+                                  text: ' ${_cardCurrency(t.currency)} ',
+                                  style: const TextStyle(
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w600)),
+                      ]),
                       maxLines: 1,
-                      style: TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w900,
-                          color: accent)),
+                      style: TextStyle(color: accent)),
                 ),
-              ])),
-              const SizedBox(width: 8),
+              ]),
+              const SizedBox(width: 10),
               GestureDetector(
                 onTap: onBook,
                 child: Container(
@@ -969,7 +990,31 @@ class _ResultCard extends StatelessWidget {
             ]),
           ),
         ]),
+          // VIP / premium: corner ribbon is the only tier marker.
+          // Smaller sash here: the result card's photo is only 70px.
+          if (t.vip) const Positioned(top: 0, right: 0, child: VipRibbon(size: 64))
+          else if (t.premium) const Positioned(top: 0, right: 0, child: VipRibbon.premium(size: 64)),
+        ]),
       ),
     );
   }
+
+  Widget _letterTile() => Container(
+      width: 26,
+      height: 26,
+      color: result.providerColor,
+      alignment: Alignment.center,
+      child: Text(result.providerLetter,
+          style: const TextStyle(
+              color: Colors.white,
+              fontSize: 11,
+              fontWeight: FontWeight.w900)));
+}
+
+class _RouteDash extends StatelessWidget {
+  const _RouteDash();
+
+  @override
+  Widget build(BuildContext context) =>
+      Container(height: 1.5, color: AppColors.border);
 }

@@ -7,6 +7,7 @@ import '../core/theme/trip_tier_style.dart';
 import '../l10n/translations.dart';
 import '../models/trip.dart';
 import 'trip_card_parts.dart';
+import 'vip_ribbon.dart';
 
 /// Mirrors `.uc` — the side-image trip card style used on the Umrah tab
 /// and the home page's umrah VIP section.
@@ -29,6 +30,11 @@ class TripCardUC extends StatelessWidget {
   /// left edges — no longer flush, so it doesn't need to fight the
   /// card's border stroke there.
   static const double _daysBadgeInset = 5.0;
+
+  /// The photo is a square inset 8px from the card's top, bottom and
+  /// start edges (header is 108 tall → 108 - 2×8 = 92).
+  static const double _imageInset = 8.0;
+  static const double _imageSize = 92.0;
 
   @override
   Widget build(BuildContext context) {
@@ -55,14 +61,15 @@ class TripCardUC extends StatelessWidget {
           color: tier.cardColor,
           borderColor: tier.borderColor,
           borderRadius: BorderRadiusDirectional.only(
-            topStart: Radius.zero,
+            topStart: const Radius.circular(AppDims.radius),
             topEnd: const Radius.circular(AppDims.radius),
             bottomStart: const Radius.circular(AppDims.radius),
             bottomEnd: const Radius.circular(AppDims.radius),
           ),
         ),
         clipBehavior: Clip.antiAlias,
-        child: Column(
+        child: Stack(children: [
+          Column(
           children: [
             // Fixed height so the image + day-count zone stay the same size
             // on every card — previously the Stack sized itself to the text
@@ -87,8 +94,8 @@ class TripCardUC extends StatelessWidget {
                     // other — opposite sides in RTL, stacked together on
                     // the left in LTR.
                     padding: EdgeInsets.only(
-                      right: isRtl ? 100 : 0,
-                      left: isRtl ? 69 : 169,
+                      right: isRtl ? _imageInset * 2 + _imageSize : 0,
+                      left: isRtl ? 69 : _imageInset + _imageSize + 72,
                       top: 11,
                       bottom: 11,
                     ),
@@ -99,20 +106,7 @@ class TripCardUC extends StatelessWidget {
                           const SuggestedBadge(),
                           const SizedBox(height: 3),
                         ],
-                        if (tier.badgeIcon != null) ...[
-                          Row(mainAxisSize: MainAxisSize.min, children: [
-                            FaIcon(tier.badgeIcon!,
-                                size: 9, color: tier.accent),
-                            const SizedBox(width: 4),
-                            Text(tr(tier.badgeLabelKey!),
-                                style: TextStyle(
-                                    color: tier.accent,
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.w900,
-                                    letterSpacing: 0.5)),
-                          ]),
-                          const SizedBox(height: 3),
-                        ],
+                        // Tier shown only by the corner ribbon (VipRibbon).
                         Text(tr(trip.title),
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
@@ -135,20 +129,24 @@ class TripCardUC extends StatelessWidget {
                   PositionedDirectional(
                     // Flush against the card's top + start edge: top:0,
                     // end-of-card:0 (physical top-right in RTL).
-                    start: 0,
-                    top: 0,
-                    bottom: 0,
-                    width: 95,
+                    start: _imageInset,
+                    top: _imageInset,
+                    width: _imageSize,
+                    height: _imageSize,
                     child: Stack(
                       fit: StackFit.expand,
+                      clipBehavior: Clip.antiAlias,
                       children: [
                         Container(
-                          constraints: const BoxConstraints(minHeight: 90),
-                          decoration: BoxDecoration(gradient: trip.bg),
+                          clipBehavior: Clip.antiAlias,
+                          decoration: BoxDecoration(
+                              gradient: trip.bg,
+                              borderRadius: BorderRadius.circular(10)),
                           // foregroundDecoration paints after the child, so
                           // the border stays visible on top of the photo
                           // instead of being covered by it.
                           foregroundDecoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(10),
                             border: Border.all(
                                 color: AppColors.greenLight, width: 2),
                           ),
@@ -230,7 +228,7 @@ class TripCardUC extends StatelessWidget {
                     // when the image shares that side too (LTR). Inset
                     // 5px from both edges, not flush, so fully rounded.
                     top: _daysBadgeInset,
-                    left: isRtl ? _daysBadgeInset : 95,
+                    left: isRtl ? _daysBadgeInset : _imageInset + _imageSize + 5,
                     width: 62,
                     child: Container(
                       height: 54,
@@ -268,6 +266,10 @@ class TripCardUC extends StatelessWidget {
             CardPriceRow(trip: trip, onBook: onBook),
           ],
         ),
+          // VIP trips: gold "VIP ♛" sash across the top-right corner.
+          if (trip.vip) const Positioned(top: 0, right: 0, child: VipRibbon())
+          else if (trip.premium) const Positioned(top: 0, right: 0, child: VipRibbon.premium()),
+        ]),
       ),
     );
   }

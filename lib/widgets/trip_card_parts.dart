@@ -1,7 +1,7 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../core/theme/app_colors.dart';
-import '../core/theme/trip_tier_style.dart';
 import '../l10n/translations.dart';
 import '../models/trip.dart';
 
@@ -24,85 +24,83 @@ class CardRouteRow extends StatelessWidget {
     final stops = trip.stops.length >= 2
         ? trip.stops
         : [TripStop('city.cairo'), TripStop(trip.dest, transportToNext: null)];
-    final iconColor = trip.vip || trip.premium
-        ? TripTierStyle.of(vip: trip.vip, premium: trip.premium).accent
-        : (trip.isGreen ? AppColors.green : AppColors.blue);
-    // The route reads origin→destination in the row's natural (already
-    // auto-mirrored) order, so the icon must face right in LTR and left in
-    // RTL to keep pointing toward the destination in both directions.
-    final isRtl = Directionality.of(context) == TextDirection.rtl;
+    // Same look as omraway.com's `.tcc-route`: white strip between two
+    // dashed rules, city names joined by thin lines with a gold arrow
+    // circle that points toward the destination (left in RTL).
     return Container(
-      padding: const EdgeInsets.fromLTRB(10, 5, 10, 7),
-      decoration: const BoxDecoration(
-          color: Color(0xFFEFF3F8)),
-      child: Row(
+      color: Colors.white,
+      child: Column(
         children: [
-          for (var i = 0; i < stops.length; i++) ...[
-            // Endpoints (first/last) keep more of the shrink priority than
-            // a middle waypoint (e.g. Mecca on a Cairo→Mecca→Medina route).
-            (i == 0 || i == stops.length - 1)
-                ? _routeCityLabel(stops[i].city, isEndpoint: true)
-                : Flexible(
-                    child: _routeCityLabel(stops[i].city, isEndpoint: false)),
-            if (i < stops.length - 1) ...[
-              const SizedBox(width: 5),
-              Expanded(child: Container(height: 6, color: AppColors.border)),
-              const SizedBox(width: 4),
-              Container(
-                width: 24,
-                height: 24,
-                decoration:
-                    BoxDecoration(color: iconColor, shape: BoxShape.circle),
-                alignment: Alignment.center,
-                child: Transform.scale(
-                  scaleX: isRtl ? -1 : 1,
-                  child: FaIcon(
-                    stops[i].transportToNext == RouteTransport.bus
-                        ? FontAwesomeIcons.bus
-                        : FontAwesomeIcons.plane,
-                    size: 9,
-                    color: Colors.white,
-                  ),
-                ),
-              ),
-              const SizedBox(width: 4),
-              Expanded(child: Container(height: 6, color: AppColors.border)),
-              // No trailing gap before the final city label — the row's own
-              // 10px padding already puts it exactly 10px from the edge.
-              // Earlier waypoints (3+ stop routes) keep the 5px gutter.
-              if (i < stops.length - 2) const SizedBox(width: 5),
-            ],
-          ],
+          const _DashedRule(),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            child: Row(
+              children: [
+                for (var i = 0; i < stops.length; i++) ...[
+                  (i == 0 || i == stops.length - 1)
+                      ? _cityLabel(stops[i].city)
+                      : Flexible(child: _cityLabel(stops[i].city)),
+                  if (i < stops.length - 1) ...[
+                    const Expanded(child: _RouteLine()),
+                    Container(
+                      width: 26,
+                      height: 26,
+                      decoration: const BoxDecoration(
+                          color: AppColors.brand, shape: BoxShape.circle),
+                      alignment: Alignment.center,
+                      // Icons.arrow_forward is already auto-mirrored in RTL
+                      // (matchTextDirection), so no manual flip here.
+                      child: const Icon(Icons.arrow_forward_rounded,
+                          size: 15, color: Colors.white),
+                    ),
+                    const Expanded(child: _RouteLine()),
+                  ],
+                ],
+              ],
+            ),
+          ),
+          const _DashedRule(),
         ],
       ),
     );
   }
 
   static const _cityStyle = TextStyle(
-      fontSize: 11, fontWeight: FontWeight.w700, color: AppColors.text);
+      fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.text);
 
-  TextStyle _midCityStyle(String city) {
-    return TextStyle(
-        fontSize: city.length > 12 ? 12 : 15,
-        fontWeight: FontWeight.w800,
-        color: AppColors.text);
-  }
+  Widget _cityLabel(String city) => Text(tr(city),
+      maxLines: 1, overflow: TextOverflow.ellipsis, style: _cityStyle);
+}
 
-  Widget _routeCityLabel(String city, {required bool isEndpoint}) {
-    // Endpoints get no Expanded/flex on purpose: city names are always
-    // short, so they should only ever take their own natural width. That
-    // leaves the connecting-line Expanded segments free to absorb *all* the
-    // remaining space, making the route line itself span the full card
-    // width instead of being squeezed by an oversized, mostly-empty label
-    // box. A middle waypoint (3-stop routes) is wrapped in Flexible by the
-    // caller instead, since it sits between two lines with no natural cap.
-    final display = tr(city);
-    return Text(
-      display,
-      maxLines: 1,
-      overflow: TextOverflow.ellipsis,
-      style: isEndpoint ? _cityStyle : _midCityStyle(display),
-    );
+class _RouteLine extends StatelessWidget {
+  const _RouteLine();
+
+  @override
+  Widget build(BuildContext context) => Container(
+      height: 1,
+      color: AppColors.border,
+      margin: const EdgeInsets.symmetric(horizontal: 4));
+}
+
+/// 1px dashed horizontal rule (CSS `border: 1px dashed`).
+class _DashedRule extends StatelessWidget {
+  const _DashedRule();
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(builder: (context, c) {
+      const dash = 4.0, gap = 3.0;
+      final count = (c.maxWidth / (dash + gap)).floor();
+      return Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: List.generate(
+            count,
+            (_) => const SizedBox(
+                width: dash,
+                height: 1,
+                child: ColoredBox(color: Color(0xFFDCD3C0)))),
+      );
+    });
   }
 }
 
@@ -119,17 +117,20 @@ class CardMetaRow extends StatelessWidget {
           border: Border(top: BorderSide(color: AppColors.border))),
       child: Row(
         children: [
-          Container(
-            width: 24,
-            height: 24,
-            decoration: BoxDecoration(
-                color: trip.accent, borderRadius: BorderRadius.circular(6)),
-            alignment: Alignment.center,
-            child: Text(tr(trip.provider).firstLetter,
-                style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 10,
-                    fontWeight: FontWeight.w900)),
+          // Company logo in the same 24×24 rounded box; the coloured
+          // first-letter tile stays as the fallback (no logo / load error).
+          ClipRRect(
+            borderRadius: BorderRadius.circular(6),
+            child: trip.providerLogo != null
+                ? CachedNetworkImage(
+                    imageUrl: trip.providerLogo!,
+                    width: 24,
+                    height: 24,
+                    fit: BoxFit.cover,
+                    placeholder: (_, __) => _letterTile(),
+                    errorWidget: (_, __, ___) => _letterTile(),
+                  )
+                : _letterTile(),
           ),
           const SizedBox(width: 6),
           Expanded(
@@ -140,31 +141,57 @@ class CardMetaRow extends StatelessWidget {
                     color: AppColors.muted,
                     fontWeight: FontWeight.w600)),
           ),
-          Container(
-              width: 1,
-              height: 28,
-              color: AppColors.border,
-              margin: const EdgeInsets.symmetric(horizontal: 10)),
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const FaIcon(FontAwesomeIcons.solidCalendar,
-                  size: 10, color: AppColors.blue),
-              const SizedBox(width: 4),
-              Text(tr(trip.date),
-                  style: const TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.text)),
-            ],
-          ),
+          // No departure info at all → no divider/calendar icon either,
+          // rather than an icon with nothing next to it.
+          if (trip.date.isNotEmpty) ...[
+            Container(
+                width: 1,
+                height: 28,
+                color: AppColors.border,
+                margin: const EdgeInsets.symmetric(horizontal: 10)),
+            Flexible(
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const FaIcon(FontAwesomeIcons.solidCalendar,
+                      size: 10, color: AppColors.blue),
+                  const SizedBox(width: 4),
+                  Flexible(
+                    child: Text(tr(trip.date),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.text)),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ],
       ),
     );
   }
+
+  Widget _letterTile() => Container(
+        width: 24,
+        height: 24,
+        decoration: BoxDecoration(
+            color: trip.accent, borderRadius: BorderRadius.circular(6)),
+        alignment: Alignment.center,
+        child: Text(tr(trip.provider).firstLetter,
+            style: const TextStyle(
+                color: Colors.white,
+                fontSize: 10,
+                fontWeight: FontWeight.w900)),
+      );
 }
 
 class CardPriceRow extends StatelessWidget {
+  /// Site's `--gold-3`: brand gold mixed 72% with black.
+  static const _priceBoxColor = Color(0xFF856322);
+
   final Trip trip;
   final VoidCallback? onBook;
   final String? bookLabel;
@@ -174,13 +201,14 @@ class CardPriceRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final label = bookLabel ?? tr('trip.card.book');
-    final resolvedPrice = tr(trip.price);
-    final parts = resolvedPrice.split(' ');
-    final hasCurrency = parts.length > 1;
-    final amount = hasCurrency
-        ? parts.sublist(0, parts.length - 1).join(' ')
-        : resolvedPrice;
-    final currency = hasCurrency ? parts.last : '';
+    // "<amount> <currency words…>" — the amount is the first token, the
+    // rest (e.g. "ريال سعودي") is the currency.
+    final resolvedPrice = tr(trip.price).trim();
+    final space = resolvedPrice.indexOf(' ');
+    final amount =
+        space < 0 ? resolvedPrice : resolvedPrice.substring(0, space);
+    final currency =
+        space < 0 ? '' : resolvedPrice.substring(space + 1).trim();
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
@@ -189,37 +217,38 @@ class CardPriceRow extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
+          // omraway.com `.tcc-price`: amount in a dark-gold box, currency
+          // in muted text beside it.
           Flexible(
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 6),
-              decoration: BoxDecoration(
-                border: Border.all(color: trip.accent, width: 1.3),
-                borderRadius: BorderRadius.circular(9),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.baseline,
-                textBaseline: TextBaseline.alphabetic,
-                children: [
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                      color: _priceBoxColor,
+                      borderRadius: BorderRadius.circular(7)),
+                  child: Text(amount,
+                      maxLines: 1,
+                      style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w800,
+                          color: Colors.white)),
+                ),
+                if (currency.isNotEmpty) ...[
+                  const SizedBox(width: 6),
                   Flexible(
-                    child: Text(amount,
+                    child: Text(currency,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.w900,
-                            color: trip.accent)),
-                  ),
-                  if (currency.isNotEmpty) ...[
-                    const SizedBox(width: 4),
-                    Text(currency,
-                        style: TextStyle(
-                            fontSize: 10.5,
+                        style: const TextStyle(
+                            fontSize: 13,
                             fontWeight: FontWeight.w700,
-                            color: trip.accent)),
-                  ],
+                            color: AppColors.muted)),
+                  ),
                 ],
-              ),
+              ],
             ),
           ),
           GestureDetector(

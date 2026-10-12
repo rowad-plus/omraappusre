@@ -4,8 +4,8 @@ import '../l10n/translations.dart';
 import '../state/nav_state.dart';
 
 /// Home-page "design your umrah" block, same layout as omraway.com's
-/// `.custom-umrah`: heading + text + gold button, then the wizard's four
-/// numbered steps. Any tap opens the Design tab.
+/// `.custom-umrah`: heading + text, the wizard's first three numbered
+/// steps side by side, then the gold button. Any tap opens the Design tab.
 class DesignUmrahBanner extends StatelessWidget {
   const DesignUmrahBanner({super.key});
 
@@ -46,11 +46,20 @@ class DesignUmrahBanner extends StatelessWidget {
                 style: const TextStyle(
                     fontSize: 13, color: AppColors.muted, height: 1.8)),
             const SizedBox(height: 14),
-            for (var i = 1; i <= 4; i++) ...[
-              _step(i),
-              const SizedBox(height: 8),
-            ],
-            const SizedBox(height: 6),
+            // Three steps side by side (the 4th "final touch" step isn't
+            // shown here), equal height.
+            IntrinsicHeight(
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  for (var i = 1; i <= 3; i++) ...[
+                    if (i > 1) const SizedBox(width: 8),
+                    Expanded(child: _step(i)),
+                  ],
+                ],
+              ),
+            ),
+            const SizedBox(height: 14),
             Container(
               width: double.infinity,
               padding: const EdgeInsets.symmetric(vertical: 13),
@@ -75,13 +84,13 @@ class DesignUmrahBanner extends StatelessWidget {
 
   Widget _step(int n) {
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(13),
         border: Border.all(color: AppColors.border),
       ),
-      child: Row(children: [
+      child: Column(children: [
         Container(
           width: 32,
           height: 32,
@@ -95,22 +104,18 @@ class DesignUmrahBanner extends StatelessWidget {
               style: const TextStyle(
                   fontWeight: FontWeight.w900, color: AppColors.brand)),
         ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(tr('design.step$n.title'),
-                  style: const TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w800,
-                      color: AppColors.text)),
-              Text(tr('design.step$n.subtitle'),
-                  style:
-                      const TextStyle(fontSize: 12, color: AppColors.muted)),
-            ],
-          ),
-        ),
+        const SizedBox(height: 8),
+        Text(tr('design.step$n.title'),
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w800,
+                color: AppColors.text)),
+        const SizedBox(height: 2),
+        Text(tr('design.step$n.subtitle'),
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+                fontSize: 11, color: AppColors.muted, height: 1.4)),
       ]),
     );
   }

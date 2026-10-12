@@ -4,6 +4,7 @@ import '../core/theme/app_colors.dart';
 import '../l10n/translations.dart';
 import '../models/order.dart';
 import '../services/payment_launcher.dart';
+import '../screens/booking/trip_tracking_screen.dart';
 import '../screens/trip_detail/trip_detail_screen.dart';
 import '../state/app_state.dart';
 import 'app_toast.dart';
@@ -19,24 +20,37 @@ import 'app_toast.dart';
 Future<void> payForOrder(BuildContext context, Order order) async {
   final apiId = order.apiId;
   if (apiId == null) return;
+  final paid = await payForBooking(context, apiId);
+  // Same as paying right after booking: land on "تتبع الرحلة".
+  if (paid == true && context.mounted) {
+    await Navigator.of(context).push(MaterialPageRoute(
+      builder: (_) => TripTrackingScreen(bookingId: apiId, justPaid: true),
+    ));
+  }
+}
 
+/// Same as [payForOrder] for callers that only hold the booking id (the
+/// trip-tracking screen). Returns true when paid, false when it failed or
+/// could not start, null when cancelled / still pending.
+Future<bool?> payForBooking(BuildContext context, int apiId) async {
   final result = await context.read<AppState>().initiatePayment(apiId);
-  if (!context.mounted) return;
+  if (!context.mounted) return null;
 
   if (result.paymentUrl == null) {
     showAppToast(
         context, '⚠️ ${result.error ?? tr('booking.payment.startError')}');
-    return;
+    return false;
   }
 
   final paid = await launchPayment(context, result.paymentUrl!, bookingId: apiId);
-  if (!context.mounted) return;
+  if (!context.mounted) return paid;
 
   if (paid == true) {
     showAppToast(context, '✅ ${tr('booking.payment.success')}');
   } else if (paid == false) {
     showAppToast(context, '⚠️ ${tr('booking.payment.failed')}');
   }
+  return paid;
 }
 
 /// Asks for confirmation, then cancels [order]. Only offered when

@@ -5,6 +5,7 @@ import '../core/theme/app_colors.dart';
 import '../core/theme/trip_tier_style.dart';
 import '../l10n/translations.dart';
 import '../models/trip.dart';
+import 'vip_ribbon.dart';
 
 /// Home-page trip card in the gold design shared with omraway.com
 /// (`_trip-card-gold.blade.php`): photo on top with the destination chip,
@@ -46,7 +47,6 @@ class TripCardGold extends StatelessWidget {
         ? (trip.date.isEmpty ? null : tr(trip.date))
         : '${date.day}/${date.month}/${date.year}';
 
-    final tag = trip.vip ? 'VIP' : tr('trip.type.premium');
 
     // Each tier keeps its own colour (VIP gold, premium purple, economy
     // green) for the tag, icons, price, outline and button.
@@ -73,7 +73,8 @@ class TripCardGold extends StatelessWidget {
           ],
         ),
         clipBehavior: Clip.antiAlias,
-        child: Column(
+        child: Stack(children: [
+          Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             SizedBox(
@@ -121,32 +122,7 @@ class TripCardGold extends StatelessWidget {
                               color: AppColors.text,
                               height: 1.35)),
                     ),
-                    // Economy cards carry no tier tag — only VIP / premium.
-                    if (trip.vip || trip.premium) ...[
-                      const SizedBox(width: 8),
-                      Container(
-                        margin: const EdgeInsets.only(top: 2),
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 9, vertical: 3),
-                        decoration: BoxDecoration(
-                          color: style.softBg,
-                          borderRadius: BorderRadius.circular(20),
-                          border:
-                              Border.all(color: accent.withValues(alpha: 0.35)),
-                        ),
-                        child: Row(mainAxisSize: MainAxisSize.min, children: [
-                          if (style.badgeIcon != null) ...[
-                            FaIcon(style.badgeIcon!, size: 9, color: accent),
-                            const SizedBox(width: 4),
-                          ],
-                          Text(tag,
-                              style: TextStyle(
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w700,
-                                  color: accent)),
-                        ]),
-                      ),
-                    ],
+                    // Tier is shown only by the corner ribbon (VipRibbon).
                   ]),
                   const SizedBox(height: 6),
                   Wrap(
@@ -227,6 +203,10 @@ class TripCardGold extends StatelessWidget {
             ),
           ],
         ),
+          // VIP trips: gold "VIP ♛" sash across the top-right corner.
+          if (trip.vip) const Positioned(top: 0, right: 0, child: VipRibbon())
+          else if (trip.premium) const Positioned(top: 0, right: 0, child: VipRibbon.premium()),
+        ]),
       ),
     );
   }

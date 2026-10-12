@@ -8,6 +8,7 @@ import '../../state/app_state.dart';
 import '../../state/country_state.dart';
 import '../../widgets/app_toast.dart';
 import '../auth/login_sheet.dart';
+import '../../widgets/instant_date_picker.dart';
 
 /// "صمّم عمرتك" — same steps and fields as the website form; its
 /// option lists come from the admin (shared with the website).
@@ -543,8 +544,9 @@ class _UmrahWizardScreenState extends State<UmrahWizardScreen> {
       InkWell(
         onTap: () async {
           final now = DateTime.now();
-          final picked = await showDatePicker(
+          final picked = await showInstantDatePicker(
             context: context,
+            title: tr('design.hint.pick_date'),
             initialDate: _travelDate ?? now,
             firstDate: DateTime(now.year, now.month, now.day),
             lastDate: now.add(const Duration(days: 730)),

@@ -35,6 +35,8 @@ class Trip {
   final String price;
   final String date;
   final String provider;
+  /// Company logo URL (null → the card shows the name's first letter).
+  final String? providerLogo;
   final String dest;
   final bool vip;
   final bool premium;
@@ -69,6 +71,7 @@ class Trip {
     required this.price,
     required this.date,
     required this.provider,
+    this.providerLogo,
     required this.dest,
     this.vip = false,
     this.premium = false,
