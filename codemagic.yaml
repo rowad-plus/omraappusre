@@ -1,6 +1,6 @@
 # Codemagic CI: builds the Omraway iOS app on a cloud Mac and uploads it to App Store Connect.
 # One-time setup in Codemagic (codemagic.io):
-#   1. Teams → Integrations → Developer Portal: add the App Store Connect API key, name it "Omraway ASC".
+#   1. Teams → Integrations → Developer Portal: add the App Store Connect API key, name it "Factorya ASC".
 #   2. Add this repository as an application, then start the "ios-release" workflow.
 # Signing is automatic: the build creates (or reuses) the App Store certificate and provisioning
 # profile for omraway.com through the App Store Connect API. Save a fixed RSA key as the secret
@@ -11,7 +11,7 @@ workflows:
     max_build_duration: 60
     instance_type: mac_mini_m2
     integrations:
-      app_store_connect: Omraway ASC
+      app_store_connect: Factorya ASC
     environment:
       flutter: 3.44.8
       xcode: latest
