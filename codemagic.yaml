@@ -1,0 +1,53 @@
+# Codemagic CI: builds the Omraway iOS app on a cloud Mac and uploads it to App Store Connect.
+# One-time setup in Codemagic (codemagic.io):
+#   1. Teams → Integrations → Developer Portal: add the App Store Connect API key, name it "Omraway ASC".
+#   2. Add this repository as an application, then start the "ios-release" workflow.
+# Signing is automatic: the build creates (or reuses) the App Store certificate and provisioning
+# profile for omraway.com through the App Store Connect API. Save a fixed RSA key as the secret
+# CERTIFICATE_PRIVATE_KEY (group "ios_signing") so every build reuses one certificate.
+workflows:
+  ios-release:
+    name: Omraway iOS (App Store)
+    max_build_duration: 60
+    instance_type: mac_mini_m2
+    integrations:
+      app_store_connect: Omraway ASC
+    environment:
+      flutter: 3.44.8
+      xcode: latest
+      cocoapods: default
+      vars:
+        BUNDLE_ID: omraway.com
+    scripts:
+      - name: Flutter packages
+        script: flutter pub get
+      - name: Set up keychain
+        script: keychain initialize
+      - name: Fetch or create signing files
+        script: |
+          if [ -z "$CERTIFICATE_PRIVATE_KEY" ]; then
+            ssh-keygen -t rsa -b 2048 -m PEM -f /tmp/cert_key -q -N ""
+            export CERTIFICATE_PRIVATE_KEY="$(cat /tmp/cert_key)"
+          fi
+          app-store-connect fetch-signing-files "$BUNDLE_ID" \
+            --type IOS_APP_STORE \
+            --certificate-key "$CERTIFICATE_PRIVATE_KEY" \
+            --create
+      - name: Add certificates to keychain
+        script: keychain add-certificates
+      - name: Use profiles in Xcode project
+        script: xcode-project use-profiles
+      - name: CocoaPods
+        script: cd ios && pod install --repo-update
+      - name: Build IPA
+        script: |
+          flutter build ipa --release \
+            --build-number=$BUILD_NUMBER \
+            --export-options-plist=/Users/builder/export_options.plist
+    artifacts:
+      - build/ios/ipa/*.ipa
+      - /tmp/xcodebuild_logs/*.log
+    publishing:
+      app_store_connect:
+        auth: integration
+        submit_to_testflight: true
