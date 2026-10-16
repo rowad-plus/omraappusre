@@ -13,7 +13,7 @@ class LocationService {
     try {
       final res = await http
           .get(Uri.parse('https://ipwho.is/'))
-          .timeout(const Duration(seconds: 5));
+          .timeout(const Duration(seconds: 3));
       if (res.statusCode != 200) return const LocationLookupResult.notFound();
       final json = jsonDecode(res.body) as Map<String, dynamic>;
       if (json['success'] != true) return const LocationLookupResult.notFound();

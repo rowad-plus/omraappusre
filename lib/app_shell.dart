@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'screens/umrah/umrah_screen.dart';
 import 'screens/umrah_results/umrah_results_screen.dart';
 import 'screens/design/design_hub_screen.dart';
@@ -59,7 +60,28 @@ class _AppShellState extends State<AppShell> {
     }
   }
 
+  static const _countryKey = 'selected_country_code';
+  static const _cityIdKey = 'selected_city_id';
+  static const _cityNameKey = 'selected_city_name';
+
+  /// Startup used to wait on an IP-geolocation lookup (ipwho.is, up to 5s)
+  /// before a single trip could load — on every launch. The country/city
+  /// is now remembered, so a returning user's trips start loading at once.
   Future<void> _detectCountry() async {
+    SharedPreferences? prefs;
+    try {
+      prefs = await SharedPreferences.getInstance();
+      final saved = prefs.getString(_countryKey);
+      final savedCountry = saved == null ? null : CountryCatalog.byCode(saved);
+      if (savedCountry != null) {
+        CountryState.selected.value = savedCountry;
+        CountryState.selectedCityId.value = prefs.getInt(_cityIdKey);
+        CountryState.selectedCityName.value = prefs.getString(_cityNameKey);
+        CountryState.detecting.value = false;
+        _rememberSelection(prefs);
+        return;
+      }
+    } catch (_) {}
     final result = await LocationService.detect();
     final country = result.countryCode == null
         ? null
@@ -73,11 +95,35 @@ class _AppShellState extends State<AppShell> {
     // false positives, and an unset city is itself a perfectly good
     // default now that it actually means "no narrowing", not "broken".
     CountryState.detecting.value = false;
+    if (prefs != null) _rememberSelection(prefs);
     if (country == null && mounted) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) openCountryPickerSheet(context);
       });
     }
+  }
+
+  /// Saves the country/city whenever it changes (auto-detected or picked).
+  static void _rememberSelection(SharedPreferences prefs) {
+    void save() {
+      final c = CountryState.selected.value;
+      if (c == null) return;
+      prefs.setString(_countryKey, c.code);
+      final cityId = CountryState.selectedCityId.value;
+      if (cityId == null) {
+        prefs.remove(_cityIdKey);
+        prefs.remove(_cityNameKey);
+      } else {
+        prefs.setInt(_cityIdKey, cityId);
+        final name = CountryState.selectedCityName.value;
+        if (name != null) prefs.setString(_cityNameKey, name);
+      }
+    }
+
+    save();
+    CountryState.selected.addListener(save);
+    CountryState.selectedCityId.addListener(save);
+    CountryState.selectedCityName.addListener(save);
   }
 
   @override
