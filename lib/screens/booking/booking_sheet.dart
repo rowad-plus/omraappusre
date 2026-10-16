@@ -19,8 +19,19 @@ import 'trip_tracking_screen.dart';
 import '../../widgets/instant_date_picker.dart';
 
 const _monthShort = [
-  '', 'يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو',
-  'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر',
+  '',
+  'يناير',
+  'فبراير',
+  'مارس',
+  'أبريل',
+  'مايو',
+  'يونيو',
+  'يوليو',
+  'أغسطس',
+  'سبتمبر',
+  'أكتوبر',
+  'نوفمبر',
+  'ديسمبر',
 ];
 
 const _documentTypes = ['national_id', 'iqama', 'passport'];
@@ -47,6 +58,7 @@ class _TravelerEntry {
 /// doesn't preview it, matching that exactly.
 class BookingSheet extends StatefulWidget {
   final Trip trip;
+
   /// A date already picked on the search page (`Y-m-d`) — mirrors the
   /// website carrying its date-strip search's `?date=` into the booking
   /// form. Pre-selects that date once the trip's real bookable dates load,
@@ -86,7 +98,8 @@ class _BookingSheetState extends State<BookingSheet> {
   int get _personsCount => _adults + (_showChildren ? _children : 0);
 
   /// Children counter only outside Saudi Arabia.
-  bool get _showChildren => CountryState.selected.value?.code.toUpperCase() != 'SA';
+  bool get _showChildren =>
+      CountryState.selected.value?.code.toUpperCase() != 'SA';
   bool get _privateRoomApplies => _privateRoom && _personsCount > 1;
 
   void _onPersonsChanged() {
@@ -199,7 +212,8 @@ class _BookingSheetState extends State<BookingSheet> {
     // there's nothing functional there to mirror — see the memory note).
     if (wasEmpty && _travelerEntries.isNotEmpty) {
       final accountName = context.read<AppState>().userName;
-      if (accountName.isNotEmpty && _travelerEntries.first.nameCtrl.text.isEmpty) {
+      if (accountName.isNotEmpty &&
+          _travelerEntries.first.nameCtrl.text.isEmpty) {
         _travelerEntries.first.nameCtrl.text = accountName;
       }
     }
@@ -297,7 +311,8 @@ class _BookingSheetState extends State<BookingSheet> {
   /// so back from tracking returns to the trip, not to a spent form.
   void _openTracking(int bookingId, {bool paid = false}) {
     Navigator.of(context).pushReplacement(MaterialPageRoute(
-      builder: (_) => TripTrackingScreen(bookingId: bookingId, justBooked: true, justPaid: paid),
+      builder: (_) => TripTrackingScreen(
+          bookingId: bookingId, justBooked: true, justPaid: paid),
     ));
   }
 
@@ -308,7 +323,8 @@ class _BookingSheetState extends State<BookingSheet> {
   /// leaves it unpaid (matching how `PaymentController::initiate` is safe
   /// to retry for the same booking).
   Future<void> _startPayment(int bookingId) async {
-    final paymentResult = await context.read<AppState>().initiatePayment(bookingId);
+    final paymentResult =
+        await context.read<AppState>().initiatePayment(bookingId);
     if (!mounted) return;
 
     if (paymentResult.paymentUrl == null) {
@@ -321,7 +337,8 @@ class _BookingSheetState extends State<BookingSheet> {
     }
 
     setState(() => _submitting = false);
-    final paid = await launchPayment(context, paymentResult.paymentUrl!, bookingId: bookingId);
+    final paid = await launchPayment(context, paymentResult.paymentUrl!,
+        bookingId: bookingId);
     if (!mounted) return;
 
     if (paid == true) {
@@ -344,132 +361,155 @@ class _BookingSheetState extends State<BookingSheet> {
         title: Text(tr('booking.step.confirm'),
             style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w800)),
       ),
+      // The confirm button sits in the body (not bottomNavigationBar) so it
+      // rides up above the keyboard instead of being hidden under it — on
+      // iOS the number pad has no "done" key, so it was impossible to reach.
+      // Tapping outside a field or dragging the form also closes the keyboard.
       body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(16, 14, 16, 8),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              _sectionCard(
-                icon: FontAwesomeIcons.solidUser,
-                title: tr('booking.personal.title'),
-                child: _personalInfoRows(app),
-              ),
-              const SizedBox(height: 14),
-              _sectionCard(
-                icon: FontAwesomeIcons.users,
-                title: tr('booking.step.travelers'),
-                child: Column(children: [
-                  // Inside Saudi Arabia there is no children split (same as
-                  // the website): one "number of people" counter only.
-                  _counterRow(
-                      _showChildren
-                          ? tr('booking.travelers.adultsLabel')
-                          : tr('orders.field.people_count'),
-                      _showChildren ? tr('booking.travelers.adultsHint') : '',
-                      _adults,
-                      (v) => setState(() {
-                            _adults = v;
-                            _onPersonsChanged();
-                          }),
-                      min: 1),
-                  if (_showChildren)
-                    _counterRow(
-                        tr('booking.travelers.childrenLabel'),
-                        tr('booking.travelers.childrenHint'),
-                        _children,
-                        (v) => setState(() {
-                              _children = v;
-                              _onPersonsChanged();
-                            })),
-                  if (_personsCount > 1) _privateRoomRow(),
-                ]),
-              ),
-              const SizedBox(height: 14),
-              _sectionCard(
-                icon: FontAwesomeIcons.idCard,
-                title: tr('booking.travelerDocs.stepTitle'),
-                child: Column(children: [
-                  for (var i = 0; i < _travelerEntries.length; i++) ...[
-                    if (i > 0) const SizedBox(height: 14),
-                    _travelerEntryCard(i),
-                  ],
-                ]),
-              ),
-              const SizedBox(height: 14),
-              _sectionCard(
-                icon: FontAwesomeIcons.calendarDays,
-                title: tr('booking.dateRoom.departureDateLabel'),
-                child: _dateSection(),
-              ),
-              const SizedBox(height: 14),
-              _sectionCard(
-                icon: FontAwesomeIcons.noteSticky,
-                title: tr('booking.contact.notesLabel'),
-                child:
-                    _textField(_notesCtrl, tr('booking.contact.notesHint'), maxLines: 3),
-              ),
-              if (_error != null) ...[
-                const SizedBox(height: 14),
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                      color: const Color(0xFFFFE4E4),
-                      borderRadius: BorderRadius.circular(10)),
-                  child: Text(_error!,
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
-                          color: Color(0xFFE84040), fontSize: 12.5)),
-                ),
-              ],
-              const SizedBox(height: 14),
-              _priceSummaryCard(),
-            ],
-          ),
-        ),
-      ),
-      bottomNavigationBar: Container(
-        padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
-        decoration: const BoxDecoration(
-            color: Colors.white,
-            border: Border(top: BorderSide(color: AppColors.border))),
-        child: SafeArea(
-          top: false,
-          child: ElevatedButton(
-            onPressed: _submitting ? null : _submit,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.blue,
-              padding: const EdgeInsets.symmetric(vertical: 15),
-              shape:
-                  RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-            ),
-            child: _submitting
-                ? const SizedBox(
-                    width: 18,
-                    height: 18,
-                    child: CircularProgressIndicator(
-                        strokeWidth: 2, color: Colors.white))
-                : Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const FaIcon(FontAwesomeIcons.check,
-                          size: 14, color: Colors.white),
-                      const SizedBox(width: 8),
-                      Text(tr('booking.step.confirm'),
-                          style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 15,
-                              fontWeight: FontWeight.w800)),
+        child: Column(children: [
+          Expanded(
+            child: GestureDetector(
+              behavior: HitTestBehavior.translucent,
+              onTap: () => FocusScope.of(context).unfocus(),
+              child: SingleChildScrollView(
+                keyboardDismissBehavior:
+                    ScrollViewKeyboardDismissBehavior.onDrag,
+                padding: const EdgeInsets.fromLTRB(16, 14, 16, 8),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    _sectionCard(
+                      icon: FontAwesomeIcons.solidUser,
+                      title: tr('booking.personal.title'),
+                      child: _personalInfoRows(app),
+                    ),
+                    const SizedBox(height: 14),
+                    _sectionCard(
+                      icon: FontAwesomeIcons.users,
+                      title: tr('booking.step.travelers'),
+                      child: Column(children: [
+                        // Inside Saudi Arabia there is no children split (same as
+                        // the website): one "number of people" counter only.
+                        _counterRow(
+                            _showChildren
+                                ? tr('booking.travelers.adultsLabel')
+                                : tr('orders.field.people_count'),
+                            _showChildren
+                                ? tr('booking.travelers.adultsHint')
+                                : '',
+                            _adults,
+                            (v) => setState(() {
+                                  _adults = v;
+                                  _onPersonsChanged();
+                                }),
+                            min: 1),
+                        if (_showChildren)
+                          _counterRow(
+                              tr('booking.travelers.childrenLabel'),
+                              tr('booking.travelers.childrenHint'),
+                              _children,
+                              (v) => setState(() {
+                                    _children = v;
+                                    _onPersonsChanged();
+                                  })),
+                        if (_personsCount > 1) _privateRoomRow(),
+                      ]),
+                    ),
+                    const SizedBox(height: 14),
+                    _sectionCard(
+                      icon: FontAwesomeIcons.idCard,
+                      title: tr('booking.travelerDocs.stepTitle'),
+                      child: Column(children: [
+                        for (var i = 0; i < _travelerEntries.length; i++) ...[
+                          if (i > 0) const SizedBox(height: 14),
+                          _travelerEntryCard(i),
+                        ],
+                      ]),
+                    ),
+                    const SizedBox(height: 14),
+                    _sectionCard(
+                      icon: FontAwesomeIcons.calendarDays,
+                      title: tr('booking.dateRoom.departureDateLabel'),
+                      child: _dateSection(),
+                    ),
+                    const SizedBox(height: 14),
+                    _sectionCard(
+                      icon: FontAwesomeIcons.noteSticky,
+                      title: tr('booking.contact.notesLabel'),
+                      child: _textField(
+                          _notesCtrl, tr('booking.contact.notesHint'),
+                          maxLines: 3),
+                    ),
+                    if (_error != null) ...[
+                      const SizedBox(height: 14),
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                            color: const Color(0xFFFFE4E4),
+                            borderRadius: BorderRadius.circular(10)),
+                        child: Text(_error!,
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(
+                                color: Color(0xFFE84040), fontSize: 12.5)),
+                      ),
                     ],
-                  ),
+                    const SizedBox(height: 14),
+                    _priceSummaryCard(),
+                  ],
+                ),
+              ),
+            ),
           ),
+          _confirmBar(),
+        ]),
+      ),
+    );
+  }
+
+  Widget _confirmBar() {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+      decoration: const BoxDecoration(
+          color: Colors.white,
+          border: Border(top: BorderSide(color: AppColors.border))),
+      child: SafeArea(
+        top: false,
+        child: ElevatedButton(
+          onPressed: _submitting ? null : _submit,
+          style: ElevatedButton.styleFrom(
+            backgroundColor: AppColors.blue,
+            padding: const EdgeInsets.symmetric(vertical: 15),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          ),
+          child: _submitting
+              ? const SizedBox(
+                  width: 18,
+                  height: 18,
+                  child: CircularProgressIndicator(
+                      strokeWidth: 2, color: Colors.white))
+              : Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const FaIcon(FontAwesomeIcons.check,
+                        size: 14, color: Colors.white),
+                    const SizedBox(width: 8),
+                    Text(tr('booking.step.confirm'),
+                        style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 15,
+                            fontWeight: FontWeight.w800)),
+                  ],
+                ),
         ),
       ),
     );
   }
 
   Widget _sectionCard(
-      {required FaIconData icon, required String title, required Widget child}) {
+      {required FaIconData icon,
+      required String title,
+      required Widget child}) {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
@@ -585,13 +625,14 @@ class _BookingSheetState extends State<BookingSheet> {
           lastDate: validDates.isEmpty
               ? now
               : validDates.reduce((a, b) => a.isAfter(b) ? a : b),
-          selectableDayPredicate: (day) => validDates.any(
-              (d) => d.year == day.year && d.month == day.month && d.day == day.day),
+          selectableDayPredicate: (day) => validDates.any((d) =>
+              d.year == day.year && d.month == day.month && d.day == day.day),
         );
         if (picked == null) return;
         final iso =
             '${picked.year.toString().padLeft(4, '0')}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}';
-        setState(() => _selectedDate = ApiTripDate(id: iso, departureDate: iso));
+        setState(
+            () => _selectedDate = ApiTripDate(id: iso, departureDate: iso));
       },
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
@@ -655,7 +696,8 @@ class _BookingSheetState extends State<BookingSheet> {
   Widget _travelerEntryCard(int index) {
     final entry = _travelerEntries[index];
     // API value `national_id` ↔ translation key `nationalId`.
-    final typeKey = entry.documentType == 'national_id' ? 'nationalId' : entry.documentType;
+    final typeKey =
+        entry.documentType == 'national_id' ? 'nationalId' : entry.documentType;
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
@@ -679,7 +721,8 @@ class _BookingSheetState extends State<BookingSheet> {
                   ? 'booking.travelerDocs.nationalId'
                   : 'booking.travelerDocs.$t'),
           },
-          onChanged: (v) => setState(() => entry.documentType = v ?? entry.documentType),
+          onChanged: (v) =>
+              setState(() => entry.documentType = v ?? entry.documentType),
         ),
         const SizedBox(height: 10),
         _fieldLabel(tr('booking.travelerDocs.nameLabel')),
@@ -689,7 +732,8 @@ class _BookingSheetState extends State<BookingSheet> {
         // Label + hint follow the chosen type: "رقم جواز السفر", not "رقم المستند".
         _fieldLabel(tr('booking.travelerDocs.numberLabel.$typeKey')),
         const SizedBox(height: 6),
-        _textField(entry.numberCtrl, tr('booking.travelerDocs.numberHint.$typeKey'),
+        _textField(
+            entry.numberCtrl, tr('booking.travelerDocs.numberHint.$typeKey'),
             keyboardType: entry.documentType == 'passport'
                 ? TextInputType.text
                 : TextInputType.number,
@@ -714,7 +758,8 @@ class _BookingSheetState extends State<BookingSheet> {
           decoration: BoxDecoration(
               color: _privateRoom ? AppColors.blueLight : Colors.white,
               border: Border.all(
-                  color: _privateRoom ? AppColors.blue : AppColors.border, width: 1.5),
+                  color: _privateRoom ? AppColors.blue : AppColors.border,
+                  width: 1.5),
               borderRadius: BorderRadius.circular(10)),
           child: Row(children: [
             Checkbox(
@@ -726,13 +771,18 @@ class _BookingSheetState extends State<BookingSheet> {
               },
             ),
             Expanded(
-              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text(tr('booking.travelers.privateRoomLabel'),
-                    style: const TextStyle(
-                        fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.text)),
-                Text(tr('booking.travelers.privateRoomHint'),
-                    style: const TextStyle(fontSize: 10.5, color: AppColors.muted)),
-              ]),
+              child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(tr('booking.travelers.privateRoomLabel'),
+                        style: const TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.text)),
+                    Text(tr('booking.travelers.privateRoomHint'),
+                        style: const TextStyle(
+                            fontSize: 10.5, color: AppColors.muted)),
+                  ]),
             ),
           ]),
         ),
@@ -744,9 +794,11 @@ class _BookingSheetState extends State<BookingSheet> {
   /// same rule as the server. Private room: the server's quoted family price.
   Widget _priceSummaryCard() {
     final unitPrice =
-        double.tryParse(widget.trip.price.replaceAll(RegExp(r'[^0-9.]'), '')) ?? 0;
+        double.tryParse(widget.trip.price.replaceAll(RegExp(r'[^0-9.]'), '')) ??
+            0;
     // Keep the spaces inside the currency name ("ريال سعودي", "Saudi Riyal (SAR)").
-    final currency = widget.trip.price.replaceAll(RegExp(r'[0-9.,]'), '').trim();
+    final currency =
+        widget.trip.price.replaceAll(RegExp(r'[0-9.,]'), '').trim();
     final usePrivate = _privateRoomApplies && _privateRoomTotal != null;
     final total = usePrivate ? _privateRoomTotal! : unitPrice * _personsCount;
     final label = usePrivate
@@ -768,11 +820,14 @@ class _BookingSheetState extends State<BookingSheet> {
           const SizedBox(
               width: 18,
               height: 18,
-              child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.blue))
+              child: CircularProgressIndicator(
+                  strokeWidth: 2, color: AppColors.blue))
         else
           Text('${NumberFormat('#,##0', 'en').format(total)} $currency',
               style: const TextStyle(
-                  fontSize: 17, fontWeight: FontWeight.w900, color: AppColors.blue)),
+                  fontSize: 17,
+                  fontWeight: FontWeight.w900,
+                  color: AppColors.blue)),
       ]),
     );
   }
@@ -829,8 +884,8 @@ class _BookingSheetState extends State<BookingSheet> {
                       color: AppColors.text)),
               if (hint.isNotEmpty)
                 Text(hint,
-                    style:
-                        const TextStyle(fontSize: 10.5, color: AppColors.muted)),
+                    style: const TextStyle(
+                        fontSize: 10.5, color: AppColors.muted)),
             ]),
           ),
           _stepperBtn('−', () => onChanged(value > min ? value - 1 : value)),

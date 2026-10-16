@@ -88,7 +88,8 @@ class PostCard extends StatelessWidget {
                     const SizedBox(width: 6),
                   ],
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                     decoration: BoxDecoration(
                         color: AppColors.greenLight,
                         borderRadius: BorderRadius.circular(10)),
@@ -223,8 +224,8 @@ class _CompanyBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ConstrainedBox(
-      constraints: BoxConstraints(
-          maxWidth: MediaQuery.of(context).size.width * 0.6),
+      constraints:
+          BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.6),
       child: Container(
         padding: const EdgeInsetsDirectional.fromSTEB(5, 4, 10, 4),
         decoration: BoxDecoration(
@@ -275,10 +276,12 @@ class _PostMediaBox extends StatefulWidget {
 class _PostMediaBoxState extends State<_PostMediaBox> {
   VideoPlayerController? _controller;
   bool _ready = false;
+  bool _visible = false;
 
-  @override
-  void initState() {
-    super.initState();
+  /// The clip is only downloaded/decoded once the card actually scrolls into
+  /// view — creating a player for every loaded post up front made the whole
+  /// app sluggish (several video decoders running for off-screen cards).
+  void _initVideo() {
     final videoAsset = widget.media.videoAsset;
     final networkVideo = widget.media.networkVideo;
     if (videoAsset != null || networkVideo != null) {
@@ -295,6 +298,7 @@ class _PostMediaBoxState extends State<_PostMediaBox> {
         await controller.seekTo(Duration.zero);
         if (!mounted) return;
         setState(() => _ready = true);
+        if (_visible) controller.play();
       }).catchError((Object e) {
         // ignore: avoid_print
         print('Feed video thumbnail failed to load: $videoAsset — $e');
@@ -309,9 +313,11 @@ class _PostMediaBoxState extends State<_PostMediaBox> {
   }
 
   void _onVisibilityChanged(VisibilityInfo info) {
+    _visible = info.visibleFraction > 0.6;
+    if (_controller == null && info.visibleFraction > 0.1) _initVideo();
     final controller = _controller;
     if (controller == null || !_ready) return;
-    if (info.visibleFraction > 0.6) {
+    if (_visible) {
       if (!controller.value.isPlaying) controller.play();
     } else {
       if (controller.value.isPlaying) controller.pause();
@@ -323,20 +329,16 @@ class _PostMediaBoxState extends State<_PostMediaBox> {
     final media = widget.media;
     final controller = _controller;
     final videoReady = controller != null && _ready;
-    return Stack(alignment: Alignment.center, children: [
+    final stack = Stack(alignment: Alignment.center, children: [
       if (videoReady)
-        VisibilityDetector(
-          key: Key(widget.visibilityKey),
-          onVisibilityChanged: _onVisibilityChanged,
-          child: IgnorePointer(
-            child: SizedBox.expand(
-              child: FittedBox(
-                fit: BoxFit.cover,
-                child: SizedBox(
-                    width: controller.value.size.width,
-                    height: controller.value.size.height,
-                    child: VideoPlayer(controller)),
-              ),
+        IgnorePointer(
+          child: SizedBox.expand(
+            child: FittedBox(
+              fit: BoxFit.cover,
+              child: SizedBox(
+                  width: controller.value.size.width,
+                  height: controller.value.size.height,
+                  child: VideoPlayer(controller)),
             ),
           ),
         )
@@ -345,6 +347,8 @@ class _PostMediaBoxState extends State<_PostMediaBox> {
             child: CachedNetworkImage(
                 imageUrl: media.networkImage!,
                 fit: BoxFit.cover,
+                // Uploads can be 4K; decode at feed size, not full size.
+                memCacheWidth: 900,
                 placeholder: (_, __) => const Center(
                     child: SizedBox(
                         width: 20,
@@ -387,5 +391,11 @@ class _PostMediaBoxState extends State<_PostMediaBox> {
           ),
         ),
     ]);
+    if (!media.isVideo) return stack;
+    return VisibilityDetector(
+      key: Key(widget.visibilityKey),
+      onVisibilityChanged: _onVisibilityChanged,
+      child: stack,
+    );
   }
 }

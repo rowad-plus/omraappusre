@@ -21,12 +21,34 @@ class AppShell extends StatefulWidget {
 }
 
 class _AppShellState extends State<AppShell> {
+  /// The app opens straight onto the search screen — once per app launch
+  /// (AppShell is re-created on every language switch).
+  static bool _openedSearchOnLaunch = false;
+
+  /// Tabs are built only once first visited. They all used to be built at
+  /// launch inside the IndexedStack, so the photos feed downloaded and
+  /// decoded its videos and full-size images while the user was elsewhere.
+  final Set<int> _builtTabs = {};
+
   void _goToTab(int i) => NavState.tab.value = i;
 
   @override
   void initState() {
     super.initState();
     NavState.tab.value = 0;
+    if (!_openedSearchOnLaunch) {
+      _openedSearchOnLaunch = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        Navigator.of(context).push(PageRouteBuilder(
+          transitionDuration: Duration.zero,
+          reverseTransitionDuration: const Duration(milliseconds: 200),
+          pageBuilder: (_, __, ___) => const UmrahResultsScreen(),
+          transitionsBuilder: (_, anim, __, child) =>
+              FadeTransition(opacity: anim, child: child),
+        ));
+      });
+    }
     // AppShell is re-created (via a locale-keyed `home:` in main.dart) on
     // every language switch, but CountryState itself is app-lifetime static
     // state — `detecting` only stays true before the very first detection
@@ -39,9 +61,11 @@ class _AppShellState extends State<AppShell> {
 
   Future<void> _detectCountry() async {
     final result = await LocationService.detect();
-    final country =
-        result.countryCode == null ? null : CountryCatalog.byCode(result.countryCode!);
-    CountryState.selected.value = country; // stays null if unresolved/unmatched — no silent default
+    final country = result.countryCode == null
+        ? null
+        : CountryCatalog.byCode(result.countryCode!);
+    CountryState.selected.value =
+        country; // stays null if unresolved/unmatched — no silent default
     // City is deliberately left unset here (meaning "every city in the
     // country") rather than guessed — the geo API's free-text city name
     // (e.g. "Riyadh") can't be reliably matched against the real backend
@@ -56,7 +80,6 @@ class _AppShellState extends State<AppShell> {
     }
   }
 
-
   @override
   Widget build(BuildContext context) {
     final screens = [
@@ -67,15 +90,21 @@ class _AppShellState extends State<AppShell> {
     ];
     return ValueListenableBuilder<int>(
       valueListenable: NavState.tab,
-      builder: (context, index, _) => Scaffold(
-        body: IndexedStack(index: index, children: screens),
-        bottomNavigationBar: AppBottomNavBar(
-          currentIndex: index,
-          onTap: _goToTab,
-          onSearchTap: () => Navigator.of(context).push(
-              MaterialPageRoute(builder: (_) => const UmrahResultsScreen())),
-        ),
-      ),
+      builder: (context, index, _) {
+        _builtTabs.add(index);
+        return Scaffold(
+          body: IndexedStack(index: index, children: [
+            for (var i = 0; i < screens.length; i++)
+              _builtTabs.contains(i) ? screens[i] : const SizedBox.shrink(),
+          ]),
+          bottomNavigationBar: AppBottomNavBar(
+            currentIndex: index,
+            onTap: _goToTab,
+            onSearchTap: () => Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const UmrahResultsScreen())),
+          ),
+        );
+      },
     );
   }
 }

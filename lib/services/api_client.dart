@@ -30,6 +30,10 @@ class ApiClient {
 
   String? _token;
 
+  /// One shared client keeps the HTTPS connection alive between requests;
+  /// the top-level `http.get` etc. opened a fresh TLS connection every time.
+  static final http.Client _http = http.Client();
+
   void setToken(String? token) => _token = token;
 
   // The server (SetApiLocale) picks the language of trip titles, city names
@@ -80,22 +84,22 @@ class ApiClient {
   }
 
   Future<dynamic> get(String path, [Map<String, dynamic>? query]) async {
-    final res = await http.get(_uri(path, query), headers: _headers);
+    final res = await _http.get(_uri(path, query), headers: _headers);
     return _decode(res);
   }
 
   Future<dynamic> post(String path, [Map<String, dynamic>? data]) async {
-    final res = await http.post(_uri(path), headers: _headers, body: jsonEncode(data ?? {}));
+    final res = await _http.post(_uri(path), headers: _headers, body: jsonEncode(data ?? {}));
     return _decode(res);
   }
 
   Future<dynamic> put(String path, [Map<String, dynamic>? data]) async {
-    final res = await http.put(_uri(path), headers: _headers, body: jsonEncode(data ?? {}));
+    final res = await _http.put(_uri(path), headers: _headers, body: jsonEncode(data ?? {}));
     return _decode(res);
   }
 
   Future<dynamic> delete(String path, [Map<String, dynamic>? data]) async {
-    final res = await http.delete(_uri(path), headers: _headers, body: data == null ? null : jsonEncode(data));
+    final res = await _http.delete(_uri(path), headers: _headers, body: data == null ? null : jsonEncode(data));
     return _decode(res);
   }
 
@@ -117,7 +121,7 @@ class ApiClient {
       request.files.add(http.MultipartFile.fromBytes(files[i].key, files[i].value, filename: 'media_$i'));
     }
 
-    final streamed = await request.send();
+    final streamed = await _http.send(request);
     final res = await http.Response.fromStream(streamed);
     return _decode(res);
   }

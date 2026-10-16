@@ -266,6 +266,7 @@ class _PhotosScreenState extends State<PhotosScreen> {
                     child: c.logo != null
                         ? CachedNetworkImage(
                             imageUrl: c.logo!,
+                            memCacheWidth: 120,
                             width: 38,
                             height: 38,
                             fit: BoxFit.cover,
@@ -343,6 +344,7 @@ class _PhotosScreenState extends State<PhotosScreen> {
                               child: t.thumbnail != null
                                   ? CachedNetworkImage(
                                       imageUrl: t.thumbnail!,
+                                      memCacheWidth: 500,
                                       fit: BoxFit.cover,
                                       width: double.infinity,
                                       height: double.infinity,
