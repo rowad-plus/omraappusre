@@ -99,6 +99,16 @@ class PushService {
     if (!_ready) return;
     try {
       await FirebaseMessaging.instance.requestPermission();
+      // On iPhone getToken() throws until Apple's APNs token has arrived,
+      // which is usually a moment after launch — the token then never
+      // reached the server and iOS got no push at all. Wait for it first.
+      if (defaultTargetPlatform == TargetPlatform.iOS) {
+        for (var i = 0;
+            i < 20 && await FirebaseMessaging.instance.getAPNSToken() == null;
+            i++) {
+          await Future.delayed(const Duration(milliseconds: 500));
+        }
+      }
       final token = await FirebaseMessaging.instance.getToken();
       if (token != null) {
         await send(token);
