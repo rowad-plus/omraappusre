@@ -166,19 +166,23 @@ class AppBottomNavBar extends StatelessWidget {
                     offset: const Offset(0, -2))
               ],
             ),
-            child: Row(
-              children: [
-                for (var i = 0; i < items.length; i++) ...[
-                  if (i == 2) _searchSlot(),
-                  _item(
-                      icon: items[i].icon,
-                      label: items[i].label,
-                      color: !searchActive && currentIndex == i
-                          ? items[i].accent
-                          : _idle,
-                      onTap: () => onTap(i)),
+            // The bar has a fixed height, so labels can't grow without limit.
+            child: MediaQuery.withClampedTextScaling(
+              maxScaleFactor: 1.2,
+              child: Row(
+                children: [
+                  for (var i = 0; i < items.length; i++) ...[
+                    if (i == 2) _searchSlot(),
+                    _item(
+                        icon: items[i].icon,
+                        label: items[i].label,
+                        color: !searchActive && currentIndex == i
+                            ? items[i].accent
+                            : _idle,
+                        onTap: () => onTap(i)),
+                  ],
                 ],
-              ],
+              ),
             ),
           ),
         ),
