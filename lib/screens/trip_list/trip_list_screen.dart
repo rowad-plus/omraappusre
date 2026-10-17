@@ -106,75 +106,121 @@ class _TripListScreenState extends State<TripListScreen> {
         list.sort((a, b) => _starCount(a).compareTo(_starCount(b)));
     }
 
+    Widget row(List<Widget> cells) => Row(children: [
+          Expanded(child: cells[0]),
+          const SizedBox(width: 6),
+          Expanded(child: cells[1]),
+          const SizedBox(width: 6),
+          Expanded(child: cells[2]),
+        ]);
+
+    // Header and filter captions scroll away; only the 3 dropdown boxes stay
+    // pinned at the top.
     return Scaffold(
       backgroundColor: AppColors.bg,
-      appBar: SubPageHeader(title: widget.title),
-      body: Column(children: [
-        Container(
-          color: Colors.white,
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-          child: Row(children: [
-            Expanded(
-              child: AppDropdown<_SortMode>(
-                label: tr('trip.filter.sort'),
-                value: _sort,
-                accent: widget.accent,
-                options: {
-                  for (final m in _SortMode.values) m: tr(_sortLabels[m]!)
-                },
-                onChanged: (m) => setState(() => _sort = m!),
-              ),
+      body: SafeArea(
+        bottom: false,
+        child: CustomScrollView(slivers: [
+          SliverToBoxAdapter(child: SubPageHeader(title: widget.title)),
+          SliverToBoxAdapter(
+            child: Container(
+              color: Colors.white,
+              padding: const EdgeInsets.fromLTRB(14, 10, 14, 0),
+              child: row([
+                for (final k in [
+                  'trip.filter.sort',
+                  'trip.filter.country',
+                  'trip.filter.city'
+                ])
+                  Text(tr(k), style: dropdownLabelStyle),
+              ]),
             ),
-            const SizedBox(width: 6),
-            Expanded(
-              child: AppDropdown<String>(
-                label: tr('trip.filter.country'),
-                value: _country,
-                accent: widget.accent,
-                options: {
-                  for (final c in countries)
-                    c: c == _kAll ? tr('filter.all') : tr(c)
-                },
-                onChanged: (c) => setState(() {
-                  _country = c!;
-                  _city = _kAll;
-                }),
+          ),
+          SliverPersistentHeader(
+            pinned: true,
+            delegate: _PinnedFilters(Container(
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                border: Border(bottom: BorderSide(color: AppColors.border)),
               ),
-            ),
-            const SizedBox(width: 6),
-            Expanded(
-              child: AppDropdown<String>(
-                label: tr('trip.filter.city'),
-                value: _city,
-                accent: widget.accent,
-                options: {
-                  for (final c in cities)
-                    c: c == _kAll ? tr('filter.all') : tr(c)
-                },
-                onChanged: (c) => setState(() => _city = c!),
-              ),
-            ),
-          ]),
-        ),
-        Expanded(
-          child: list.isEmpty
-              ? Center(
-                  child: Text(tr('trip.list.no_results'),
-                      style: const TextStyle(color: AppColors.muted)))
-              : ListView.builder(
-                  padding: const EdgeInsets.all(14),
-                  itemCount: list.length,
-                  itemBuilder: (context, i) {
-                    final t = list[i];
-                    return TripCardUC(
-                      showSuggested: true,
-                        trip: t,
-                        onTap: () => _openDetail(t),
-                        onBook: () => _openBooking(t));
+              padding: const EdgeInsets.fromLTRB(14, 4, 14, 10),
+              child: row([
+                AppDropdown<_SortMode>(
+                  value: _sort,
+                  accent: widget.accent,
+                  options: {
+                    for (final m in _SortMode.values) m: tr(_sortLabels[m]!)
                   },
+                  onChanged: (m) => setState(() => _sort = m!),
                 ),
-        ),
-      ]),
+                AppDropdown<String>(
+                  value: _country,
+                  accent: widget.accent,
+                  options: {
+                    for (final c in countries)
+                      c: c == _kAll ? tr('filter.all') : tr(c)
+                  },
+                  onChanged: (c) => setState(() {
+                    _country = c!;
+                    _city = _kAll;
+                  }),
+                ),
+                AppDropdown<String>(
+                  value: _city,
+                  accent: widget.accent,
+                  options: {
+                    for (final c in cities)
+                      c: c == _kAll ? tr('filter.all') : tr(c)
+                  },
+                  onChanged: (c) => setState(() => _city = c!),
+                ),
+              ]),
+            )),
+          ),
+          if (list.isEmpty)
+            SliverFillRemaining(
+              hasScrollBody: false,
+              child: Center(
+                  child: Text(tr('trip.list.no_results'),
+                      style: const TextStyle(color: AppColors.muted))),
+            )
+          else
+            SliverPadding(
+              padding: const EdgeInsets.all(14),
+              sliver: SliverList.builder(
+                itemCount: list.length,
+                itemBuilder: (context, i) {
+                  final t = list[i];
+                  return TripCardUC(
+                      showSuggested: true,
+                      trip: t,
+                      onTap: () => _openDetail(t),
+                      onBook: () => _openBooking(t));
+                },
+              ),
+            ),
+        ]),
+      ),
     );
   }
+}
+
+class _PinnedFilters extends SliverPersistentHeaderDelegate {
+  final Widget child;
+  _PinnedFilters(this.child);
+
+  // 46px dropdown box + 4px top / 10px bottom padding + 1px border.
+  static const _height = 61.0;
+
+  @override
+  double get minExtent => _height;
+  @override
+  double get maxExtent => _height;
+
+  @override
+  Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) =>
+      child;
+
+  @override
+  bool shouldRebuild(_PinnedFilters oldDelegate) => true;
 }

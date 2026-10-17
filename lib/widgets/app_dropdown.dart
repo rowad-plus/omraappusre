@@ -6,11 +6,16 @@ import '../core/theme/app_colors.dart';
 // not the section accent color (green/blue), per design feedback.
 const _darkTone = Color(0xFF3E2F26);
 
+/// The small caption above a dropdown box.
+const dropdownLabelStyle = TextStyle(
+    fontSize: 10.5, color: AppColors.muted, fontWeight: FontWeight.w700);
+
 /// A styled filter dropdown: labeled, tinted pill container, dark chevron,
 /// and a rounded popup menu whose selected option is highlighted — used for
 /// every "sort / country / city / type" filter across the app.
 class AppDropdown<T> extends StatelessWidget {
-  final String label;
+  /// Shown above the box; null when the page draws the labels itself.
+  final String? label;
   final T value;
   final Map<T, String> options;
   final ValueChanged<T?> onChanged;
@@ -18,7 +23,7 @@ class AppDropdown<T> extends StatelessWidget {
 
   const AppDropdown({
     super.key,
-    required this.label,
+    this.label,
     required this.value,
     required this.options,
     required this.onChanged,
@@ -28,12 +33,10 @@ class AppDropdown<T> extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      Text(label,
-          style: const TextStyle(
-              fontSize: 10.5,
-              color: AppColors.muted,
-              fontWeight: FontWeight.w700)),
-      const SizedBox(height: 4),
+      if (label != null) ...[
+        Text(label!, style: dropdownLabelStyle),
+        const SizedBox(height: 4),
+      ],
       Container(
         height: 46,
         padding: const EdgeInsets.symmetric(horizontal: 10),
