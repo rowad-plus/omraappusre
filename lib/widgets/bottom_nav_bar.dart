@@ -74,6 +74,67 @@ class AppBottomNavBar extends StatelessWidget {
     );
   }
 
+  /// The search button: a raised gold circle that rises above the bar so it
+  /// stands apart from the 4 tabs. Always gold; a soft halo while active.
+  Widget _searchItem() {
+    return Expanded(
+      child: GestureDetector(
+        onTap: onSearchTap,
+        behavior: HitTestBehavior.opaque,
+        child: Padding(
+          padding: const EdgeInsets.only(top: 9, bottom: 11),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Takes the same 22px as the other icons in the layout (so the
+              // bar keeps its height) and lets the circle overflow upward.
+              SizedBox(
+                height: 22,
+                child: OverflowBox(
+                  minHeight: 54,
+                  maxHeight: 54,
+                  minWidth: 54,
+                  maxWidth: 54,
+                  alignment: Alignment.bottomCenter,
+                  child: Container(
+                    width: 54,
+                    height: 54,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      gradient: const LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [AppColors.brandLight, AppColors.brandDark]),
+                      border: Border.all(color: Colors.white, width: 4),
+                      boxShadow: [
+                        BoxShadow(
+                            color: AppColors.brand
+                                .withValues(alpha: searchActive ? 0.55 : 0.35),
+                            blurRadius: searchActive ? 16 : 10,
+                            spreadRadius: searchActive ? 2 : 0,
+                            offset: const Offset(0, 4)),
+                      ],
+                    ),
+                    alignment: Alignment.center,
+                    child: const FaIcon(FontAwesomeIcons.magnifyingGlass,
+                        size: 20, color: Colors.white),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 3),
+              Text(tr('nav.search'),
+                  style: TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w900,
+                    color: searchActive ? AppColors.brandDark : AppColors.brand,
+                  )),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -93,12 +154,7 @@ class AppBottomNavBar extends StatelessWidget {
         child: Row(
           children: [
             for (var i = 0; i < items.length; i++) ...[
-              if (i == 2)
-                _item(
-                    icon: FontAwesomeIcons.magnifyingGlass,
-                    label: tr('nav.search'),
-                    color: searchActive ? AppColors.green : _idle,
-                    onTap: onSearchTap),
+              if (i == 2) _searchItem(),
               _item(
                   icon: items[i].icon,
                   label: items[i].label,
