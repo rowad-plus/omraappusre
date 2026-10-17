@@ -103,34 +103,42 @@ class AppBottomNavBar extends StatelessWidget {
     );
   }
 
-  /// The search button: a raised gold circle that rises above the bar so it
-  /// stands apart from the 4 tabs. Always gold; a soft halo while active.
+  /// The search button: a raised circle that rises above the bar so it
+  /// stands apart from the 4 tabs. Gold with a white icon normally; while
+  /// the search tab is open it flips to white with a gold ring and icon.
   /// It lies fully inside this widget's bounds, so all of it takes taps.
   Widget _searchCircle() {
     return GestureDetector(
       onTap: onSearchTap,
-      child: Container(
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
         width: 54,
         height: 54,
         decoration: BoxDecoration(
           shape: BoxShape.circle,
-          gradient: const LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [AppColors.brandLight, AppColors.brandDark]),
-          border: Border.all(color: Colors.white, width: 4),
+          color: searchActive ? Colors.white : null,
+          gradient: searchActive
+              ? null
+              : const LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [AppColors.brandLight, AppColors.brandDark]),
+          border: Border.all(
+              color: searchActive ? AppColors.brand : Colors.white,
+              width: searchActive ? 3 : 4),
           boxShadow: [
             BoxShadow(
                 color: AppColors.brand
-                    .withValues(alpha: searchActive ? 0.55 : 0.35),
-                blurRadius: searchActive ? 16 : 10,
-                spreadRadius: searchActive ? 2 : 0,
+                    .withValues(alpha: searchActive ? 0.5 : 0.35),
+                blurRadius: searchActive ? 14 : 10,
+                spreadRadius: searchActive ? 1 : 0,
                 offset: const Offset(0, 4)),
           ],
         ),
         alignment: Alignment.center,
-        child: const FaIcon(FontAwesomeIcons.magnifyingGlass,
-            size: 20, color: Colors.white),
+        child: FaIcon(FontAwesomeIcons.magnifyingGlass,
+            size: 20,
+            color: searchActive ? AppColors.brandDark : Colors.white),
       ),
     );
   }
