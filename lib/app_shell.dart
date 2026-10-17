@@ -22,29 +22,49 @@ class AppShell extends StatefulWidget {
 }
 
 class _AppShellState extends State<AppShell> {
-  /// The app opens straight onto the search screen — once per app launch
-  /// (AppShell is re-created on every language switch).
-  static bool _openedSearchOnLaunch = false;
+  /// Saudi users land on the search screen, everyone else on home — once
+  /// per app launch (AppShell is re-created on every language switch).
+  static bool _launchTabChosen = false;
+
+  /// Set once the user picks a tab, so a slow country lookup never yanks
+  /// them off a tab they chose.
+  bool _userPickedTab = false;
 
   /// Tabs are built only once first visited. They all used to be built at
   /// launch inside the IndexedStack, so the photos feed downloaded and
   /// decoded its videos and full-size images while the user was elsewhere.
   final Set<int> _builtTabs = {};
 
-  void _goToTab(int i) => NavState.tab.value = i;
+  void _goToTab(int i) {
+    _userPickedTab = true;
+    NavState.tab.value = i;
+  }
+
+  /// Opens the search tab on launch when the country is Saudi Arabia. The
+  /// country is only known after [_detectCountry], so the app starts on home
+  /// and switches if the user is still there untouched.
+  void _chooseLaunchTab() {
+    if (_launchTabChosen) return;
+    _launchTabChosen = true;
+    if (!mounted || _userPickedTab || NavState.tab.value != 0) return;
+    if (CountryState.selected.value?.code == 'SA') {
+      NavState.tab.value = NavState.searchTab;
+    }
+  }
 
   @override
   void initState() {
     super.initState();
-    NavState.tab.value = _openedSearchOnLaunch ? 0 : NavState.searchTab;
-    _openedSearchOnLaunch = true;
+    NavState.tab.value = 0;
     // AppShell is re-created (via a locale-keyed `home:` in main.dart) on
     // every language switch, but CountryState itself is app-lifetime static
     // state — `detecting` only stays true before the very first detection
     // attempt ever runs, so this guard prevents re-hitting the geolocation
     // API on every subsequent language change.
     if (CountryState.detecting.value) {
-      _detectCountry();
+      _detectCountry().whenComplete(_chooseLaunchTab);
+    } else {
+      _launchTabChosen = true;
     }
   }
 

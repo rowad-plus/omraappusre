@@ -11,15 +11,15 @@ class BottomNavItemData {
       {required this.icon, required this.label, this.accent = AppColors.blue});
 }
 
-/// Mirrors `.bnav` / `.bi` — the 4-tab bottom bar (العمرة، صمم رحلتك،
-/// لقطات، المزيد). The "العمرة" tab highlights green, the rest blue.
+/// Mirrors `.bnav` / `.bi` — the 4-tab bottom bar (الرئيسية، صمم رحلتك،
+/// لقطات، المزيد). The "الرئيسية" tab highlights green, the rest blue.
 /// A search button sits in the middle; it opens the search tab via
 /// [onSearchTap] and is highlighted while [searchActive].
 class AppBottomNavBar extends StatelessWidget {
   static List<BottomNavItemData> get items => [
         BottomNavItemData(
             icon: FontAwesomeIcons.kaaba,
-            label: tr('nav.umrah'),
+            label: tr('nav.home'),
             accent: AppColors.green),
         BottomNavItemData(
             icon: FontAwesomeIcons.wandMagicSparkles, label: tr('nav.design')),
@@ -81,30 +81,23 @@ class AppBottomNavBar extends StatelessWidget {
   /// How far the search circle rises above the white bar. The widget is
   /// this much taller than the bar; that strip is transparent and only the
   /// circle in it takes taps, so the page underneath stays tappable.
-  static const rise = 23.0;
+  static const rise = 12.0;
 
   /// Total height this widget takes, including the safe-area inset.
   static double totalHeight(BuildContext context) =>
       rise + barHeight + MediaQuery.paddingOf(context).bottom;
 
-  /// The search slot inside the bar: room for the circle + the label.
+  /// The search slot inside the bar: an empty, tappable gap under the
+  /// circle (no label — the circle speaks for itself).
   Widget _searchSlot() {
     return Expanded(
-      child: GestureDetector(
-        onTap: onSearchTap,
-        behavior: HitTestBehavior.opaque,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const SizedBox(height: 22),
-            const SizedBox(height: 3),
-            Text(tr('nav.search'),
-                style: TextStyle(
-                  fontSize: 10,
-                  fontWeight: FontWeight.w900,
-                  color: searchActive ? AppColors.brandDark : AppColors.brand,
-                )),
-          ],
+      child: Semantics(
+        button: true,
+        label: tr('nav.search'),
+        child: GestureDetector(
+          onTap: onSearchTap,
+          behavior: HitTestBehavior.opaque,
+          child: const SizedBox.expand(),
         ),
       ),
     );

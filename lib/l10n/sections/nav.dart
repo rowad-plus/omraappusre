@@ -2,7 +2,7 @@
 const Map<String, Map<String, String>> navTranslations = {
   'ar': {
     'nav.search': 'بحث',
-    'nav.umrah': 'العمرة',
+    'nav.home': 'الرئيسية',
     'nav.design': 'صمم رحلتك',
     'nav.photos': 'لقطات',
     'nav.more': 'المزيد',
@@ -10,7 +10,7 @@ const Map<String, Map<String, String>> navTranslations = {
   },
   'en': {
     'nav.search': 'Search',
-    'nav.umrah': 'Umrah',
+    'nav.home': 'Home',
     'nav.design': 'Plan Your Trip',
     'nav.photos': 'Photos',
     'nav.more': 'More',
@@ -18,7 +18,7 @@ const Map<String, Map<String, String>> navTranslations = {
   },
   'fr': {
     'nav.search': 'Recherche',
-    'nav.umrah': 'Omra',
+    'nav.home': 'Accueil',
     'nav.design': 'Planifiez votre voyage',
     'nav.photos': 'Photos',
     'nav.more': 'Plus',
@@ -26,7 +26,7 @@ const Map<String, Map<String, String>> navTranslations = {
   },
   'tr': {
     'nav.search': 'Ara',
-    'nav.umrah': 'Umre',
+    'nav.home': 'Ana Sayfa',
     'nav.design': 'Seyahatini Planla',
     'nav.photos': 'Fotoğraflar',
     'nav.more': 'Diğer',
@@ -34,7 +34,7 @@ const Map<String, Map<String, String>> navTranslations = {
   },
   'id': {
     'nav.search': 'Cari',
-    'nav.umrah': 'Umrah',
+    'nav.home': 'Beranda',
     'nav.design': 'Rencanakan Perjalanan',
     'nav.photos': 'Foto',
     'nav.more': 'Lainnya',
@@ -42,7 +42,7 @@ const Map<String, Map<String, String>> navTranslations = {
   },
   'ur': {
     'nav.search': 'تلاش',
-    'nav.umrah': 'عمرہ',
+    'nav.home': 'ہوم',
     'nav.design': 'اپنا سفر بنائیں',
     'nav.photos': 'تصاویر',
     'nav.more': 'مزید',
@@ -50,7 +50,7 @@ const Map<String, Map<String, String>> navTranslations = {
   },
   'ms': {
     'nav.search': 'Cari',
-    'nav.umrah': 'Umrah',
+    'nav.home': 'Utama',
     'nav.design': 'Rancang Perjalanan Anda',
     'nav.photos': 'Foto',
     'nav.more': 'Lagi',
