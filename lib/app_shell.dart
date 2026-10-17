@@ -36,20 +36,8 @@ class _AppShellState extends State<AppShell> {
   @override
   void initState() {
     super.initState();
-    NavState.tab.value = 0;
-    if (!_openedSearchOnLaunch) {
-      _openedSearchOnLaunch = true;
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (!mounted) return;
-        Navigator.of(context).push(PageRouteBuilder(
-          transitionDuration: Duration.zero,
-          reverseTransitionDuration: const Duration(milliseconds: 200),
-          pageBuilder: (_, __, ___) => const UmrahResultsScreen(),
-          transitionsBuilder: (_, anim, __, child) =>
-              FadeTransition(opacity: anim, child: child),
-        ));
-      });
-    }
+    NavState.tab.value = _openedSearchOnLaunch ? 0 : NavState.searchTab;
+    _openedSearchOnLaunch = true;
     // AppShell is re-created (via a locale-keyed `home:` in main.dart) on
     // every language switch, but CountryState itself is app-lifetime static
     // state — `detecting` only stays true before the very first detection
@@ -133,21 +121,30 @@ class _AppShellState extends State<AppShell> {
       const DesignHubScreen(),
       const PhotosScreen(),
       const MoreScreen(),
+      const UmrahResultsScreen(), // NavState.searchTab
     ];
     return ValueListenableBuilder<int>(
       valueListenable: NavState.tab,
       builder: (context, index, _) {
         _builtTabs.add(index);
-        return Scaffold(
-          body: IndexedStack(index: index, children: [
-            for (var i = 0; i < screens.length; i++)
-              _builtTabs.contains(i) ? screens[i] : const SizedBox.shrink(),
-          ]),
-          bottomNavigationBar: AppBottomNavBar(
-            currentIndex: index,
-            onTap: _goToTab,
-            onSearchTap: () => Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => const UmrahResultsScreen())),
+        // Back on any tab other than the first goes to the first tab
+        // instead of closing the app.
+        return PopScope(
+          canPop: index == 0,
+          onPopInvokedWithResult: (didPop, _) {
+            if (!didPop) _goToTab(0);
+          },
+          child: Scaffold(
+            body: IndexedStack(index: index, children: [
+              for (var i = 0; i < screens.length; i++)
+                _builtTabs.contains(i) ? screens[i] : const SizedBox.shrink(),
+            ]),
+            bottomNavigationBar: AppBottomNavBar(
+              currentIndex: index,
+              searchActive: index == NavState.searchTab,
+              onTap: _goToTab,
+              onSearchTap: () => _goToTab(NavState.searchTab),
+            ),
           ),
         );
       },

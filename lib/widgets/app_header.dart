@@ -90,7 +90,7 @@ class _HeaderIconGroup extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        _CountryButton(),
+        const CountryButton(),
         const SizedBox(width: 12),
         _HdrIcon(icon: FontAwesomeIcons.magnifyingGlass, onTap: onSearchTap),
         const SizedBox(width: 12),
@@ -135,7 +135,10 @@ class _HeaderIconGroup extends StatelessWidget {
   }
 }
 
-class _CountryButton extends StatelessWidget {
+/// Flag of the selected country; opens the country picker.
+class CountryButton extends StatelessWidget {
+  const CountryButton({super.key});
+
   @override
   Widget build(BuildContext context) {
     return GestureDetector(

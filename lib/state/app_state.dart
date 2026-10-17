@@ -4,6 +4,7 @@ import '../models/api_booking.dart';
 import '../models/api_company.dart';
 import '../models/api_notification.dart';
 import '../models/design_option.dart';
+import '../models/design_request.dart';
 import '../models/api_post.dart';
 import '../models/api_tracking.dart';
 import '../models/api_trip.dart';
@@ -791,6 +792,21 @@ class AppState extends ChangeNotifier {
               ),
           ],
       };
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /// The signed-in customer's "صمّم عمرتك" requests with their admin-set
+  /// status, newest first. Null on failure (so the screen can tell an
+  /// error apart from "no requests").
+  Future<List<UmrahDesignRequest>?> fetchDesignRequests() async {
+    try {
+      final res = await api.get('/design-umrah/mine') as Map<String, dynamic>;
+      return [
+        for (final r in (res['data'] as List<dynamic>))
+          UmrahDesignRequest.fromJson(r as Map<String, dynamic>),
+      ];
     } catch (_) {
       return null;
     }

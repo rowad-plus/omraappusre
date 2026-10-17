@@ -5,7 +5,6 @@ import '../models/provider_company.dart';
 import '../models/post.dart';
 import '../models/order.dart';
 import '../models/umrah_result.dart';
-import '../models/design_request.dart';
 
 /// Static content mirroring the inline JS data literals in rehlaty.html
 /// (home cards, provider scrollers, feed posts, orders, companies).
@@ -1838,28 +1837,6 @@ class SeedData {
       action: 'order.ord4.action',
     ),
   };
-
-  // ── Design requests (submitted via "صمّم عمرتك") ──
-  static const umrahDesignRequest = UmrahDesignRequest(
-    id: '#DR-2025-014',
-    date: 'design_request.sample.date',
-    stage: DesignRequestStage.contacted,
-    startPoint: 'design.option.makkah_then_madinah',
-    adults: 2,
-    makkaDays: 7,
-    madinaDays: 3,
-    hotelStars: 'design.option.star_5',
-    roomType: 'design.option.double_room',
-    hotelPrefs: [
-      'design.option.near_haram',
-      'design.option.breakfast_included'
-    ],
-    departureCity: 'city.cairo',
-    flightClass: 'design.option.economy',
-    extraService: 'design.option.umrah_visa',
-    name: 'محمد رزق',
-    phone: '+20 100 123 4567',
-  );
 }
 
 class _ExtraName {

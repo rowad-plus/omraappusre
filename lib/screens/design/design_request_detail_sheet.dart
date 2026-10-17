@@ -3,9 +3,10 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../../core/theme/app_colors.dart';
 import '../../l10n/translations.dart';
 import '../../models/design_request.dart';
+import 'my_design_requests_screen.dart';
 
-/// Details of a previously submitted "صمّم عمرتك" wizard request — shows the
-/// exact inputs collected by the wizard plus a status tracker. Unlike
+/// Details of a submitted "صمّم عمرتك" wizard request — the inputs sent from
+/// the wizard plus a tracker of the admin-set status. Unlike
 /// [OrderDetailSheet] this is not a confirmed booking: no bus/hotel
 /// assignment, no price, no "تواصل مع المشرف".
 class DesignRequestDetailSheet extends StatelessWidget {
@@ -13,10 +14,9 @@ class DesignRequestDetailSheet extends StatelessWidget {
   const DesignRequestDetailSheet({super.key, required this.request});
 
   static List<(DesignRequestStage, String)> get _stages => [
-        (DesignRequestStage.accepted, tr('design.tracker.accepted')),
-        (DesignRequestStage.contacted, tr('design.tracker.contacted')),
-        (DesignRequestStage.prepared, tr('design.tracker.prepared')),
-        (DesignRequestStage.completed, tr('design.tracker.completed')),
+        (DesignRequestStage.received, tr('design.tracker.received')),
+        (DesignRequestStage.reviewed, tr('design.tracker.reviewed')),
+        (DesignRequestStage.completed, tr('design.tracker.done')),
       ];
 
   @override
@@ -60,27 +60,37 @@ class DesignRequestDetailSheet extends StatelessWidget {
                         size: 14, color: AppColors.muted)),
               ),
             ]),
-            Text('${request.id} · ${request.date}',
+            Text('${request.ref} · ${formatDesignDate(request.createdAt)}',
                 style: const TextStyle(fontSize: 11, color: AppColors.muted)),
             const SizedBox(height: 16),
             _statusTracker(),
             _section(tr('design.step1.title'), FontAwesomeIcons.route, [
               (tr('design.field.start_point'), tr(request.startPoint)),
-              (
-                tr('design.field.travelers_count'),
-                '${request.adults} ${tr('design.unit.adult')}'
-              ),
+              (tr('design.field.adults'), '${request.adults}'),
+              if (request.children > 0)
+                (tr('design.field.children'), '${request.children}'),
+              if (request.infants > 0)
+                (tr('design.field.infants'), '${request.infants}'),
+              (tr('design.field.travel_date'), request.travelDate ?? ''),
               (
                 tr('design.field.makka_days'),
                 '${request.makkaDays} ${tr('design.unit.days')}'
               ),
-              (
-                tr('design.field.madina_days'),
-                '${request.madinaDays} ${tr('design.unit.days')}'
-              ),
+              if (request.madinaDays > 0)
+                (
+                  tr('design.field.madina_days'),
+                  '${request.madinaDays} ${tr('design.unit.days')}'
+                ),
             ]),
             _section(tr('design.step2.title'), FontAwesomeIcons.bed, [
-              (tr('design.field.hotel_rating_makkah'), tr(request.hotelStars)),
+              (
+                tr('design.field.hotel_rating_makkah'),
+                tr(request.hotelStarsMakkah)
+              ),
+              (
+                tr('design.field.hotel_rating_madinah'),
+                tr(request.hotelStarsMadinah)
+              ),
               (tr('design.field.room_type'), tr(request.roomType)),
               if (request.hotelPrefs.isNotEmpty)
                 (
@@ -89,22 +99,33 @@ class DesignRequestDetailSheet extends StatelessWidget {
                 ),
             ]),
             _section(tr('design.step3.title'), FontAwesomeIcons.plane, [
+              (
+                tr('design.field.departure_country'),
+                tr(request.departureCountry)
+              ),
               (tr('design.field.departure_city'), tr(request.departureCity)),
+              (tr('design.field.flight_type'), tr(request.flightType)),
               (tr('design.field.flight_class'), tr(request.flightClass)),
+              if (request.transport.isNotEmpty)
+                (
+                  tr('design.field.transport_services'),
+                  request.transport.map(tr).join('، ')
+                ),
             ]),
-            if (request.extraService != null)
-              _section(
-                  tr('design.section.extra_services'), FontAwesomeIcons.solidStar, [
-                (tr('design.field.service'), tr(request.extraService!)),
+            if (request.extras.isNotEmpty)
+              _section(tr('design.section.extra_services'),
+                  FontAwesomeIcons.solidStar, [
+                (tr('design.field.service'), request.extras.map(tr).join('، ')),
               ]),
             _section(
                 tr('design.section.contact_info'), FontAwesomeIcons.solidUser, [
               (tr('design.hint.full_name'), request.name),
               (tr('design.hint.phone_number'), request.phone),
+              (tr('design.hint.email'), request.email),
             ]),
             if (request.notes.isNotEmpty)
-              _section(
-                  tr('design.section.notes'), FontAwesomeIcons.solidNoteSticky, [
+              _section(tr('design.section.notes'),
+                  FontAwesomeIcons.solidNoteSticky, [
                 ('', request.notes),
               ]),
             const SizedBox(height: 6),
@@ -131,6 +152,16 @@ class DesignRequestDetailSheet extends StatelessWidget {
   }
 
   Widget _statusTracker() {
+    if (request.stage == DesignRequestStage.cancelled) {
+      return Container(
+        margin: const EdgeInsets.only(bottom: 12),
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+            color: const Color(0xFFFEF2F2),
+            borderRadius: BorderRadius.circular(12)),
+        child: DesignStageBar(stage: request.stage),
+      );
+    }
     final currentIndex = _stages.indexWhere((s) => s.$1 == request.stage);
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
@@ -141,6 +172,12 @@ class DesignRequestDetailSheet extends StatelessWidget {
         for (var i = 0; i < _stages.length; i++)
           _stageRow(_stages[i].$2,
               done: i <= currentIndex, isLast: i == _stages.length - 1),
+        if (request.updatedAt != null) ...[
+          const SizedBox(height: 10),
+          Text(
+              '${tr('design.my_requests.updated')}: ${formatDesignDate(request.updatedAt)}',
+              style: const TextStyle(fontSize: 11, color: AppColors.muted)),
+        ],
       ]),
     );
   }
@@ -178,7 +215,8 @@ class DesignRequestDetailSheet extends StatelessWidget {
     ]);
   }
 
-  Widget _section(String title, FaIconData icon, List<(String, String)> allRows) {
+  Widget _section(
+      String title, FaIconData icon, List<(String, String)> allRows) {
     final rows = allRows.where((r) => r.$2.trim().isNotEmpty).toList();
     if (rows.isEmpty) return const SizedBox.shrink();
     return Container(

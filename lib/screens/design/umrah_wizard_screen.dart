@@ -1,3 +1,4 @@
+import 'my_design_requests_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:provider/provider.dart';
@@ -72,7 +73,15 @@ class _UmrahWizardScreenState extends State<UmrahWizardScreen> {
   bool get _makkahOnly => _startPoint == 'مكة فقط';
 
   // Longest first so "+966…" isn't split as "+96…".
-  static const _dialCodes = ['+966', '+971', '+965', '+974', '+962', '+212', '+20'];
+  static const _dialCodes = [
+    '+966',
+    '+971',
+    '+965',
+    '+974',
+    '+962',
+    '+212',
+    '+20'
+  ];
 
   @override
   void initState() {
@@ -94,20 +103,28 @@ class _UmrahWizardScreenState extends State<UmrahWizardScreen> {
   /// Contact step comes pre-filled from the signed-in account (like the
   /// website's form); only empty fields are filled, so edits are kept.
   static const _dialByCountry = {
-    'SA': '+966', 'EG': '+20', 'AE': '+971', 'KW': '+965', 'QA': '+974', 'JO': '+962', 'MA': '+212',
+    'SA': '+966',
+    'EG': '+20',
+    'AE': '+971',
+    'KW': '+965',
+    'QA': '+974',
+    'JO': '+962',
+    'MA': '+212',
   };
 
   void _prefillFromAccount() {
     final app = context.read<AppState>();
     if (!app.isLoggedIn) {
-      _countryCode = _dialByCountry[CountryState.selected.value?.code] ?? _countryCode;
+      _countryCode =
+          _dialByCountry[CountryState.selected.value?.code] ?? _countryCode;
       return;
     }
     if (_nameCtrl.text.trim().isEmpty) _nameCtrl.text = app.userName;
     if (_emailCtrl.text.trim().isEmpty) _emailCtrl.text = app.userEmail ?? '';
     final phone = (app.userPhone ?? '').replaceAll(' ', '');
     if (_phoneCtrl.text.trim().isEmpty && phone.isNotEmpty) {
-      final code = _dialCodes.firstWhere((c) => phone.startsWith(c), orElse: () => '');
+      final code =
+          _dialCodes.firstWhere((c) => phone.startsWith(c), orElse: () => '');
       if (code.isNotEmpty) {
         _countryCode = code;
         _phoneCtrl.text = phone.substring(code.length);
@@ -144,8 +161,11 @@ class _UmrahWizardScreenState extends State<UmrahWizardScreen> {
 
   /// Required parts of a step, checked before moving on (like the website).
   String? _stepError(int step) {
-    if (step == 0 && _startPoint == null) return tr('design.error.missing_start');
-    if (step == 3 && (_nameCtrl.text.trim().isEmpty || _phoneCtrl.text.trim().isEmpty)) {
+    if (step == 0 && _startPoint == null) {
+      return tr('design.error.missing_start');
+    }
+    if (step == 3 &&
+        (_nameCtrl.text.trim().isEmpty || _phoneCtrl.text.trim().isEmpty)) {
       return tr('design.error.missing_contact');
     }
     return null;
@@ -197,7 +217,8 @@ class _UmrahWizardScreenState extends State<UmrahWizardScreen> {
       daysInMakkah: _makkaDays,
       daysInMadinah: _makkahOnly ? 0 : _madinaDays,
       hotelStarsMakkah: _makkaStars == 'لا يهم' ? null : _makkaStars,
-      hotelStarsMadinah: _makkahOnly || _madinaStars == 'لا يهم' ? null : _madinaStars,
+      hotelStarsMadinah:
+          _makkahOnly || _madinaStars == 'لا يهم' ? null : _madinaStars,
       hotelPrefs: _hotelPrefs.toList(),
       transport: _transport.toList(),
       departureCountry: _departureCountry,
@@ -235,15 +256,24 @@ class _UmrahWizardScreenState extends State<UmrahWizardScreen> {
             textAlign: TextAlign.center),
         content: Text(tr('design.dialog.submitted_body'),
             textAlign: TextAlign.center),
+        actionsAlignment: MainAxisAlignment.center,
         actions: [
-          Center(
-            child: TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-                Navigator.of(context).popUntil((r) => r.isFirst);
-              },
-              child: Text(tr('design.dialog.ok')),
-            ),
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+              Navigator.of(context).popUntil((r) => r.isFirst);
+            },
+            child: Text(tr('design.dialog.ok')),
+          ),
+          // Straight to the request's status tracker.
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+              Navigator.of(context).pushReplacement(MaterialPageRoute(
+                  builder: (_) => const MyDesignRequestsScreen()));
+            },
+            child: Text(tr('design.dialog.track'),
+                style: const TextStyle(fontWeight: FontWeight.w800)),
           ),
         ],
       ),
@@ -381,7 +411,9 @@ class _UmrahWizardScreenState extends State<UmrahWizardScreen> {
       padding: EdgeInsets.symmetric(vertical: 12),
       child: Center(
           child: SizedBox(
-              width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2))),
+              width: 18,
+              height: 18,
+              child: CircularProgressIndicator(strokeWidth: 2))),
     );
   }
 
@@ -407,7 +439,11 @@ class _UmrahWizardScreenState extends State<UmrahWizardScreen> {
       _Label(tr('design.field.start_point')),
       for (final p in const [
         ('مكة أولاً', 'design.option.makkah_first', FontAwesomeIcons.kaaba),
-        ('المدينة أولاً', 'design.option.madinah_first', FontAwesomeIcons.mosque),
+        (
+          'المدينة أولاً',
+          'design.option.madinah_first',
+          FontAwesomeIcons.mosque
+        ),
         ('مكة فقط', 'design.option.makkah_only', FontAwesomeIcons.solidMoon),
       ])
         Padding(
@@ -423,25 +459,33 @@ class _UmrahWizardScreenState extends State<UmrahWizardScreen> {
       _RowInput(
         label: tr('design.field.adults'),
         child: _Counter(
-            value: _adults, min: 1, max: 20, onChanged: (v) => setState(() => _adults = v)),
+            value: _adults,
+            min: 1,
+            max: 20,
+            onChanged: (v) => setState(() => _adults = v)),
       ),
       _RowInput(
         label: tr('design.field.children'),
         child: _Counter(
-            value: _children, min: 0, max: 10, onChanged: (v) => setState(() => _children = v)),
+            value: _children,
+            min: 0,
+            max: 10,
+            onChanged: (v) => setState(() => _children = v)),
       ),
       _RowInput(
         label: tr('design.field.infants'),
         child: _Counter(
-            value: _infants, min: 0, max: 5, onChanged: (v) => setState(() => _infants = v)),
+            value: _infants,
+            min: 0,
+            max: 5,
+            onChanged: (v) => setState(() => _infants = v)),
       ),
     ]);
   }
 
   Widget _stepStay() {
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      _StepHeader(
-          title: tr('design.step2.title'), subtitle: ''),
+      _StepHeader(title: tr('design.step2.title'), subtitle: ''),
       _Label(tr('design.field.stay_duration')),
       Row(children: [
         Expanded(
@@ -461,7 +505,8 @@ class _UmrahWizardScreenState extends State<UmrahWizardScreen> {
               controller: _madinaDaysCtrl,
               onDecrement: () => _setMadinaDays(_madinaDays - 1),
               onIncrement: () => _setMadinaDays(_madinaDays + 1),
-              onChangedText: (t) => _setMadinaDays(int.tryParse(t) ?? _madinaDays),
+              onChangedText: (t) =>
+                  _setMadinaDays(int.tryParse(t) ?? _madinaDays),
             ),
           ),
         ],
@@ -469,12 +514,14 @@ class _UmrahWizardScreenState extends State<UmrahWizardScreen> {
       const SizedBox(height: 16),
       _Label(tr('design.field.hotel_rating_makkah')),
       _HotelRatingDropdown(
-          value: _makkaStars, onChanged: (v) => setState(() => _makkaStars = v!)),
+          value: _makkaStars,
+          onChanged: (v) => setState(() => _makkaStars = v!)),
       if (!_makkahOnly) ...[
         const SizedBox(height: 12),
         _Label(tr('design.field.hotel_rating_madinah')),
         _HotelRatingDropdown(
-            value: _madinaStars, onChanged: (v) => setState(() => _madinaStars = v!)),
+            value: _madinaStars,
+            onChanged: (v) => setState(() => _madinaStars = v!)),
       ],
       const SizedBox(height: 16),
       _Label(tr('design.field.preferences')),
@@ -516,7 +563,8 @@ class _UmrahWizardScreenState extends State<UmrahWizardScreen> {
       ),
       _Label(tr('design.field.departure_city')),
       _TextInput(
-          controller: _departureCityCtrl, hint: tr('design.field.departure_city')),
+          controller: _departureCityCtrl,
+          hint: tr('design.field.departure_city')),
       _Label(tr('design.field.flight_type')),
       _Grid2(children: [
         for (final f in const [
@@ -560,11 +608,16 @@ class _UmrahWizardScreenState extends State<UmrahWizardScreen> {
               border: Border.all(color: _kBorder, width: 0.5),
               borderRadius: BorderRadius.circular(10)),
           child: Row(children: [
-            const FaIcon(FontAwesomeIcons.calendarDays, size: 14, color: _kAccent),
+            const FaIcon(FontAwesomeIcons.calendarDays,
+                size: 14, color: _kAccent),
             const SizedBox(width: 8),
-            Text(_travelDate == null ? tr('design.hint.pick_date') : _isoDate(_travelDate!),
+            Text(
+                _travelDate == null
+                    ? tr('design.hint.pick_date')
+                    : _isoDate(_travelDate!),
                 style: TextStyle(
-                    fontSize: 14, color: _travelDate == null ? _kMuted : _kText)),
+                    fontSize: 14,
+                    color: _travelDate == null ? _kMuted : _kText)),
           ]),
         ),
       ),
@@ -581,8 +634,7 @@ class _UmrahWizardScreenState extends State<UmrahWizardScreen> {
 
   Widget _stepContact() {
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      _StepHeader(
-          title: tr('design.stepx.contact'), subtitle: ''),
+      _StepHeader(title: tr('design.stepx.contact'), subtitle: ''),
       _TextInput(controller: _nameCtrl, hint: tr('design.hint.full_name')),
       _PhoneField(
         countryCode: _countryCode,
@@ -618,7 +670,8 @@ class _UmrahWizardScreenState extends State<UmrahWizardScreen> {
   Widget _stepNotes() {
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       _StepHeader(title: tr('design.stepx.notes'), subtitle: ''),
-      _TextInput(controller: _notesCtrl, hint: tr('design.hint.notes'), maxLines: 6),
+      _TextInput(
+          controller: _notesCtrl, hint: tr('design.hint.notes'), maxLines: 6),
     ]);
   }
 
@@ -636,36 +689,67 @@ class _UmrahWizardScreenState extends State<UmrahWizardScreen> {
     }
 
     final rows = <(String, String)>[
-      (tr('design.field.start_point'), pick(_startPoint, const [
-        ('مكة أولاً', 'design.option.makkah_first'),
-        ('المدينة أولاً', 'design.option.madinah_first'),
-        ('مكة فقط', 'design.option.makkah_only'),
-      ])),
-      (tr('design.field.travelers_count'),
-          '$_adults ${tr('design.unit.adult')}${_children > 0 ? ' + $_children ${tr('design.field.children')}' : ''}${_infants > 0 ? ' + $_infants ${tr('design.field.infants')}' : ''}'),
-      (tr('design.field.stay_duration'),
-          '${_makkaDays + (_makkahOnly ? 0 : _madinaDays)} ${tr('design.unit.days')}'),
-      if (_makkaStars != 'لا يهم') (tr('design.field.hotel_rating_makkah'), _makkaStars),
-      if (!_makkahOnly && _madinaStars != 'لا يهم') (tr('design.field.hotel_rating_madinah'), _madinaStars),
-      if (_hotelPrefs.isNotEmpty) (tr('design.field.preferences'), labels('hotel_pref', _hotelPrefs)),
-      if (_transport.isNotEmpty) (tr('design.field.transport_services'), labels('transport', _transport)),
-      if (_departureCountry != null) (tr('design.field.departure_country'), _departureCountry!),
-      if (_departureCityCtrl.text.trim().isNotEmpty) (tr('design.field.departure_city'), _departureCityCtrl.text.trim()),
-      if (_flightType != null) (tr('design.field.flight_type'), pick(_flightType, const [
-        ('ذهاب وإياب', 'design.option.round_trip'),
-        ('ذهاب فقط', 'design.option.one_way'),
-      ])),
-      if (_flightClass != null) (tr('design.field.flight_class'), pick(_flightClass, const [
-        ('اقتصادية', 'design.option.economy'),
-        ('رجال الأعمال', 'design.option.business_class'),
-        ('الدرجة الأولى', 'design.option.first_class'),
-      ])),
-      if (_travelDate != null) (tr('design.field.travel_date'), _isoDate(_travelDate!)),
-      if (_roomType != null) (tr('design.field.room_type'), labels('room_type', {_roomType!})),
+      (
+        tr('design.field.start_point'),
+        pick(_startPoint, const [
+          ('مكة أولاً', 'design.option.makkah_first'),
+          ('المدينة أولاً', 'design.option.madinah_first'),
+          ('مكة فقط', 'design.option.makkah_only'),
+        ])
+      ),
+      (
+        tr('design.field.travelers_count'),
+        '$_adults ${tr('design.unit.adult')}${_children > 0 ? ' + $_children ${tr('design.field.children')}' : ''}${_infants > 0 ? ' + $_infants ${tr('design.field.infants')}' : ''}'
+      ),
+      (
+        tr('design.field.stay_duration'),
+        '${_makkaDays + (_makkahOnly ? 0 : _madinaDays)} ${tr('design.unit.days')}'
+      ),
+      if (_makkaStars != 'لا يهم')
+        (tr('design.field.hotel_rating_makkah'), _makkaStars),
+      if (!_makkahOnly && _madinaStars != 'لا يهم')
+        (tr('design.field.hotel_rating_madinah'), _madinaStars),
+      if (_hotelPrefs.isNotEmpty)
+        (tr('design.field.preferences'), labels('hotel_pref', _hotelPrefs)),
+      if (_transport.isNotEmpty)
+        (
+          tr('design.field.transport_services'),
+          labels('transport', _transport)
+        ),
+      if (_departureCountry != null)
+        (tr('design.field.departure_country'), _departureCountry!),
+      if (_departureCityCtrl.text.trim().isNotEmpty)
+        (tr('design.field.departure_city'), _departureCityCtrl.text.trim()),
+      if (_flightType != null)
+        (
+          tr('design.field.flight_type'),
+          pick(_flightType, const [
+            ('ذهاب وإياب', 'design.option.round_trip'),
+            ('ذهاب فقط', 'design.option.one_way'),
+          ])
+        ),
+      if (_flightClass != null)
+        (
+          tr('design.field.flight_class'),
+          pick(_flightClass, const [
+            ('اقتصادية', 'design.option.economy'),
+            ('رجال الأعمال', 'design.option.business_class'),
+            ('الدرجة الأولى', 'design.option.first_class'),
+          ])
+        ),
+      if (_travelDate != null)
+        (tr('design.field.travel_date'), _isoDate(_travelDate!)),
+      if (_roomType != null)
+        (tr('design.field.room_type'), labels('room_type', {_roomType!})),
       (tr('design.hint.full_name'), _nameCtrl.text.trim()),
-      (tr('design.hint.phone_number'), '$_countryCode ${_phoneCtrl.text.trim()}'),
-      if (_emailCtrl.text.trim().isNotEmpty) (tr('design.hint.email'), _emailCtrl.text.trim()),
-      if (_notesCtrl.text.trim().isNotEmpty) (tr('design.stepx.notes'), _notesCtrl.text.trim()),
+      (
+        tr('design.hint.phone_number'),
+        '$_countryCode ${_phoneCtrl.text.trim()}'
+      ),
+      if (_emailCtrl.text.trim().isNotEmpty)
+        (tr('design.hint.email'), _emailCtrl.text.trim()),
+      if (_notesCtrl.text.trim().isNotEmpty)
+        (tr('design.stepx.notes'), _notesCtrl.text.trim()),
     ];
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       _StepHeader(title: tr('design.stepx.review'), subtitle: ''),
@@ -677,11 +761,14 @@ class _UmrahWizardScreenState extends State<UmrahWizardScreen> {
           child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
             SizedBox(
                 width: 120,
-                child: Text(r.$1, style: const TextStyle(fontSize: 12.5, color: _kMuted))),
+                child: Text(r.$1,
+                    style: const TextStyle(fontSize: 12.5, color: _kMuted))),
             Expanded(
                 child: Text(r.$2,
                     style: const TextStyle(
-                        fontSize: 13.5, fontWeight: FontWeight.w600, color: _kText))),
+                        fontSize: 13.5,
+                        fontWeight: FontWeight.w600,
+                        color: _kText))),
           ]),
         ),
     ]);
@@ -874,7 +961,10 @@ class _Counter extends StatelessWidget {
   final int max;
   final ValueChanged<int> onChanged;
   const _Counter(
-      {required this.value, this.min = 1, this.max = 99, required this.onChanged});
+      {required this.value,
+      this.min = 1,
+      this.max = 99,
+      required this.onChanged});
 
   @override
   Widget build(BuildContext context) {
@@ -1058,7 +1148,8 @@ class _PhoneField extends StatelessWidget {
               textDirection: TextDirection.ltr,
               style: const TextStyle(fontSize: 14, color: _kText),
               decoration: InputDecoration(
-                hintText: _hintByCode[countryCode] ?? tr('design.hint.phone_number'),
+                hintText:
+                    _hintByCode[countryCode] ?? tr('design.hint.phone_number'),
                 hintStyle: const TextStyle(color: _kMuted, fontSize: 14),
                 contentPadding:
                     const EdgeInsets.symmetric(horizontal: 12, vertical: 10),

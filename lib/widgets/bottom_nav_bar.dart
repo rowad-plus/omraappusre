@@ -13,8 +13,8 @@ class BottomNavItemData {
 
 /// Mirrors `.bnav` / `.bi` — the 4-tab bottom bar (العمرة، صمم رحلتك،
 /// لقطات، المزيد). The "العمرة" tab highlights green, the rest blue.
-/// A search button sits in the middle; it isn't a tab — it pushes the
-/// search screen via [onSearchTap] and never becomes "selected".
+/// A search button sits in the middle; it opens the search tab via
+/// [onSearchTap] and is highlighted while [searchActive].
 class AppBottomNavBar extends StatelessWidget {
   static List<BottomNavItemData> get items => [
         BottomNavItemData(

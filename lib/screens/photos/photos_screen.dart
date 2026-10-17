@@ -15,7 +15,7 @@ import '../../widgets/h_scroll_auto.dart';
 import '../auth/login_sheet.dart';
 import '../company/company_profile_screen.dart';
 import '../trip_detail/trip_detail_screen.dart';
-import '../umrah_results/umrah_results_screen.dart';
+import '../../state/nav_state.dart';
 import 'comments_sheet.dart';
 import 'post_modal.dart';
 import 'tiktok_viewer.dart';
@@ -175,8 +175,7 @@ class _PhotosScreenState extends State<PhotosScreen> {
     return Scaffold(
       backgroundColor: AppColors.bg,
       appBar: AppHeader(
-        onSearchTap: () => Navigator.of(context).push(
-            MaterialPageRoute(builder: (_) => const UmrahResultsScreen())),
+        onSearchTap: NavState.openSearch,
         onSignInTap: () => openLoginSheet(context),
       ),
       body: Column(children: [

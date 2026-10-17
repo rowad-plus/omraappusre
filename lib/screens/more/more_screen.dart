@@ -8,7 +8,7 @@ import '../../services/live_updates.dart';
 import '../../state/app_state.dart';
 import '../../widgets/app_header.dart';
 import '../auth/login_sheet.dart';
-import '../umrah_results/umrah_results_screen.dart';
+import '../../state/nav_state.dart';
 import 'comparisons_screen.dart';
 import 'favorites_screen.dart';
 import 'my_trips_screen.dart';
@@ -60,7 +60,7 @@ class _MoreScreenState extends State<MoreScreen> with LiveReload<MoreScreen> {
     return Scaffold(
       backgroundColor: AppColors.bg,
       appBar: AppHeader(
-        onSearchTap: () => _push(context, const UmrahResultsScreen()),
+        onSearchTap: NavState.openSearch,
         onSignInTap: () => openLoginSheet(context),
       ),
       body: ListView(

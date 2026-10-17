@@ -16,7 +16,7 @@ import '../../state/country_state.dart';
 import '../../state/locale_state.dart';
 import '../../state/nav_state.dart';
 import '../../widgets/app_dropdown.dart';
-import '../../widgets/bottom_nav_bar.dart';
+import '../../widgets/app_header.dart';
 import '../../widgets/h_scroll_auto.dart';
 import '../../widgets/trip_card_parts.dart';
 import '../trip_detail/trip_detail_screen.dart';
@@ -48,9 +48,20 @@ const _kAll = '__all__';
 /// Short currency label for the date strip, from the selected country
 /// (was a hard-coded Egyptian "ج" for every country).
 const _currencyShortAr = {
-  'SAR': 'ر.س', 'EGP': 'ج.م', 'AED': 'د.إ', 'KWD': 'د.ك', 'QAR': 'ر.ق',
-  'BHD': 'د.ب', 'OMR': 'ر.ع', 'JOD': 'د.أ', 'MAD': 'د.م', 'DZD': 'د.ج',
-  'TND': 'د.ت', 'IQD': 'د.ع', 'YER': 'ر.ي', 'SDG': 'ج.س',
+  'SAR': 'ر.س',
+  'EGP': 'ج.م',
+  'AED': 'د.إ',
+  'KWD': 'د.ك',
+  'QAR': 'ر.ق',
+  'BHD': 'د.ب',
+  'OMR': 'ر.ع',
+  'JOD': 'د.أ',
+  'MAD': 'د.م',
+  'DZD': 'د.ج',
+  'TND': 'د.ت',
+  'IQD': 'د.ع',
+  'YER': 'ر.ي',
+  'SDG': 'ج.س',
 };
 String _currencyShort() {
   final code = CountryState.selected.value?.currencyCode;
@@ -62,11 +73,21 @@ String _currencyShort() {
 
 /// Arabic currency names as the API sends them → ISO code.
 const _currencyCodeByName = {
-  'ريال سعودي': 'SAR', 'جنيه مصري': 'EGP', 'درهم إماراتي': 'AED',
-  'دينار كويتي': 'KWD', 'ريال قطري': 'QAR', 'دينار بحريني': 'BHD',
-  'ريال عماني': 'OMR', 'دينار أردني': 'JOD', 'درهم مغربي': 'MAD',
-  'دينار جزائري': 'DZD', 'دينار تونسي': 'TND', 'دينار عراقي': 'IQD',
-  'ريال يمني': 'YER', 'جنيه سوداني': 'SDG', 'دولار أمريكي': 'USD',
+  'ريال سعودي': 'SAR',
+  'جنيه مصري': 'EGP',
+  'درهم إماراتي': 'AED',
+  'دينار كويتي': 'KWD',
+  'ريال قطري': 'QAR',
+  'دينار بحريني': 'BHD',
+  'ريال عماني': 'OMR',
+  'دينار أردني': 'JOD',
+  'درهم مغربي': 'MAD',
+  'دينار جزائري': 'DZD',
+  'دينار تونسي': 'TND',
+  'دينار عراقي': 'IQD',
+  'ريال يمني': 'YER',
+  'جنيه سوداني': 'SDG',
+  'دولار أمريكي': 'USD',
 };
 
 /// Currency label on a result card: Arabic UI shows the short Arabic form
@@ -96,6 +117,7 @@ class UmrahResultsScreen extends StatefulWidget {
   /// A date already picked on the search bar (`Y-m-d`) — defaults to today,
   /// same as the website's `/umrah/schedule` with no `?date=`.
   final String? initialDate;
+
   /// A trip type already picked on the search bar (API value: `economy` /
   /// `premium` / `vip`) — preselects the type filter; null means all.
   final String? initialType;
@@ -107,12 +129,14 @@ class UmrahResultsScreen extends StatefulWidget {
 
 class _UmrahResultsScreenState extends State<UmrahResultsScreen> {
   // Holds the display label [_fromApiTrip] puts on `UmrahResult.type`.
-  late String _type = switch (widget.initialType) {
-    'vip' => 'VIP',
-    'premium' => 'مميزة',
-    'economy' => 'اقتصادية',
-    _ => _kAll,
-  };
+  late String _type = _typeLabel(widget.initialType);
+
+  static String _typeLabel(String? apiType) => switch (apiType) {
+        'vip' => 'VIP',
+        'premium' => 'مميزة',
+        'economy' => 'اقتصادية',
+        _ => _kAll,
+      };
   _SortMode _sort = _SortMode.nearest;
   String _country = _kAll;
   String _city = _kAll;
@@ -154,7 +178,20 @@ class _UmrahResultsScreenState extends State<UmrahResultsScreen> {
     CountryState.selected.addListener(_onCountryChanged);
     CountryState.detecting.addListener(_onCountryChanged);
     CountryState.selectedCityId.addListener(_onCountryChanged);
+    NavState.searchRequest.addListener(_onSearchRequest);
     _maybeLoad();
+  }
+
+  /// A date/type picked on the home search bar (this screen is a tab now,
+  /// so it receives the search instead of being pushed with it).
+  void _onSearchRequest() {
+    final req = NavState.searchRequest.value;
+    if (req == null) return;
+    setState(() {
+      _selectedDate = req.date ?? _todayIso();
+      _type = _typeLabel(req.type);
+    });
+    _maybeLoad(force: true);
   }
 
   void _onCountryChanged() => _maybeLoad(force: true);
@@ -197,14 +234,16 @@ class _UmrahResultsScreenState extends State<UmrahResultsScreen> {
   }
 
   UmrahResult _fromApiTrip(ApiTrip t, String countryCode) {
-    final stars = '★' * t.hotelStars.clamp(0, 5) + '☆' * (5 - t.hotelStars.clamp(0, 5));
+    final stars =
+        '★' * t.hotelStars.clamp(0, 5) + '☆' * (5 - t.hotelStars.clamp(0, 5));
     return UmrahResult(
       apiId: t.id,
       id: '${t.id}',
       name: t.title,
       emoji: '🕋',
       bg: const LinearGradient(colors: [Color(0xFF8E6A28), Color(0xFFB8892F)]),
-      networkImage: t.thumbnail ?? (t.images != null && t.images!.isNotEmpty ? t.images!.first : null),
+      networkImage: t.thumbnail ??
+          (t.images != null && t.images!.isNotEmpty ? t.images!.first : null),
       hotel: t.hotelName ?? '',
       stars: stars,
       rating: t.hotelStars,
@@ -299,6 +338,7 @@ class _UmrahResultsScreenState extends State<UmrahResultsScreen> {
     CountryState.selected.removeListener(_onCountryChanged);
     CountryState.detecting.removeListener(_onCountryChanged);
     CountryState.selectedCityId.removeListener(_onCountryChanged);
+    NavState.searchRequest.removeListener(_onSearchRequest);
     _searchCtrl.dispose();
     super.dispose();
   }
@@ -308,37 +348,19 @@ class _UmrahResultsScreenState extends State<UmrahResultsScreen> {
     final selectedDate = DateTime.tryParse(_selectedDate) ?? DateTime.now();
     return Scaffold(
       backgroundColor: AppColors.bg,
-      bottomNavigationBar: AppBottomNavBar(
-        currentIndex: NavState.tab.value,
-        searchActive: true,
-        onSearchTap: () {},
-        onTap: (i) {
-          NavState.tab.value = i;
-          Navigator.of(context).popUntil((r) => r.isFirst);
-        },
-      ),
-      body: Column(children: [
-        Container(
+      // Only the date strip stays pinned; the header, the count row and the
+      // trips all scroll together.
+      body: CustomScrollView(slivers: [
+        SliverToBoxAdapter(
+            child: Container(
           height: 54,
           padding: const EdgeInsets.symmetric(horizontal: 14),
           decoration: const BoxDecoration(
               color: Colors.white,
               border: Border(bottom: BorderSide(color: AppColors.border))),
           child: Row(children: [
-            GestureDetector(
-              onTap: () => Navigator.of(context).maybePop(),
-              child: Container(
-                  width: 34,
-                  height: 34,
-                  decoration: BoxDecoration(
-                      color: AppColors.bg, shape: BoxShape.circle),
-                  alignment: Alignment.center,
-                  child: FaIcon(
-                      Directionality.of(context) == TextDirection.rtl
-                          ? FontAwesomeIcons.arrowRight
-                          : FontAwesomeIcons.arrowLeft,
-                      size: 14)),
-            ),
+            Image.asset('assets/images/omraway_kaaba.png',
+                width: 40, fit: BoxFit.contain),
             const SizedBox(width: 8),
             Expanded(
               child: Column(
@@ -363,6 +385,8 @@ class _UmrahResultsScreenState extends State<UmrahResultsScreen> {
                 ],
               ),
             ),
+            const CountryButton(),
+            const SizedBox(width: 8),
             GestureDetector(
               onTap: () => setState(() {
                 _searchOpen = !_searchOpen;
@@ -380,8 +404,7 @@ class _UmrahResultsScreenState extends State<UmrahResultsScreen> {
                   alignment: Alignment.center,
                   child: FaIcon(FontAwesomeIcons.magnifyingGlass,
                       size: 13,
-                      color:
-                          _searchOpen ? AppColors.green : AppColors.muted)),
+                      color: _searchOpen ? AppColors.green : AppColors.muted)),
             ),
             const SizedBox(width: 8),
             GestureDetector(
@@ -396,9 +419,10 @@ class _UmrahResultsScreenState extends State<UmrahResultsScreen> {
                       size: 13, color: AppColors.muted)),
             ),
           ]),
-        ),
+        )),
         if (_searchOpen)
-          Container(
+          SliverToBoxAdapter(
+              child: Container(
             color: Colors.white,
             padding: const EdgeInsets.fromLTRB(14, 0, 14, 10),
             child: TextField(
@@ -421,86 +445,95 @@ class _UmrahResultsScreenState extends State<UmrahResultsScreen> {
                 contentPadding: const EdgeInsets.symmetric(vertical: 10),
               ),
             ),
-          ),
-        Container(
-          color: Colors.white,
-          padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 8),
-          child: _dateStrip.isEmpty
-              ? const SizedBox(
-                  height: 66,
-                  child: Center(
-                      child: SizedBox(
-                          width: 18,
-                          height: 18,
-                          child: CircularProgressIndicator(strokeWidth: 2))))
-              : HScrollAuto(
-                  itemCount: _dateStrip.length,
-                  spacing: 6,
-                  itemBuilder: (context, i) {
-                    final entry = _dateStrip[i];
-                    final d = DateTime.parse(entry.date);
-                    final selected = entry.date == _selectedDate;
-                    return GestureDetector(
-                      key: selected ? _selectedDateKey : null,
-                      onTap: () => _onDateStripTap(entry),
-                      child: Container(
-                        width: 72,
-                        height: 66,
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 6, vertical: 6),
-                        decoration: BoxDecoration(
-                          color: selected ? AppColors.green : Colors.white,
-                          border: Border.all(
-                              color:
-                                  selected ? AppColors.green : AppColors.border,
-                              width: 1.5),
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text(
-                                  intl.DateFormat('EEE',
-                                          LocaleState.locale.value.languageCode)
-                                      .format(d),
-                                  style: TextStyle(
-                                      fontSize: 10,
-                                      fontWeight: FontWeight.w700,
-                                      color: selected
-                                          ? Colors.white70
-                                          : AppColors.muted)),
-                              FittedBox(
-                                fit: BoxFit.scaleDown,
-                                child: Text(
-                                    intl.DateFormat('d MMM',
-                                            LocaleState.locale.value.languageCode)
+          )),
+        SliverPersistentHeader(
+          pinned: true,
+          delegate: _PinnedDateStrip(Container(
+            color: Colors.white,
+            padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 8),
+            child: _dateStrip.isEmpty
+                ? const SizedBox(
+                    height: 66,
+                    child: Center(
+                        child: SizedBox(
+                            width: 18,
+                            height: 18,
+                            child: CircularProgressIndicator(strokeWidth: 2))))
+                : HScrollAuto(
+                    itemCount: _dateStrip.length,
+                    spacing: 6,
+                    itemBuilder: (context, i) {
+                      final entry = _dateStrip[i];
+                      final d = DateTime.parse(entry.date);
+                      final selected = entry.date == _selectedDate;
+                      return GestureDetector(
+                        key: selected ? _selectedDateKey : null,
+                        onTap: () => _onDateStripTap(entry),
+                        child: Container(
+                          width: 72,
+                          height: 66,
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 6, vertical: 6),
+                          decoration: BoxDecoration(
+                            color: selected ? AppColors.green : Colors.white,
+                            border: Border.all(
+                                color: selected
+                                    ? AppColors.green
+                                    : AppColors.border,
+                                width: 1.5),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(
+                                    intl.DateFormat(
+                                            'EEE',
+                                            LocaleState
+                                                .locale.value.languageCode)
                                         .format(d),
-                                    maxLines: 1,
                                     style: TextStyle(
-                                        fontSize: 14,
+                                        fontSize: 10,
                                         fontWeight: FontWeight.w700,
                                         color: selected
-                                            ? Colors.white
+                                            ? Colors.white70
                                             : AppColors.muted)),
-                              ),
-                              Text(
-                                  entry.minPrice != null
-                                      ? '${entry.minPrice!.toInt()} ${_currencyShort()}'
-                                      : '—',
-                                  style: TextStyle(
-                                      fontSize: 10,
-                                      fontWeight: FontWeight.w700,
-                                      color: selected
-                                          ? Colors.white70
-                                          : AppColors.green)),
-                            ]),
-                      ),
-                    );
-                  },
-                ),
+                                FittedBox(
+                                  fit: BoxFit.scaleDown,
+                                  child: Text(
+                                      intl.DateFormat(
+                                              'd MMM',
+                                              LocaleState
+                                                  .locale.value.languageCode)
+                                          .format(d),
+                                      maxLines: 1,
+                                      style: TextStyle(
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w700,
+                                          color: selected
+                                              ? Colors.white
+                                              : AppColors.muted)),
+                                ),
+                                Text(
+                                    entry.minPrice != null
+                                        ? '${entry.minPrice!.toInt()} ${_currencyShort()}'
+                                        : '—',
+                                    style: TextStyle(
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.w700,
+                                        color: selected
+                                            ? Colors.white70
+                                            : AppColors.green)),
+                              ]),
+                        ),
+                      );
+                    },
+                  ),
+          )),
         ),
-        Padding(
+        SliverToBoxAdapter(
+            child: Padding(
           padding: const EdgeInsets.fromLTRB(14, 10, 14, 6),
           child: Row(children: [
             Expanded(
@@ -520,40 +553,43 @@ class _UmrahResultsScreenState extends State<UmrahResultsScreen> {
                     .format(selectedDate),
                 style: const TextStyle(fontSize: 11, color: AppColors.muted)),
           ]),
-        ),
-        Expanded(
-          child: _loading
-              ? const Center(
+        )),
+        if (_loading)
+          const SliverFillRemaining(
+              hasScrollBody: false,
+              child: Center(
                   child: SizedBox(
                       width: 22,
                       height: 22,
-                      child: CircularProgressIndicator(strokeWidth: 2)))
-              : _results.isEmpty
-              ? Center(
+                      child: CircularProgressIndicator(strokeWidth: 2))))
+        else if (_results.isEmpty)
+          SliverFillRemaining(
+              hasScrollBody: false,
+              child: Center(
                   child: Text(tr('trip.list.no_results'),
-                      style: const TextStyle(color: AppColors.muted)))
-              : ListView.builder(
-                  padding: const EdgeInsets.fromLTRB(14, 0, 14, 14),
-                  itemCount: _results.length,
-                  itemBuilder: (context, i) {
-                    final trip = _results[i].toTrip(
-                        date: intl.DateFormat('d MMMM yyyy',
-                                LocaleState.locale.value.languageCode)
-                            .format(selectedDate));
-                    return _ResultCard(
-                      result: _results[i],
-                      onTap: () => Navigator.of(context).push(
-                          MaterialPageRoute(
-                              builder: (_) => TripDetailScreen(
-                                  trip: trip, initialDate: _selectedDate))),
-                      onBook: () => Navigator.of(context).push(
-                          MaterialPageRoute(
-                              builder: (_) => BookingSheet(
-                                  trip: trip, initialDate: _selectedDate))),
-                    );
-                  },
-                ),
-        ),
+                      style: const TextStyle(color: AppColors.muted))))
+        else
+          SliverPadding(
+            padding: const EdgeInsets.fromLTRB(14, 0, 14, 14),
+            sliver: SliverList.builder(
+              itemCount: _results.length,
+              itemBuilder: (context, i) {
+                final trip = _results[i].toTrip(
+                    date: intl.DateFormat('d MMMM yyyy',
+                            LocaleState.locale.value.languageCode)
+                        .format(selectedDate));
+                return _ResultCard(
+                  result: _results[i],
+                  onTap: () => Navigator.of(context).push(MaterialPageRoute(
+                      builder: (_) => TripDetailScreen(
+                          trip: trip, initialDate: _selectedDate))),
+                  onBook: () => Navigator.of(context).push(MaterialPageRoute(
+                      builder: (_) => BookingSheet(
+                          trip: trip, initialDate: _selectedDate))),
+                );
+              },
+            ),
+          ),
       ]),
     );
   }
@@ -724,6 +760,27 @@ class _UmrahResultsScreenState extends State<UmrahResultsScreen> {
   }
 }
 
+/// Keeps the date strip pinned under the status bar while the rest scrolls.
+class _PinnedDateStrip extends SliverPersistentHeaderDelegate {
+  final Widget child;
+  _PinnedDateStrip(this.child);
+
+  // 66px day cards + 10px vertical padding on each side.
+  static const _height = 86.0;
+
+  @override
+  double get minExtent => _height;
+  @override
+  double get maxExtent => _height;
+
+  @override
+  Widget build(BuildContext context, double shrinkOffset, bool overlaps) =>
+      SizedBox.expand(child: child);
+
+  @override
+  bool shouldRebuild(_PinnedDateStrip old) => true;
+}
+
 class _ResultCard extends StatelessWidget {
   final UmrahResult result;
   final VoidCallback onTap;
@@ -744,8 +801,8 @@ class _ResultCard extends StatelessWidget {
       onTap: onTap,
       child: Container(
         margin: const EdgeInsets.only(bottom: 12),
-        decoration: AppDims.card(
-            color: tier.cardColor, borderColor: tier.borderColor),
+        decoration:
+            AppDims.card(color: tier.cardColor, borderColor: tier.borderColor),
         // The border is also painted on top of the content: the footer's
         // own background otherwise covers the bottom stroke and its
         // rounded corners (the clip alone can't fix that).
@@ -756,244 +813,247 @@ class _ResultCard extends StatelessWidget {
         clipBehavior: Clip.antiAlias,
         child: Stack(children: [
           Column(children: [
-          Padding(
-            padding: const EdgeInsets.all(14),
-            child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              SizedBox(
-                width: 70,
-                height: 70,
-                child: Stack(children: [
-                  Container(
-                    clipBehavior: Clip.antiAlias,
-                    decoration: BoxDecoration(
-                        gradient: t.bg,
-                        borderRadius: BorderRadius.circular(11)),
-                    alignment: Alignment.center,
-                    child: t.networkImage != null
-                        ? CachedNetworkImage(
-                            imageUrl: t.networkImage!,
-                            fit: BoxFit.cover,
-                            width: double.infinity,
-                            height: double.infinity,
-                            fadeInDuration: const Duration(milliseconds: 150),
-                            placeholder: (_, __) => const Center(
-                                child: SizedBox(
-                                    width: 16,
-                                    height: 16,
-                                    child: CircularProgressIndicator(
-                                        strokeWidth: 2, color: Colors.white))),
-                            errorWidget: (_, __, ___) =>
-                                Text(t.emoji, style: const TextStyle(fontSize: 28)))
-                        : Text(t.emoji, style: const TextStyle(fontSize: 28)),
-                  ),
-                  // Tier badge lives above the title only (was duplicated here).
-                ]),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      if (t.featured) ...[
-                        const SuggestedBadge(),
+            Padding(
+              padding: const EdgeInsets.all(14),
+              child:
+                  Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                SizedBox(
+                  width: 70,
+                  height: 70,
+                  child: Stack(children: [
+                    Container(
+                      clipBehavior: Clip.antiAlias,
+                      decoration: BoxDecoration(
+                          gradient: t.bg,
+                          borderRadius: BorderRadius.circular(11)),
+                      alignment: Alignment.center,
+                      child: t.networkImage != null
+                          ? CachedNetworkImage(
+                              imageUrl: t.networkImage!,
+                              fit: BoxFit.cover,
+                              width: double.infinity,
+                              height: double.infinity,
+                              fadeInDuration: const Duration(milliseconds: 150),
+                              placeholder: (_, __) => const Center(
+                                  child: SizedBox(
+                                      width: 16,
+                                      height: 16,
+                                      child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                          color: Colors.white))),
+                              errorWidget: (_, __, ___) => Text(t.emoji,
+                                  style: const TextStyle(fontSize: 28)))
+                          : Text(t.emoji, style: const TextStyle(fontSize: 28)),
+                    ),
+                    // Tier badge lives above the title only (was duplicated here).
+                  ]),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        if (t.featured) ...[
+                          const SuggestedBadge(),
+                          const SizedBox(height: 4),
+                        ],
+                        // Tier shown only by the corner ribbon.
+                        Text(tr(t.name),
+                            style: const TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w900,
+                                color: AppColors.text)),
                         const SizedBox(height: 4),
-                      ],
-                      // Tier shown only by the corner ribbon.
-                      Text(tr(t.name),
-                          style: const TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w900,
-                              color: AppColors.text)),
-                      const SizedBox(height: 4),
-                      Wrap(
-                          spacing: 5,
-                          crossAxisAlignment: WrapCrossAlignment.center,
-                          children: [
-                            // Hotel only — the company is in the footer.
-                            if (t.hotel.isNotEmpty) ...[
-                              FaIcon(FontAwesomeIcons.hotel,
+                        Wrap(
+                            spacing: 5,
+                            crossAxisAlignment: WrapCrossAlignment.center,
+                            children: [
+                              // Hotel only — the company is in the footer.
+                              if (t.hotel.isNotEmpty) ...[
+                                FaIcon(FontAwesomeIcons.hotel,
+                                    size: 10, color: accent),
+                                Text(tr(t.hotel),
+                                    style: const TextStyle(
+                                        fontSize: 11, color: AppColors.muted)),
+                                const Text('·',
+                                    style: TextStyle(color: AppColors.muted)),
+                                Text(starRatingLabel(t.stars),
+                                    style: const TextStyle(
+                                        fontSize: 11, color: AppColors.gold)),
+                                const Text('·',
+                                    style: TextStyle(color: AppColors.muted)),
+                              ],
+                              FaIcon(FontAwesomeIcons.solidCalendar,
                                   size: 10, color: accent),
-                              Text(tr(t.hotel),
+                              Text(tr(t.days),
                                   style: const TextStyle(
                                       fontSize: 11, color: AppColors.muted)),
-                              const Text('·',
-                                  style: TextStyle(color: AppColors.muted)),
-                              Text(starRatingLabel(t.stars),
+                            ]),
+                        const SizedBox(height: 6),
+                        Wrap(spacing: 5, runSpacing: 5, children: [
+                          for (final f in t.feats.take(3))
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 8, vertical: 2),
+                              decoration: BoxDecoration(
+                                  color: tier.borderColor != null
+                                      ? Colors.white
+                                      : AppColors.bg,
+                                  border: Border.all(
+                                      color:
+                                          tier.borderColor ?? AppColors.border),
+                                  borderRadius: BorderRadius.circular(20)),
+                              child: Text(tr(f),
                                   style: const TextStyle(
-                                      fontSize: 11, color: AppColors.gold)),
-                              const Text('·',
-                                  style: TextStyle(color: AppColors.muted)),
-                            ],
-                            FaIcon(FontAwesomeIcons.solidCalendar,
-                                size: 10, color: accent),
-                            Text(tr(t.days),
-                                style: const TextStyle(
-                                    fontSize: 11, color: AppColors.muted)),
-                          ]),
-                      const SizedBox(height: 6),
-                      Wrap(spacing: 5, runSpacing: 5, children: [
-                        for (final f in t.feats.take(3))
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 8, vertical: 2),
-                            decoration: BoxDecoration(
-                                color: tier.borderColor != null
-                                    ? Colors.white
-                                    : AppColors.bg,
-                                border: Border.all(
-                                    color: tier.borderColor ?? AppColors.border),
-                                borderRadius: BorderRadius.circular(20)),
-                            child: Text(tr(f),
-                                style: const TextStyle(
-                                    fontSize: 10, color: AppColors.text)),
-                          ),
+                                      fontSize: 10, color: AppColors.text)),
+                            ),
+                        ]),
                       ]),
-                    ]),
-              ),
-            ]),
-          ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(14, 0, 14, 10),
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-              decoration: BoxDecoration(
-                  color: tier.softBg,
-                  borderRadius: BorderRadius.circular(9)),
-              // Every stop in order (Riyadh → Makkah → Madinah). City
-              // labels take only their own width, so the lines absorb the
-              // rest and the destination sits at the far end (left in RTL).
-              child: Row(children: [
-                for (var i = 0; i < stops.length; i++) ...[
-                  ConstrainedBox(
-                    constraints: const BoxConstraints(maxWidth: 110),
-                    child: Text(tr(stops[i].city),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                            fontSize: 11.5,
-                            fontWeight: FontWeight.w700,
-                            color: AppColors.text)),
-                  ),
-                  if (i < stops.length - 1) ...[
-                    const SizedBox(width: 6),
-                    const Expanded(child: _RouteDash()),
-                    Container(
-                        width: 22,
-                        height: 22,
-                        decoration: BoxDecoration(
-                            color: tier.gradient == null ? accent : null,
-                            gradient: tier.gradient,
-                            shape: BoxShape.circle),
-                        alignment: Alignment.center,
-                        child: Transform.scale(
-                            scaleX: Directionality.of(context) ==
-                                    TextDirection.rtl
-                                ? -1
-                                : 1,
-                            child: const FaIcon(FontAwesomeIcons.plane,
-                                size: 8, color: Colors.white))),
-                    const Expanded(child: _RouteDash()),
-                    const SizedBox(width: 6),
-                  ],
-                ],
+                ),
               ]),
             ),
-          ),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-            decoration: BoxDecoration(
-                color: tier.footerBg,
-                border: Border(top: BorderSide(color: tier.footerBorder))),
-            child: Row(children: [
-              Expanded(
+            Padding(
+              padding: const EdgeInsets.fromLTRB(14, 0, 14, 10),
+              child: Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                decoration: BoxDecoration(
+                    color: tier.softBg, borderRadius: BorderRadius.circular(9)),
+                // Every stop in order (Riyadh → Makkah → Madinah). City
+                // labels take only their own width, so the lines absorb the
+                // rest and the destination sits at the far end (left in RTL).
                 child: Row(children: [
-                  // Company logo, same 26×26 rounded box as the letter
-                  // tile it replaces (the tile stays as the fallback).
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(7),
-                    child: t.providerLogo != null
-                        ? CachedNetworkImage(
-                            imageUrl: t.providerLogo!,
-                            width: 26,
-                            height: 26,
-                            fit: BoxFit.cover,
-                            placeholder: (_, __) => _letterTile(),
-                            errorWidget: (_, __, ___) => _letterTile(),
-                          )
-                        : _letterTile(),
-                  ),
-                  const SizedBox(width: 6),
-                  Flexible(
-                    child: Text(tr(t.provider),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                            fontSize: 10.5,
-                            color: AppColors.muted,
-                            fontWeight: FontWeight.w600)),
-                  ),
+                  for (var i = 0; i < stops.length; i++) ...[
+                    ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 110),
+                      child: Text(tr(stops[i].city),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                              fontSize: 11.5,
+                              fontWeight: FontWeight.w700,
+                              color: AppColors.text)),
+                    ),
+                    if (i < stops.length - 1) ...[
+                      const SizedBox(width: 6),
+                      const Expanded(child: _RouteDash()),
+                      Container(
+                          width: 22,
+                          height: 22,
+                          decoration: BoxDecoration(
+                              color: tier.gradient == null ? accent : null,
+                              gradient: tier.gradient,
+                              shape: BoxShape.circle),
+                          alignment: Alignment.center,
+                          child: Transform.scale(
+                              scaleX: Directionality.of(context) ==
+                                      TextDirection.rtl
+                                  ? -1
+                                  : 1,
+                              child: const FaIcon(FontAwesomeIcons.plane,
+                                  size: 8, color: Colors.white))),
+                      const Expanded(child: _RouteDash()),
+                      const SizedBox(width: 6),
+                    ],
+                  ],
                 ]),
               ),
-              const SizedBox(width: 8),
-              // Company name takes all the free space (full name when it
-              // fits, ellipsis otherwise); price sits 10px before the book
-              // button, which is at the row's far end (left edge in RTL).
-              Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                FittedBox(
-                  fit: BoxFit.scaleDown,
-                  // Bold amount + a smaller currency word: in Arabic only
-                  // the first word ("ريال" / "جنيه"), otherwise the ISO code.
-                  child: Text.rich(
-                      // Arabic reads RTL: amount then currency ("110 ر.س");
-                      // other languages put the code first ("SAR 110").
-                      TextSpan(children: [
-                        for (final part in (LocaleState
-                                    .locale.value.languageCode ==
-                                'ar'
-                            ? ['amount', 'currency']
-                            : ['currency', 'amount']))
-                          part == 'amount'
-                              ? TextSpan(
-                                  text: '${t.price}',
-                                  style: const TextStyle(
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.w900))
-                              : TextSpan(
-                                  text: ' ${_cardCurrency(t.currency)} ',
-                                  style: const TextStyle(
-                                      fontSize: 11,
-                                      fontWeight: FontWeight.w600)),
-                      ]),
-                      maxLines: 1,
-                      style: TextStyle(color: accent)),
+            ),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              decoration: BoxDecoration(
+                  color: tier.footerBg,
+                  border: Border(top: BorderSide(color: tier.footerBorder))),
+              child: Row(children: [
+                Expanded(
+                  child: Row(children: [
+                    // Company logo, same 26×26 rounded box as the letter
+                    // tile it replaces (the tile stays as the fallback).
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(7),
+                      child: t.providerLogo != null
+                          ? CachedNetworkImage(
+                              imageUrl: t.providerLogo!,
+                              width: 26,
+                              height: 26,
+                              fit: BoxFit.cover,
+                              placeholder: (_, __) => _letterTile(),
+                              errorWidget: (_, __, ___) => _letterTile(),
+                            )
+                          : _letterTile(),
+                    ),
+                    const SizedBox(width: 6),
+                    Flexible(
+                      child: Text(tr(t.provider),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                              fontSize: 10.5,
+                              color: AppColors.muted,
+                              fontWeight: FontWeight.w600)),
+                    ),
+                  ]),
+                ),
+                const SizedBox(width: 8),
+                // Company name takes all the free space (full name when it
+                // fits, ellipsis otherwise); price sits 10px before the book
+                // button, which is at the row's far end (left edge in RTL).
+                Column(mainAxisSize: MainAxisSize.min, children: [
+                  FittedBox(
+                    fit: BoxFit.scaleDown,
+                    // Bold amount + a smaller currency word: in Arabic only
+                    // the first word ("ريال" / "جنيه"), otherwise the ISO code.
+                    child: Text.rich(
+                        // Arabic reads RTL: amount then currency ("110 ر.س");
+                        // other languages put the code first ("SAR 110").
+                        TextSpan(children: [
+                          for (final part
+                              in (LocaleState.locale.value.languageCode == 'ar'
+                                  ? ['amount', 'currency']
+                                  : ['currency', 'amount']))
+                            part == 'amount'
+                                ? TextSpan(
+                                    text: '${t.price}',
+                                    style: const TextStyle(
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.w900))
+                                : TextSpan(
+                                    text: ' ${_cardCurrency(t.currency)} ',
+                                    style: const TextStyle(
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.w600)),
+                        ]),
+                        maxLines: 1,
+                        style: TextStyle(color: accent)),
+                  ),
+                ]),
+                const SizedBox(width: 10),
+                GestureDetector(
+                  onTap: onBook,
+                  child: Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                    decoration: BoxDecoration(
+                        color: tier.gradient == null ? accent : null,
+                        gradient: tier.gradient,
+                        borderRadius: BorderRadius.circular(9)),
+                    child: Text(tr('trip.card.book'),
+                        style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 12.5,
+                            fontWeight: FontWeight.w800)),
+                  ),
                 ),
               ]),
-              const SizedBox(width: 10),
-              GestureDetector(
-                onTap: onBook,
-                child: Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                  decoration: BoxDecoration(
-                      color: tier.gradient == null ? accent : null,
-                      gradient: tier.gradient,
-                      borderRadius: BorderRadius.circular(9)),
-                  child: Text(tr('trip.card.book'),
-                      style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 12.5,
-                          fontWeight: FontWeight.w800)),
-                ),
-              ),
-            ]),
-          ),
-        ]),
+            ),
+          ]),
           // VIP / premium: corner ribbon is the only tier marker.
           // Smaller sash here: the result card's photo is only 70px.
-          if (t.vip) const Positioned(top: 0, right: 0, child: VipRibbon(size: 64))
-          else if (t.premium) const Positioned(top: 0, right: 0, child: VipRibbon.premium(size: 64)),
+          if (t.vip)
+            const Positioned(top: 0, right: 0, child: VipRibbon(size: 64))
+          else if (t.premium)
+            const Positioned(
+                top: 0, right: 0, child: VipRibbon.premium(size: 64)),
         ]),
       ),
     );
@@ -1006,9 +1066,7 @@ class _ResultCard extends StatelessWidget {
       alignment: Alignment.center,
       child: Text(result.providerLetter,
           style: const TextStyle(
-              color: Colors.white,
-              fontSize: 11,
-              fontWeight: FontWeight.w900)));
+              color: Colors.white, fontSize: 11, fontWeight: FontWeight.w900)));
 }
 
 class _RouteDash extends StatelessWidget {

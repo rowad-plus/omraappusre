@@ -14,7 +14,7 @@ import '../../models/provider_company.dart';
 import '../auth/login_sheet.dart';
 import '../trip_detail/trip_detail_screen.dart';
 import '../booking/booking_sheet.dart';
-import '../umrah_results/umrah_results_screen.dart';
+import '../../state/nav_state.dart';
 import '../trip_list/trip_list_screen.dart';
 import '../company/company_profile_screen.dart';
 import '../../models/trip.dart';
@@ -147,7 +147,8 @@ class _UmrahScreenState extends State<UmrahScreen> {
       case 5:
         trips = _trips.where(_visitsMadinah).toList();
       case 6:
-        trips = _trips.where((t) => t.programType == 'trip.program.hajj').toList();
+        trips =
+            _trips.where((t) => t.programType == 'trip.program.hajj').toList();
       default:
         trips = _trips;
     }
@@ -169,9 +170,7 @@ class _UmrahScreenState extends State<UmrahScreen> {
   Widget _goldCardGrid(List<Trip> trips) {
     return LayoutBuilder(builder: (context, c) {
       Widget card(Trip t) => TripCardGold(
-          trip: t,
-          onTap: () => _openDetail(t),
-          onBook: () => _openBooking(t));
+          trip: t, onTap: () => _openDetail(t), onBook: () => _openBooking(t));
       if (c.maxWidth < 600) {
         return Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -202,14 +201,12 @@ class _UmrahScreenState extends State<UmrahScreen> {
   Widget build(BuildContext context) {
     final vipTrips = _trips.where((t) => t.vip).toList();
     final premiumTrips = _trips.where((t) => t.premium).toList();
-    final economyTrips =
-        _trips.where((t) => !t.vip && !t.premium).toList();
+    final economyTrips = _trips.where((t) => !t.vip && !t.premium).toList();
 
     return Scaffold(
       backgroundColor: AppColors.bg,
       appBar: AppHeader(
-        onSearchTap: () => Navigator.of(context).push(
-            MaterialPageRoute(builder: (_) => const UmrahResultsScreen())),
+        onSearchTap: NavState.openSearch,
         onSignInTap: () => openLoginSheet(context),
       ),
       body: SingleChildScrollView(
@@ -220,12 +217,11 @@ class _UmrahScreenState extends State<UmrahScreen> {
               destIcon: FontAwesomeIcons.kaaba,
               accent: AppColors.green,
               hint: tr('trip.umrah.search_hint'),
-              onGo: (date, type) => Navigator.of(context).push(MaterialPageRoute(
-                  builder: (_) => UmrahResultsScreen(
-                      initialType: type,
-                      initialDate: date == null
-                          ? null
-                          : '${date.year.toString().padLeft(4, '0')}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}'))),
+              onGo: (date, type) => NavState.openSearch(
+                  type: type,
+                  date: date == null
+                      ? null
+                      : '${date.year.toString().padLeft(4, '0')}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}'),
             ),
             FilterChipBar(
                 labels: _filterKeys.map(tr).toList(),

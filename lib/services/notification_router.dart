@@ -5,6 +5,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:provider/provider.dart';
 
 import '../core/theme/app_colors.dart';
+import '../screens/design/my_design_requests_screen.dart';
 import '../screens/more/notifications_screen.dart';
 import '../screens/more/order_detail_sheet.dart';
 import '../state/app_state.dart';
@@ -37,6 +38,12 @@ Future<void> openNotificationTarget(Map<String, dynamic> data) async {
       );
       return;
     }
+  }
+  final designId = _asInt(data['design_request_id']);
+  if (designId != null) {
+    nav.push(MaterialPageRoute(
+        builder: (_) => MyDesignRequestsScreen(openRequestId: designId)));
+    return;
   }
   nav.push(MaterialPageRoute(builder: (_) => const NotificationsScreen()));
 }
@@ -101,9 +108,11 @@ class _InAppBanner extends StatefulWidget {
   State<_InAppBanner> createState() => _InAppBannerState();
 }
 
-class _InAppBannerState extends State<_InAppBanner> with SingleTickerProviderStateMixin {
-  late final AnimationController _anim =
-      AnimationController(vsync: this, duration: const Duration(milliseconds: 280))..forward();
+class _InAppBannerState extends State<_InAppBanner>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _anim = AnimationController(
+      vsync: this, duration: const Duration(milliseconds: 280))
+    ..forward();
 
   @override
   void dispose() {
@@ -121,7 +130,8 @@ class _InAppBannerState extends State<_InAppBanner> with SingleTickerProviderSta
       child: SafeArea(
         child: SlideTransition(
           position: Tween(begin: const Offset(0, -1.2), end: Offset.zero)
-              .animate(CurvedAnimation(parent: _anim, curve: Curves.easeOutCubic)),
+              .animate(
+                  CurvedAnimation(parent: _anim, curve: Curves.easeOutCubic)),
           child: Dismissible(
             key: const ValueKey('in-app-notification'),
             direction: DismissDirection.up,
@@ -144,7 +154,9 @@ class _InAppBannerState extends State<_InAppBanner> with SingleTickerProviderSta
                         Container(
                           width: 40,
                           height: 40,
-                          decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(12)),
+                          decoration: BoxDecoration(
+                              color: bg,
+                              borderRadius: BorderRadius.circular(12)),
                           alignment: Alignment.center,
                           child: FaIcon(icon, size: 17, color: fg),
                         ),
@@ -157,13 +169,18 @@ class _InAppBannerState extends State<_InAppBanner> with SingleTickerProviderSta
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
                                   style: const TextStyle(
-                                      fontSize: 13.5, fontWeight: FontWeight.w800, color: AppColors.text)),
+                                      fontSize: 13.5,
+                                      fontWeight: FontWeight.w800,
+                                      color: AppColors.text)),
                               if ((widget.body ?? '').isNotEmpty) ...[
                                 const SizedBox(height: 3),
                                 Text(widget.body!,
                                     maxLines: 3,
                                     overflow: TextOverflow.ellipsis,
-                                    style: const TextStyle(fontSize: 12, color: AppColors.muted, height: 1.4)),
+                                    style: const TextStyle(
+                                        fontSize: 12,
+                                        color: AppColors.muted,
+                                        height: 1.4)),
                               ],
                             ],
                           ),

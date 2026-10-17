@@ -3,6 +3,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../../core/theme/app_colors.dart';
 import '../../l10n/translations.dart';
 import '../../widgets/sub_page_header.dart';
+import 'my_design_requests_screen.dart';
 import 'umrah_wizard_screen.dart';
 
 /// Mirrors `#pg-design` — the "صمّم عمرتك بنفسك" entry point into the
@@ -79,6 +80,38 @@ class DesignHubScreen extends StatelessWidget {
                   buttonLabel: tr('design.hub.start_button'),
                   onTap: () => Navigator.of(context).push(MaterialPageRoute(
                       builder: (_) => const UmrahWizardScreen())),
+                ),
+                const SizedBox(height: 12),
+                // Status tracking of requests already sent.
+                GestureDetector(
+                  onTap: () => Navigator.of(context).push(MaterialPageRoute(
+                      builder: (_) => const MyDesignRequestsScreen())),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 14, vertical: 14),
+                    decoration: BoxDecoration(
+                        color: Colors.white,
+                        border: Border.all(color: AppColors.border),
+                        borderRadius: BorderRadius.circular(14)),
+                    child: Row(children: [
+                      const FaIcon(FontAwesomeIcons.listCheck,
+                          size: 16, color: AppColors.green),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(tr('design.hub.my_requests_button'),
+                            style: const TextStyle(
+                                fontSize: 13.5,
+                                fontWeight: FontWeight.w800,
+                                color: AppColors.text)),
+                      ),
+                      FaIcon(
+                          Directionality.of(context) == TextDirection.rtl
+                              ? FontAwesomeIcons.chevronLeft
+                              : FontAwesomeIcons.chevronRight,
+                          size: 12,
+                          color: AppColors.muted),
+                    ]),
+                  ),
                 ),
               ]),
             ),
