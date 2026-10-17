@@ -74,98 +74,119 @@ class AppBottomNavBar extends StatelessWidget {
     );
   }
 
-  /// The search button: a raised gold circle that rises above the bar so it
-  /// stands apart from the 4 tabs. Always gold; a soft halo while active.
-  Widget _searchItem() {
+  /// Height of the white bar (top border included), not counting the
+  /// device's bottom safe-area inset.
+  static const barHeight = 60.0;
+
+  /// How far the search circle rises above the white bar. The widget is
+  /// this much taller than the bar; that strip is transparent and only the
+  /// circle in it takes taps, so the page underneath stays tappable.
+  static const rise = 23.0;
+
+  /// Total height this widget takes, including the safe-area inset.
+  static double totalHeight(BuildContext context) =>
+      rise + barHeight + MediaQuery.paddingOf(context).bottom;
+
+  /// The search slot inside the bar: room for the circle + the label.
+  Widget _searchSlot() {
     return Expanded(
       child: GestureDetector(
         onTap: onSearchTap,
         behavior: HitTestBehavior.opaque,
-        child: Padding(
-          padding: const EdgeInsets.only(top: 9, bottom: 11),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // Takes the same 22px as the other icons in the layout (so the
-              // bar keeps its height) and lets the circle overflow upward.
-              SizedBox(
-                height: 22,
-                child: OverflowBox(
-                  minHeight: 54,
-                  maxHeight: 54,
-                  minWidth: 54,
-                  maxWidth: 54,
-                  alignment: Alignment.bottomCenter,
-                  child: Container(
-                    width: 54,
-                    height: 54,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      gradient: const LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: [AppColors.brandLight, AppColors.brandDark]),
-                      border: Border.all(color: Colors.white, width: 4),
-                      boxShadow: [
-                        BoxShadow(
-                            color: AppColors.brand
-                                .withValues(alpha: searchActive ? 0.55 : 0.35),
-                            blurRadius: searchActive ? 16 : 10,
-                            spreadRadius: searchActive ? 2 : 0,
-                            offset: const Offset(0, 4)),
-                      ],
-                    ),
-                    alignment: Alignment.center,
-                    child: const FaIcon(FontAwesomeIcons.magnifyingGlass,
-                        size: 20, color: Colors.white),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 3),
-              Text(tr('nav.search'),
-                  style: TextStyle(
-                    fontSize: 10,
-                    fontWeight: FontWeight.w900,
-                    color: searchActive ? AppColors.brandDark : AppColors.brand,
-                  )),
-            ],
-          ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const SizedBox(height: 22),
+            const SizedBox(height: 3),
+            Text(tr('nav.search'),
+                style: TextStyle(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w900,
+                  color: searchActive ? AppColors.brandDark : AppColors.brand,
+                )),
+          ],
         ),
+      ),
+    );
+  }
+
+  /// The search button: a raised gold circle that rises above the bar so it
+  /// stands apart from the 4 tabs. Always gold; a soft halo while active.
+  /// It lies fully inside this widget's bounds, so all of it takes taps.
+  Widget _searchCircle() {
+    return GestureDetector(
+      onTap: onSearchTap,
+      child: Container(
+        width: 54,
+        height: 54,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          gradient: const LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [AppColors.brandLight, AppColors.brandDark]),
+          border: Border.all(color: Colors.white, width: 4),
+          boxShadow: [
+            BoxShadow(
+                color: AppColors.brand
+                    .withValues(alpha: searchActive ? 0.55 : 0.35),
+                blurRadius: searchActive ? 16 : 10,
+                spreadRadius: searchActive ? 2 : 0,
+                offset: const Offset(0, 4)),
+          ],
+        ),
+        alignment: Alignment.center,
+        child: const FaIcon(FontAwesomeIcons.magnifyingGlass,
+            size: 20, color: Colors.white),
       ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        border:
-            const Border(top: BorderSide(color: AppColors.border, width: 2)),
-        boxShadow: [
-          BoxShadow(
-              color: Colors.black.withValues(alpha: 0.1),
-              blurRadius: 8,
-              offset: const Offset(0, -2))
-        ],
-      ),
-      child: SafeArea(
-        top: false,
-        child: Row(
-          children: [
-            for (var i = 0; i < items.length; i++) ...[
-              if (i == 2) _searchItem(),
-              _item(
-                  icon: items[i].icon,
-                  label: items[i].label,
-                  color: !searchActive && currentIndex == i
-                      ? items[i].accent
-                      : _idle,
-                  onTap: () => onTap(i)),
-            ],
-          ],
+    final inset = MediaQuery.paddingOf(context).bottom;
+    return SizedBox(
+      height: totalHeight(context),
+      child: Stack(children: [
+        Positioned(
+          left: 0,
+          right: 0,
+          bottom: 0,
+          height: barHeight + inset,
+          child: Container(
+            padding: EdgeInsets.only(bottom: inset),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              border: const Border(
+                  top: BorderSide(color: AppColors.border, width: 2)),
+              boxShadow: [
+                BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.1),
+                    blurRadius: 8,
+                    offset: const Offset(0, -2))
+              ],
+            ),
+            child: Row(
+              children: [
+                for (var i = 0; i < items.length; i++) ...[
+                  if (i == 2) _searchSlot(),
+                  _item(
+                      icon: items[i].icon,
+                      label: items[i].label,
+                      color: !searchActive && currentIndex == i
+                          ? items[i].accent
+                          : _idle,
+                      onTap: () => onTap(i)),
+                ],
+              ],
+            ),
+          ),
         ),
-      ),
+        // The search slot is the middle of 5 equal slots, so the circle
+        // sits at the horizontal centre in both RTL and LTR.
+        Positioned(
+            top: 0, left: 0, right: 0, child: Center(child: _searchCircle())),
+      ]),
     );
   }
 }

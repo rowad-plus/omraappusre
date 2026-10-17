@@ -134,17 +134,48 @@ class _AppShellState extends State<AppShell> {
           onPopInvokedWithResult: (didPop, _) {
             if (!didPop) _goToTab(0);
           },
+          // Not Scaffold.bottomNavigationBar: the search circle rises above
+          // the bar, and only a widget whose own bounds cover it can take
+          // taps there. So the nav is laid over the page in a Stack; the
+          // page ends at the white bar, under the nav's transparent strip.
           child: Scaffold(
-            body: IndexedStack(index: index, children: [
-              for (var i = 0; i < screens.length; i++)
-                _builtTabs.contains(i) ? screens[i] : const SizedBox.shrink(),
-            ]),
-            bottomNavigationBar: AppBottomNavBar(
-              currentIndex: index,
-              searchActive: index == NavState.searchTab,
-              onTap: _goToTab,
-              onSearchTap: () => _goToTab(NavState.searchTab),
-            ),
+            body: Builder(builder: (bodyContext) {
+              // Hidden while the keyboard is up, like a bottomNavigationBar.
+              // Read above the Scaffold: it zeroes viewInsets for its body.
+              final keyboardUp = MediaQuery.viewInsetsOf(context).bottom > 0;
+              final pages = IndexedStack(index: index, children: [
+                for (var i = 0; i < screens.length; i++)
+                  _builtTabs.contains(i) ? screens[i] : const SizedBox.shrink(),
+              ]);
+              // Same tree either way, so the tabs keep their state.
+              final barSpace = keyboardUp
+                  ? 0.0
+                  : AppBottomNavBar.barHeight +
+                      MediaQuery.paddingOf(bodyContext).bottom;
+              return Stack(children: [
+                Positioned.fill(
+                  bottom: barSpace,
+                  child: MediaQuery.removePadding(
+                      context: bodyContext,
+                      removeBottom: !keyboardUp,
+                      child: pages),
+                ),
+                Positioned(
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  child: Offstage(
+                    offstage: keyboardUp,
+                    child: AppBottomNavBar(
+                      currentIndex: index,
+                      searchActive: index == NavState.searchTab,
+                      onTap: _goToTab,
+                      onSearchTap: () => _goToTab(NavState.searchTab),
+                    ),
+                  ),
+                ),
+              ]);
+            }),
           ),
         );
       },
