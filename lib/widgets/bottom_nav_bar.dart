@@ -43,30 +43,43 @@ class AppBottomNavBar extends StatelessWidget {
       required this.onSearchTap,
       this.searchActive = false});
 
-  static const _idle = Color(0xFF9CA3AF);
+  static const _idle = Color(0xFF8A8F98);
 
   Widget _item(
       {required FaIconData icon,
       required String label,
-      required Color color,
+      required bool active,
+      required Color accent,
       required VoidCallback onTap}) {
+    final color = active ? accent : _idle;
     return Expanded(
       child: GestureDetector(
         onTap: onTap,
         behavior: HitTestBehavior.opaque,
         child: Padding(
-          padding: const EdgeInsets.only(top: 9, bottom: 11),
+          padding: const EdgeInsets.only(top: 9, bottom: 6),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              FaIcon(icon, size: 22, color: color),
-              const SizedBox(height: 3),
+              FaIcon(icon, size: 21, color: color),
+              const SizedBox(height: 4),
               Text(label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                   style: TextStyle(
-                    fontSize: 10,
-                    fontWeight: FontWeight.w700,
+                    fontSize: 10.5,
+                    fontWeight: active ? FontWeight.w800 : FontWeight.w600,
                     color: color,
                   )),
+              const SizedBox(height: 4),
+              // Short underline under the active tab.
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                width: active ? 22 : 0,
+                height: 3,
+                decoration: BoxDecoration(
+                    color: accent, borderRadius: BorderRadius.circular(2)),
+              ),
             ],
           ),
         ),
@@ -74,14 +87,19 @@ class AppBottomNavBar extends StatelessWidget {
     );
   }
 
-  /// Height of the white bar (top border included), not counting the
-  /// device's bottom safe-area inset.
-  static const barHeight = 60.0;
+  /// Height of the bar body, not counting the device's bottom safe-area
+  /// inset or the cradle bump around the search circle.
+  static const barHeight = 64.0;
 
-  /// How far the search circle rises above the white bar. The widget is
-  /// this much taller than the bar; that strip is transparent and only the
-  /// circle in it takes taps, so the page underneath stays tappable.
-  static const rise = 12.0;
+  /// How far the cradle bump (and the circle in it) rises above the bar.
+  /// The widget is this much taller than the bar; outside the bump that
+  /// strip is transparent and only the circle in it takes taps.
+  static const rise = 20.0;
+
+  static const _circle = 56.0;
+
+  /// The search circle's centre sits this far below the bar's top edge.
+  static const _circleDrop = 14.0;
 
   /// Total height this widget takes, including the safe-area inset.
   static double totalHeight(BuildContext context) =>
@@ -103,42 +121,40 @@ class AppBottomNavBar extends StatelessWidget {
     );
   }
 
-  /// The search button: a raised circle that rises above the bar so it
-  /// stands apart from the 4 tabs. Gold with a white icon normally; while
-  /// the search tab is open it flips to white with a gold ring and icon.
-  /// It lies fully inside this widget's bounds, so all of it takes taps.
+  /// The search button sitting in the bar's cradle. Idle it is a very soft
+  /// gold with a gold icon; while the search tab is open it fills with the
+  /// full gold and a white icon. It lies inside this widget's bounds, so
+  /// all of it takes taps.
   Widget _searchCircle() {
     return GestureDetector(
       onTap: onSearchTap,
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        width: 54,
-        height: 54,
+        duration: const Duration(milliseconds: 220),
+        width: _circle,
+        height: _circle,
         decoration: BoxDecoration(
           shape: BoxShape.circle,
-          color: searchActive ? Colors.white : null,
-          gradient: searchActive
-              ? null
-              : const LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [AppColors.brandLight, AppColors.brandDark]),
+          gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: searchActive
+                  ? const [AppColors.brandLight, AppColors.brandDark]
+                  : const [Color(0xFFFCF6E6), Color(0xFFF5E8C8)]),
           border: Border.all(
-              color: searchActive ? AppColors.brand : Colors.white,
-              width: searchActive ? 3 : 4),
+              color: searchActive ? Colors.transparent : AppColors.brandLine,
+              width: 1),
           boxShadow: [
             BoxShadow(
                 color: AppColors.brand
-                    .withValues(alpha: searchActive ? 0.5 : 0.35),
-                blurRadius: searchActive ? 14 : 10,
-                spreadRadius: searchActive ? 1 : 0,
+                    .withValues(alpha: searchActive ? 0.45 : 0.15),
+                blurRadius: searchActive ? 16 : 8,
                 offset: const Offset(0, 4)),
           ],
         ),
         alignment: Alignment.center,
         child: FaIcon(FontAwesomeIcons.magnifyingGlass,
-            size: 20,
-            color: searchActive ? AppColors.brandDark : Colors.white),
+            size: 21,
+            color: searchActive ? Colors.white : AppColors.brand),
       ),
     );
   }
@@ -149,24 +165,22 @@ class AppBottomNavBar extends StatelessWidget {
     return SizedBox(
       height: totalHeight(context),
       child: Stack(children: [
+        // The bar body + the cradle bump, painted as one shape.
+        Positioned.fill(
+          child: CustomPaint(
+            painter: _NavBarPainter(
+                barTop: rise,
+                cradleCenterY: rise + _circleDrop,
+                cradleRadius: _circle / 2 + 7),
+          ),
+        ),
         Positioned(
           left: 0,
           right: 0,
           bottom: 0,
           height: barHeight + inset,
-          child: Container(
+          child: Padding(
             padding: EdgeInsets.only(bottom: inset),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              border: const Border(
-                  top: BorderSide(color: AppColors.border, width: 2)),
-              boxShadow: [
-                BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.1),
-                    blurRadius: 8,
-                    offset: const Offset(0, -2))
-              ],
-            ),
             // The bar has a fixed height, so labels can't grow without limit.
             child: MediaQuery.withClampedTextScaling(
               maxScaleFactor: 1.2,
@@ -177,9 +191,8 @@ class AppBottomNavBar extends StatelessWidget {
                     _item(
                         icon: items[i].icon,
                         label: items[i].label,
-                        color: !searchActive && currentIndex == i
-                            ? items[i].accent
-                            : _idle,
+                        active: !searchActive && currentIndex == i,
+                        accent: items[i].accent,
                         onTap: () => onTap(i)),
                   ],
                 ],
@@ -190,8 +203,59 @@ class AppBottomNavBar extends StatelessWidget {
         // The search slot is the middle of 5 equal slots, so the circle
         // sits at the horizontal centre in both RTL and LTR.
         Positioned(
-            top: 0, left: 0, right: 0, child: Center(child: _searchCircle())),
+            top: rise + _circleDrop - _circle / 2,
+            left: 0,
+            right: 0,
+            child: Center(child: _searchCircle())),
       ]),
     );
   }
+}
+
+/// White bar with rounded top corners and a round cradle bump in the middle
+/// that holds the search circle, with a thin gold outline and soft shadow.
+class _NavBarPainter extends CustomPainter {
+  final double barTop;
+  final double cradleCenterY;
+  final double cradleRadius;
+
+  _NavBarPainter(
+      {required this.barTop,
+      required this.cradleCenterY,
+      required this.cradleRadius});
+
+  static const _corner = 26.0;
+
+  Path _shape(Size size) {
+    final bar = Path()
+      ..addRRect(RRect.fromRectAndCorners(
+        Rect.fromLTRB(0, barTop, size.width, size.height),
+        topLeft: const Radius.circular(_corner),
+        topRight: const Radius.circular(_corner),
+      ));
+    final cradle = Path()
+      ..addOval(Rect.fromCircle(
+          center: Offset(size.width / 2, cradleCenterY),
+          radius: cradleRadius));
+    return Path.combine(PathOperation.union, bar, cradle);
+  }
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final shape = _shape(size);
+    canvas.drawShadow(shape, Colors.black.withValues(alpha: 0.35), 6, false);
+    canvas.drawPath(shape, Paint()..color = const Color(0xFFFFFDF9));
+    canvas.drawPath(
+        shape,
+        Paint()
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 1
+          ..color = AppColors.brandLine);
+  }
+
+  @override
+  bool shouldRepaint(_NavBarPainter old) =>
+      old.barTop != barTop ||
+      old.cradleCenterY != cradleCenterY ||
+      old.cradleRadius != cradleRadius;
 }
