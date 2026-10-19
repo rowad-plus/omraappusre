@@ -1,7 +1,7 @@
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
-import 'package:flutter_paymob_sdk/flutter_paymob_sdk.dart';
 import 'package:provider/provider.dart';
-import '../core/theme/app_colors.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../screens/booking/neoleap_payment_screen.dart';
 import '../state/app_state.dart';
 
@@ -9,13 +9,13 @@ import '../state/app_state.dart';
 /// `POST /bookings/{id}/pay`.
 ///
 /// Paymob Unified Checkout URLs (`.../unifiedcheckout/?publicKey=..&
-/// clientSecret=..`) run in Paymob's native SDK — no web page, no
-/// redirect back into our website. Anything else (e.g. NeoLeap) falls back
-/// to the in-app WebView.
+/// clientSecret=..`) open our own card form (omraway.com/pay/app, Paymob
+/// Pixel) in the in-app WebView. Anything else (e.g. NeoLeap) opens the
+/// gateway's page in the same WebView.
 ///
 /// Returns `true` when paid, `false` when the payment failed, `null` when
-/// the customer cancelled or the result is still pending. After the SDK
-/// closes, the server is asked to confirm with Paymob ([AppState.
+/// the customer cancelled or the result is still pending. After the card
+/// form closes, the server is asked to confirm with Paymob ([AppState.
 /// verifyPayment]) so the booking is recorded as paid right away; callers
 /// should still re-fetch the booking.
 Future<bool?> launchPayment(BuildContext context, String paymentUrl,
@@ -31,32 +31,33 @@ Future<bool?> launchPayment(BuildContext context, String paymentUrl,
       clientSecret != null &&
       clientSecret.isNotEmpty) {
     final state = context.read<AppState>();
-    final result = await PaymobService().payWithPaymob(
-      publicKey: publicKey,
-      clientSecret: clientSecret,
-      customization: const PaymobCustomization(
-        appName: 'Omraway',
-        buttonBackgroundColor: AppColors.brand,
-        buttonTextColor: Colors.white,
-        showSaveCard: false,
-        showTransactionResult: false,
+    // Our own card form (Paymob Pixel on omraway.com/pay/app) instead of the
+    // native SDK, whose screen always shows Paymob's logo and merchant name.
+    // The keys go in the fragment, so they never reach server logs.
+    final formUrl = Uri.https('omraway.com', '/pay/app').replace(
+        fragment: 'pk=${Uri.encodeComponent(publicKey)}'
+            '&cs=${Uri.encodeComponent(clientSecret)}');
+    // The web build has no in-app WebView: open the form in a new tab.
+    if (kIsWeb) {
+      await launchUrl(formUrl, webOnlyWindowName: '_blank');
+      return null;
+    }
+    final formResult = await Navigator.of(context).push<bool?>(
+      MaterialPageRoute(
+        fullscreenDialog: true,
+        builder: (_) => NeoLeapPaymentScreen(paymentUrl: formUrl.toString()),
       ),
     );
-    final sdkResult = switch (result.status) {
-      PaymentStatus.successful => true,
-      PaymentStatus.failure => false,
-      _ => null,
-    };
-    if (sdkResult == false) return false;
+    if (formResult == false) return false;
 
-    // Paymob may need a few seconds to settle — retry while the SDK said
+    // Paymob may need a few seconds to settle — retry while the form said
     // paid; a single check otherwise (cancelled after paying, pending).
-    final attempts = sdkResult == true ? 4 : 1;
+    final attempts = formResult == true ? 4 : 1;
     for (var i = 0; i < attempts; i++) {
       if (i > 0) await Future.delayed(const Duration(seconds: 2));
       if (await state.verifyPayment(bookingId) == true) return true;
     }
-    return sdkResult;
+    return formResult;
   }
 
   if (!context.mounted) return null;

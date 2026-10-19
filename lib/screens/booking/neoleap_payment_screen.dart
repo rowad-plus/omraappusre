@@ -50,6 +50,13 @@ class _NeoLeapPaymentScreenState extends State<NeoLeapPaymentScreen> {
     }
     if (uri == null || !_isOurSite(uri)) return NavigationDecision.navigate;
     final path = uri.path;
+    // Our Paymob Pixel card form (see launchPayment) — the form itself,
+    // then its end marker once Paymob reports the payment.
+    if (path == '/pay/app') return NavigationDecision.navigate;
+    if (path == '/pay/app/done') {
+      _finish(true);
+      return NavigationDecision.prevent;
+    }
     if (path.contains('/payments/neoleap/return')) {
       _finish(true);
       return NavigationDecision.prevent;
