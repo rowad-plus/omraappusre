@@ -15,6 +15,7 @@ import '../../widgets/app_dropdown.dart';
 import '../../widgets/app_toast.dart';
 import '../../widgets/country_picker_sheet.dart';
 import '../../services/payment_launcher.dart';
+import '../auth/login_sheet.dart';
 import 'trip_tracking_screen.dart';
 import '../../widgets/instant_date_picker.dart';
 
@@ -258,6 +259,13 @@ class _BookingSheetState extends State<BookingSheet> {
     final tripId = widget.trip.apiId;
     if (tripId == null) return;
 
+    // Guests log in from here and the booking continues with the same form.
+    if (!context.read<AppState>().isLoggedIn) {
+      setState(() => _error = null);
+      await openLoginSheet(context);
+      if (!mounted || !context.read<AppState>().isLoggedIn) return;
+    }
+
     setState(() {
       _submitting = true;
       _error = null;
@@ -278,6 +286,12 @@ class _BookingSheetState extends State<BookingSheet> {
           privateRoom: _privateRoomApplies,
         );
     if (!mounted) return;
+    if (result.unauthorized) {
+      setState(() => _submitting = false);
+      await openLoginSheet(context);
+      if (mounted && context.read<AppState>().isLoggedIn) await _submit();
+      return;
+    }
     if (result.error != null) {
       setState(() {
         _submitting = false;

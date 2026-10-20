@@ -255,9 +255,8 @@ class _UmrahScreenState extends State<UmrahScreen> {
                                 gradient: AppColors.vipGradient,
                                 lineColor: const Color(0x80E5E9F2),
                                 moreColor: AppColors.tierVip,
-                                onMoreTap: () => _openList(
-                                    tr('trip.umrah.vip_section_title'),
-                                    vipTrips),
+                                onMoreTap: () =>
+                                    NavState.openSearch(type: 'vip'),
                               ),
                               _goldCardGrid(vipTrips),
                             ]),
@@ -277,9 +276,8 @@ class _UmrahScreenState extends State<UmrahScreen> {
                                 gradient: AppColors.premiumGradient,
                                 lineColor: const Color(0x80E5E9F2),
                                 moreColor: AppColors.tierPremium,
-                                onMoreTap: () => _openList(
-                                    tr('trip.umrah.premium_section_title'),
-                                    premiumTrips),
+                                onMoreTap: () =>
+                                    NavState.openSearch(type: 'premium'),
                               ),
                               _goldCardGrid(premiumTrips),
                             ]),
@@ -295,19 +293,22 @@ class _UmrahScreenState extends State<UmrahScreen> {
                             children: [
                               Row(children: [
                                 Expanded(
-                                    child: Text(
-                                        tr('trip.umrah.economy_section_title'),
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                        style: const TextStyle(
-                                            fontSize: 15,
-                                            fontWeight: FontWeight.w800,
-                                            color: AppColors.text))),
+                                    child: GestureDetector(
+                                  onTap: () =>
+                                      NavState.openSearch(type: 'economy'),
+                                  child: Text(
+                                      tr('trip.umrah.economy_section_title'),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: const TextStyle(
+                                          fontSize: 15,
+                                          fontWeight: FontWeight.w800,
+                                          color: AppColors.text)),
+                                )),
                                 const SizedBox(width: 8),
                                 GestureDetector(
-                                  onTap: () => _openList(
-                                      tr('trip.umrah.economy_section_title'),
-                                      economyTrips),
+                                  onTap: () =>
+                                      NavState.openSearch(type: 'economy'),
                                   child: Text(tr('common.viewAll'),
                                       style: const TextStyle(
                                           fontSize: 11.5,

@@ -570,8 +570,8 @@ class _LoginSheetState extends State<LoginSheet> {
   }
 }
 
-void openLoginSheet(BuildContext context) {
-  showModalBottomSheet(
+Future<void> openLoginSheet(BuildContext context) {
+  return showModalBottomSheet<void>(
     context: context,
     isScrollControlled: true,
     backgroundColor: Colors.transparent,

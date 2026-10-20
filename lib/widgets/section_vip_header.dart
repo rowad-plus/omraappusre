@@ -29,21 +29,24 @@ class SectionVipHeader extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: 12),
       child: Row(
         children: [
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 4),
-            decoration: BoxDecoration(
-                gradient: gradient, borderRadius: BorderRadius.circular(20)),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                FaIcon(icon, size: 13, color: Colors.white),
-                const SizedBox(width: 5),
-                Text(label,
-                    style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w800)),
-              ],
+          GestureDetector(
+            onTap: onMoreTap,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 4),
+              decoration: BoxDecoration(
+                  gradient: gradient, borderRadius: BorderRadius.circular(20)),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  FaIcon(icon, size: 13, color: Colors.white),
+                  const SizedBox(width: 5),
+                  Text(label,
+                      style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w800)),
+                ],
+              ),
             ),
           ),
           const SizedBox(width: 8),

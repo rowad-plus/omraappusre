@@ -31,7 +31,11 @@ class BookingCreateResult {
   final int? bookingId;
   final String? paymentOption;
   final String? error;
-  const BookingCreateResult({this.bookingId, this.paymentOption, this.error});
+  /// True when the server rejected the token (401) — the local session has
+  /// already been cleared, so the caller should open the login sheet.
+  final bool unauthorized;
+  const BookingCreateResult(
+      {this.bookingId, this.paymentOption, this.error, this.unauthorized = false});
 }
 
 /// Result of starting a NeoLeap payment — either a hosted payment page URL
@@ -652,6 +656,16 @@ class AppState extends ChangeNotifier {
         paymentOption: res['payment_option'] as String?,
       );
     } on ApiException catch (e) {
+      if (e.statusCode == 401) {
+        // Saved token expired/revoked — drop it so the login sheet can
+        // issue a fresh one and the booking can be retried.
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.remove(_tokenPrefsKey);
+        api.setToken(null);
+        _clearSession();
+        notifyListeners();
+        return BookingCreateResult(error: e.message, unauthorized: true);
+      }
       return BookingCreateResult(error: e.message);
     } catch (_) {
       return const BookingCreateResult(
