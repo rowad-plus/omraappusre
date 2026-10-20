@@ -187,6 +187,12 @@ class _UmrahResultsScreenState extends State<UmrahResultsScreen> {
   void _onSearchRequest() {
     final req = NavState.searchRequest.value;
     if (req == null) return;
+    if (req.showAll) {
+      if (_type == _kAll) return;
+      setState(() => _type = _kAll);
+      _maybeLoad(force: true);
+      return;
+    }
     setState(() {
       _selectedDate = req.date ?? _todayIso();
       _type = _typeLabel(req.type);

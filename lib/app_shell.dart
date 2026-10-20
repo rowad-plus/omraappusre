@@ -197,7 +197,10 @@ class _AppShellState extends State<AppShell> {
                       currentIndex: index,
                       searchActive: index == NavState.searchTab,
                       onTap: _goToTab,
-                      onSearchTap: () => _goToTab(NavState.searchTab),
+                      onSearchTap: () {
+                        _userPickedTab = true;
+                        NavState.openSearch();
+                      },
                     ),
                   ),
                 ),

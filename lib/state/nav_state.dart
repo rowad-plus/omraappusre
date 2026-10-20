@@ -4,7 +4,11 @@ import 'package:flutter/foundation.dart';
 class SearchRequest {
   final String? date;
   final String? type;
-  const SearchRequest({this.date, this.type});
+
+  /// Plain "open search" (bottom-nav circle / header icon): drop any type
+  /// filter left over from a home section link, keep the chosen date.
+  final bool showAll;
+  const SearchRequest({this.date, this.type, this.showAll = false});
 }
 
 /// Selected bottom-nav tab of [AppShell]. Lives outside the shell so any
@@ -19,10 +23,13 @@ class NavState {
   static final searchRequest = ValueNotifier<SearchRequest?>(null);
 
   /// Switches to the search tab, optionally applying a picked date/type.
+  /// With neither, the tab opens on all trips (no type filter).
   static void openSearch({String? date, String? type}) {
-    if (date != null || type != null) {
-      searchRequest.value = SearchRequest(date: date, type: type);
-    }
+    searchRequest.value = date != null || type != null
+        ? SearchRequest(date: date, type: type)
+        // Not const: a new instance so the
+        // ValueNotifier fires every time.
+        : SearchRequest(showAll: true);
     tab.value = searchTab;
   }
 }
