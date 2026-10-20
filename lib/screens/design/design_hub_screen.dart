@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:provider/provider.dart';
 import '../../core/theme/app_colors.dart';
 import '../../l10n/translations.dart';
+import '../../state/app_state.dart';
+import '../auth/login_sheet.dart';
 import '../../widgets/sub_page_header.dart';
 import 'my_design_requests_screen.dart';
 import 'umrah_wizard_screen.dart';
@@ -78,14 +81,13 @@ class DesignHubScreen extends StatelessWidget {
                   buttonColor: AppColors.green,
                   buttonIcon: FontAwesomeIcons.solidMap,
                   buttonLabel: tr('design.hub.start_button'),
-                  onTap: () => Navigator.of(context).push(MaterialPageRoute(
-                      builder: (_) => const UmrahWizardScreen())),
+                  onTap: () => _openForUser(context, const UmrahWizardScreen()),
                 ),
                 const SizedBox(height: 12),
                 // Status tracking of requests already sent.
                 GestureDetector(
-                  onTap: () => Navigator.of(context).push(MaterialPageRoute(
-                      builder: (_) => const MyDesignRequestsScreen())),
+                  onTap: () =>
+                      _openForUser(context, const MyDesignRequestsScreen()),
                   child: Container(
                     padding: const EdgeInsets.symmetric(
                         horizontal: 14, vertical: 14),
@@ -269,4 +271,14 @@ class _TrustItem extends StatelessWidget {
               fontWeight: FontWeight.w600)),
     ]);
   }
+}
+
+/// Guests log in first (login sheet), then land on [page] — same as the
+/// website's design page opening its auth popup.
+Future<void> _openForUser(BuildContext context, Widget page) async {
+  if (!context.read<AppState>().isLoggedIn) {
+    await openLoginSheet(context);
+    if (!context.mounted || !context.read<AppState>().isLoggedIn) return;
+  }
+  Navigator.of(context).push(MaterialPageRoute(builder: (_) => page));
 }

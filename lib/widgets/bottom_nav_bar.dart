@@ -101,9 +101,18 @@ class AppBottomNavBar extends StatelessWidget {
   /// The search circle's centre sits this far below the bar's top edge.
   static const _circleDrop = 14.0;
 
+  /// Empty space kept under the labels for the device's bottom inset. On
+  /// iPhones the full home-indicator inset (~34px) left a visible gap under
+  /// the bar, so only part of it is kept — the indicator sits over the bar.
+  static double bottomInset(BuildContext context) {
+    final inset = MediaQuery.paddingOf(context).bottom;
+    if (Theme.of(context).platform != TargetPlatform.iOS) return inset;
+    return (inset - 22).clamp(0.0, inset);
+  }
+
   /// Total height this widget takes, including the safe-area inset.
   static double totalHeight(BuildContext context) =>
-      rise + barHeight + MediaQuery.paddingOf(context).bottom;
+      rise + barHeight + bottomInset(context);
 
   /// The search slot inside the bar: an empty, tappable gap under the
   /// circle (no label — the circle speaks for itself).
@@ -153,15 +162,14 @@ class AppBottomNavBar extends StatelessWidget {
         ),
         alignment: Alignment.center,
         child: FaIcon(FontAwesomeIcons.magnifyingGlass,
-            size: 21,
-            color: searchActive ? Colors.white : AppColors.brand),
+            size: 21, color: searchActive ? Colors.white : AppColors.brand),
       ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    final inset = MediaQuery.paddingOf(context).bottom;
+    final inset = bottomInset(context);
     return SizedBox(
       height: totalHeight(context),
       child: Stack(children: [
@@ -235,8 +243,7 @@ class _NavBarPainter extends CustomPainter {
       ));
     final cradle = Path()
       ..addOval(Rect.fromCircle(
-          center: Offset(size.width / 2, cradleCenterY),
-          radius: cradleRadius));
+          center: Offset(size.width / 2, cradleCenterY), radius: cradleRadius));
     return Path.combine(PathOperation.union, bar, cradle);
   }
 
