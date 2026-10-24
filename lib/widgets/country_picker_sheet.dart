@@ -39,6 +39,34 @@ class _CountryPickerSheetState extends State<_CountryPickerSheet> {
   bool _loadingCities = false;
   List<CityOption> _cities = const [];
 
+  /// Filters whichever list is showing (countries or cities); cleared when
+  /// switching between the two steps.
+  final _searchCtrl = TextEditingController();
+  String _query = '';
+
+  @override
+  void dispose() {
+    _searchCtrl.dispose();
+    super.dispose();
+  }
+
+  void _clearSearch() {
+    _searchCtrl.clear();
+    _query = '';
+  }
+
+  /// Case-insensitive match that also ignores Arabic hamza/taa-marbuta/
+  /// alef-maqsura spelling differences (مكه = مكة, اسكندرية = الإسكندرية).
+  static String _norm(String s) => s
+      .toLowerCase()
+      .replaceAll(RegExp('[أإآ]'), 'ا')
+      .replaceAll('ة', 'ه')
+      .replaceAll('ى', 'ي')
+      .trim();
+
+  bool _matches(String text) =>
+      _query.isEmpty || _norm(text).contains(_norm(_query));
+
   @override
   void initState() {
     super.initState();
@@ -48,8 +76,8 @@ class _CountryPickerSheetState extends State<_CountryPickerSheet> {
     if (current != null) {
       _stepTwoCountry = current;
       _loadingCities = true;
-      WidgetsBinding.instance.addPostFrameCallback(
-          (_) => _selectCountry(current, keepCity: true));
+      WidgetsBinding.instance
+          .addPostFrameCallback((_) => _selectCountry(current, keepCity: true));
     }
   }
 
@@ -63,14 +91,17 @@ class _CountryPickerSheetState extends State<_CountryPickerSheet> {
       _stepTwoCountry = country;
       _loadingCities = true;
       _cities = const [];
+      _clearSearch();
     });
-    final cities = await context.read<AppState>().fetchDepartureCities(country.code);
+    final cities =
+        await context.read<AppState>().fetchDepartureCities(country.code);
     if (!mounted) return;
     if (cities.isEmpty) {
       // Nothing to narrow down to: on a pick, close; when the sheet just
       // opened on the current country, show the country list instead.
       if (keepCity) {
         setState(() {
+          _clearSearch();
           _stepTwoCountry = null;
           _loadingCities = false;
         });
@@ -94,16 +125,16 @@ class _CountryPickerSheetState extends State<_CountryPickerSheet> {
   @override
   Widget build(BuildContext context) {
     return SafeArea(
-      child: ConstrainedBox(
-        constraints: BoxConstraints(
-            maxHeight: MediaQuery.of(context).size.height * 0.85),
+      // Fixed height, so the sheet doesn't jump as a search shrinks the list.
+      child: SizedBox(
+        height: MediaQuery.of(context).size.height * 0.75,
         child: Column(
-          mainAxisSize: MainAxisSize.min,
           children: [
             _stepTwoCountry == null
                 ? _buildCountryHeader()
                 : _buildCityHeader(_stepTwoCountry!),
-            Flexible(
+            _buildSearchField(),
+            Expanded(
               child: _stepTwoCountry == null
                   ? _buildCountryList()
                   : _buildCityList(),
@@ -134,7 +165,10 @@ class _CountryPickerSheetState extends State<_CountryPickerSheet> {
                     : FontAwesomeIcons.chevronLeft,
                 size: 14,
                 color: AppColors.muted),
-            onPressed: () => setState(() => _stepTwoCountry = null),
+            onPressed: () => setState(() {
+              _clearSearch();
+              _stepTwoCountry = null;
+            }),
           ),
           Expanded(
             child: Text(
@@ -143,6 +177,31 @@ class _CountryPickerSheetState extends State<_CountryPickerSheet> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildSearchField() {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(14, 0, 14, 8),
+      child: TextField(
+        controller: _searchCtrl,
+        onChanged: (v) => setState(() => _query = v),
+        decoration: InputDecoration(
+          isDense: true,
+          hintText: tr('country.picker.search'),
+          prefixIcon: const Padding(
+            padding: EdgeInsets.all(10),
+            child: FaIcon(FontAwesomeIcons.magnifyingGlass,
+                size: 13, color: AppColors.muted),
+          ),
+          filled: true,
+          fillColor: AppColors.bg,
+          border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+              borderSide: BorderSide.none),
+          contentPadding: const EdgeInsets.symmetric(vertical: 10),
+        ),
       ),
     );
   }
@@ -156,20 +215,20 @@ class _CountryPickerSheetState extends State<_CountryPickerSheet> {
           if (selected != null) selected,
           for (final c in CountryCatalog.all)
             if (c.code != selected?.code) c,
-        ];
+        ].where((c) => _matches(tr(c.nameKey)) || _matches(c.code)).toList();
         return ListView(
           shrinkWrap: true,
           children: [
             for (final country in countries)
               ListTile(
-                leading:
-                    Text(country.flagEmoji, style: const TextStyle(fontSize: 20)),
+                leading: Text(country.flagEmoji,
+                    style: const TextStyle(fontSize: 20)),
                 title: Text(tr(country.nameKey)),
                 subtitle: country.hasContent
                     ? null
                     : Text(tr('country.picker.no_content'),
-                        style:
-                            const TextStyle(fontSize: 11, color: AppColors.muted)),
+                        style: const TextStyle(
+                            fontSize: 11, color: AppColors.muted)),
                 trailing: country.code == selected?.code
                     ? const FaIcon(FontAwesomeIcons.check,
                         size: 14, color: AppColors.blue)
@@ -207,17 +266,19 @@ class _CountryPickerSheetState extends State<_CountryPickerSheet> {
         return ListView(
           shrinkWrap: true,
           children: [
-            ListTile(
-              title: Text(tr('country.picker.all_cities')),
-              trailing: selectedId == null
-                  ? const FaIcon(FontAwesomeIcons.check,
-                      size: 14, color: AppColors.blue)
-                  : null,
-              onTap: () => _selectCity(null),
-            ),
+            if (_query.isEmpty)
+              ListTile(
+                title: Text(tr('country.picker.all_cities')),
+                trailing: selectedId == null
+                    ? const FaIcon(FontAwesomeIcons.check,
+                        size: 14, color: AppColors.blue)
+                    : null,
+                onTap: () => _selectCity(null),
+              ),
             // One list, like the website: the server orders it capital
             // first, then featured cities, then the rest.
-            for (final city in _cities) cityTile(city),
+            for (final city in _cities)
+              if (_matches(city.name)) cityTile(city),
           ],
         );
       },

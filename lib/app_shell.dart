@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'screens/umrah/umrah_screen.dart';
 import 'screens/umrah_results/umrah_results_screen.dart';
@@ -9,8 +8,6 @@ import 'screens/more/more_screen.dart';
 import 'widgets/bottom_nav_bar.dart';
 import 'data/country_catalog.dart';
 import 'services/location_service.dart';
-import 'screens/auth/login_sheet.dart';
-import 'state/app_state.dart';
 import 'state/country_state.dart';
 import 'state/nav_state.dart';
 import 'widgets/country_picker_sheet.dart';
@@ -41,10 +38,8 @@ class _AppShellState extends State<AppShell> {
   void _goToTab(int i) {
     _userPickedTab = true;
     NavState.tab.value = i;
-    // صمم عمرتك: guests get the login sheet as soon as they open the tab.
-    if (i == 1 && !context.read<AppState>().isLoggedIn) {
-      openLoginSheet(context);
-    }
+    // صمم عمرتك opens for guests too; the hub's buttons ask for login when
+    // they start designing (see design_hub_screen.dart _openForUser).
   }
 
   /// Opens the search tab on launch when the country is Saudi Arabia. The

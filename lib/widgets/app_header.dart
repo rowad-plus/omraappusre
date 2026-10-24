@@ -91,17 +91,17 @@ class _HeaderIconGroup extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         const CountryButton(),
-        const SizedBox(width: 12),
+        const SizedBox(width: 8),
         _HdrIcon(icon: FontAwesomeIcons.magnifyingGlass, onTap: onSearchTap),
-        const SizedBox(width: 12),
+        const SizedBox(width: 8),
         GestureDetector(
           onTap: loggedIn
               ? () => Navigator.of(context).push(
                   MaterialPageRoute(builder: (_) => const ProfileScreen()))
               : onSignInTap,
           child: Container(
-            width: 32,
-            height: 32,
+            width: 40,
+            height: 40,
             alignment: Alignment.center,
             clipBehavior: Clip.antiAlias,
             decoration: BoxDecoration(
@@ -114,20 +114,20 @@ class _HeaderIconGroup extends StatelessWidget {
             child: avatarUrl != null
                 ? CachedNetworkImage(
                     imageUrl: avatarUrl,
-                    width: 32,
-                    height: 32,
+                    width: 40,
+                    height: 40,
                     fit: BoxFit.cover,
                     errorWidget: (_, __, ___) => const FaIcon(
                         FontAwesomeIcons.userCheck,
                         color: Colors.white,
-                        size: 13),
+                        size: 16),
                   )
                 : FaIcon(
                     loggedIn
                         ? FontAwesomeIcons.userCheck
                         : FontAwesomeIcons.solidUser,
                     color: Colors.white,
-                    size: 13),
+                    size: 16),
           ),
         ),
       ],
@@ -144,8 +144,8 @@ class CountryButton extends StatelessWidget {
     return GestureDetector(
       onTap: () => openCountryPickerSheet(context),
       child: SizedBox(
-        width: 32,
-        height: 32,
+        width: 40,
+        height: 40,
         child: Center(
           child: ValueListenableBuilder<bool>(
             valueListenable: CountryState.detecting,
@@ -162,10 +162,10 @@ class CountryButton extends StatelessWidget {
                 builder: (context, country, __) {
                   if (country == null) {
                     return const FaIcon(FontAwesomeIcons.globe,
-                        size: 14, color: AppColors.muted);
+                        size: 20, color: AppColors.muted);
                   }
                   return Text(country.flagEmoji,
-                      style: const TextStyle(fontSize: 18));
+                      style: const TextStyle(fontSize: 28));
                 },
               );
             },
@@ -185,11 +185,16 @@ class _HdrIcon extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
+      // Framed like the search tab's header buttons.
       child: Container(
-        width: 32,
-        height: 32,
+        width: 38,
+        height: 38,
         alignment: Alignment.center,
-        child: FaIcon(icon, size: 14, color: AppColors.muted),
+        decoration: BoxDecoration(
+            color: AppColors.bg,
+            shape: BoxShape.circle,
+            border: Border.all(color: AppColors.border)),
+        child: FaIcon(icon, size: 15, color: AppColors.muted),
       ),
     );
   }
