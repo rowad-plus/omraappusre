@@ -234,10 +234,16 @@ class _NavBarPainter extends CustomPainter {
 
   static const _corner = 26.0;
 
+  /// The app lives inside a SafeArea (safeAppFrame), so the nav ends above
+  /// the iPhone home indicator and a white strip showed under it. The bar is
+  /// painted this far past its bottom edge to fill that strip; the screen
+  /// edge cuts it off, so its bottom outline and shadow never show.
+  static const _bleed = 60.0;
+
   Path _shape(Size size) {
     final bar = Path()
       ..addRRect(RRect.fromRectAndCorners(
-        Rect.fromLTRB(0, barTop, size.width, size.height),
+        Rect.fromLTRB(0, barTop, size.width, size.height + _bleed),
         topLeft: const Radius.circular(_corner),
         topRight: const Radius.circular(_corner),
       ));
