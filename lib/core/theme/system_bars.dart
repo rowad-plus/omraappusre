@@ -14,7 +14,29 @@ const systemBarsStyle = SystemUiOverlayStyle(
   systemNavigationBarIconBrightness: Brightness.dark,
 );
 
+/// On iPhones the full home-indicator inset (~34px) left the bottom nav
+/// floating well above the screen edge, so only [_iosBottomKeep] of it is
+/// kept clear; the thin indicator line sits over the bar's lower edge.
+const _iosBottomKeep = 12.0;
+
 Widget safeAppFrame(Widget child) => AnnotatedRegion<SystemUiOverlayStyle>(
       value: systemBarsStyle,
-      child: ColoredBox(color: Colors.white, child: SafeArea(child: child)),
+      child: ColoredBox(
+        color: Colors.white,
+        child: Builder(builder: (context) {
+          if (Theme.of(context).platform != TargetPlatform.iOS) {
+            return SafeArea(child: child);
+          }
+          final mq = MediaQuery.of(context);
+          double trim(double b) => b > _iosBottomKeep ? _iosBottomKeep : b;
+          return MediaQuery(
+            data: mq.copyWith(
+              padding: mq.padding.copyWith(bottom: trim(mq.padding.bottom)),
+              viewPadding:
+                  mq.viewPadding.copyWith(bottom: trim(mq.viewPadding.bottom)),
+            ),
+            child: SafeArea(child: child),
+          );
+        }),
+      ),
     );

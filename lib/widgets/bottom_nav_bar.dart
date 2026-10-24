@@ -101,14 +101,11 @@ class AppBottomNavBar extends StatelessWidget {
   /// The search circle's centre sits this far below the bar's top edge.
   static const _circleDrop = 14.0;
 
-  /// Empty space kept under the labels for the device's bottom inset. On
-  /// iPhones the full home-indicator inset (~34px) left a visible gap under
-  /// the bar, so only part of it is kept — the indicator sits over the bar.
-  static double bottomInset(BuildContext context) {
-    final inset = MediaQuery.paddingOf(context).bottom;
-    if (Theme.of(context).platform != TargetPlatform.iOS) return inset;
-    return (inset - 22).clamp(0.0, inset);
-  }
+  /// Empty space kept under the labels for the device's bottom inset. The
+  /// app frame (safeAppFrame) already keeps the inset clear — trimmed on
+  /// iPhones so the bar sits near the screen edge — so this is normally 0.
+  static double bottomInset(BuildContext context) =>
+      MediaQuery.paddingOf(context).bottom;
 
   /// Total height this widget takes, including the safe-area inset.
   static double totalHeight(BuildContext context) =>
