@@ -20,7 +20,6 @@ import '../../widgets/app_header.dart';
 import '../../widgets/h_scroll_auto.dart';
 import '../../widgets/trip_card_parts.dart';
 import '../trip_detail/trip_detail_screen.dart';
-import '../booking/booking_sheet.dart';
 import '../../widgets/vip_ribbon.dart';
 
 enum _SortMode {
@@ -590,7 +589,7 @@ class _UmrahResultsScreenState extends State<UmrahResultsScreen> {
                       builder: (_) => TripDetailScreen(
                           trip: trip, initialDate: _selectedDate))),
                   onBook: () => Navigator.of(context).push(MaterialPageRoute(
-                      builder: (_) => BookingSheet(
+                      builder: (_) => TripDetailScreen(
                           trip: trip, initialDate: _selectedDate))),
                 );
               },
@@ -1043,10 +1042,10 @@ class _ResultCard extends StatelessWidget {
                         color: tier.gradient == null ? accent : null,
                         gradient: tier.gradient,
                         borderRadius: BorderRadius.circular(9)),
-                    child: Text(tr('trip.card.book'),
+                    child: Text(tr('trip.card.view'),
                         style: const TextStyle(
                             color: Colors.white,
-                            fontSize: 12.5,
+                            fontSize: 15,
                             fontWeight: FontWeight.w800)),
                   ),
                 ),
