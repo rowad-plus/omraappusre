@@ -24,6 +24,9 @@ class ApiTracking {
   final bool companyContactVisible;
   final Map<String, dynamic>? hotel;
   final Map<String, dynamic>? bus;
+  /// Names of the trip's hotel / bus supervisors.
+  final List<String> hotelSupervisors;
+  final List<String> busSupervisors;
   final bool needsPayment;
   final String? paymentStatusLabel;
   final double total;
@@ -51,6 +54,8 @@ class ApiTracking {
     this.companyContactVisible = false,
     this.hotel,
     this.bus,
+    this.hotelSupervisors = const [],
+    this.busSupervisors = const [],
     required this.needsPayment,
     this.paymentStatusLabel,
     required this.total,
@@ -89,6 +94,8 @@ class ApiTracking {
       companyContactVisible: company['contact_visible'] == true,
       hotel: j['hotel'] as Map<String, dynamic>?,
       bus: j['bus'] as Map<String, dynamic>?,
+      hotelSupervisors: ((j['supervisors'] as Map<String, dynamic>?)?['hotel'] as List<dynamic>? ?? []).map((e) => '$e').toList(),
+      busSupervisors: ((j['supervisors'] as Map<String, dynamic>?)?['bus'] as List<dynamic>? ?? []).map((e) => '$e').toList(),
       needsPayment: payment['needs_payment'] == true,
       paymentStatusLabel: payment['status'] != null ? payment['status_label'] as String? : null,
       total: (payment['total'] as num?)?.toDouble() ?? 0,
