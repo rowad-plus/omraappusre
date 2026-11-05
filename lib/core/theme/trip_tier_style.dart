@@ -69,8 +69,9 @@ class TripTierStyle {
     footerBorder: AppColors.border,
   );
 
+  /// Whole app uses the gold set (see [goldOf]) so every page matches.
   static TripTierStyle of({required bool vip, required bool premium}) =>
-      vip ? TripTierStyle.vip : (premium ? TripTierStyle.premium : economy);
+      goldOf(vip: vip, premium: premium);
 
   // ── All-gold set (search results page): every card is gold, the tier
   // only changes how rich the gold is (economy plain → premium → VIP),

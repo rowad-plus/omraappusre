@@ -146,7 +146,7 @@ class TripCardGold extends StatelessWidget {
                       if (trip.busType != null)
                         _meta(
                             FontAwesomeIcons.bus,
-                            tr('trip.detail.bus_type')
+                            tr('trip.card.bus_seats')
                                 .replaceAll(':n', trip.busType!),
                             accent),
                       if (trip.provider.isNotEmpty)

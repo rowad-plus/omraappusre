@@ -901,7 +901,7 @@ class _ResultCard extends StatelessWidget {
                                 FaIcon(FontAwesomeIcons.bus,
                                     size: 10, color: accent),
                                 Text(
-                                    tr('trip.detail.bus_type')
+                                    tr('trip.card.bus_seats')
                                         .replaceAll(':n', t.busType!),
                                     style: const TextStyle(
                                         fontSize: 11,
