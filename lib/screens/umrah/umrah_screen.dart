@@ -5,7 +5,6 @@ import '../../core/theme/app_colors.dart';
 import '../../l10n/translations.dart';
 import '../../widgets/app_header.dart';
 import '../../widgets/search_bar_widget.dart';
-import '../../widgets/section_vip_header.dart';
 import '../../widgets/provider_scroller.dart';
 import '../../widgets/trip_card_gold.dart';
 import '../../widgets/design_umrah_banner.dart';
@@ -202,6 +201,7 @@ class _UmrahScreenState extends State<UmrahScreen> {
     final vipTrips = _trips.where((t) => t.vip).toList();
     final premiumTrips = _trips.where((t) => t.premium).toList();
     final economyTrips = _trips.where((t) => !t.vip && !t.premium).toList();
+    final allTrips = [...vipTrips, ...premiumTrips, ...economyTrips];
 
     return Scaffold(
       backgroundColor: AppColors.bg,
@@ -243,83 +243,43 @@ class _UmrahScreenState extends State<UmrahScreen> {
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    if (vipTrips.isNotEmpty)
-                      Padding(
-                        padding: const EdgeInsets.all(14),
-                        child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              SectionVipHeader(
-                                icon: FontAwesomeIcons.crown,
-                                label: tr('trip.umrah.vip_section_title'),
-                                gradient: AppColors.vipGradient,
-                                lineColor: const Color(0x80E5E9F2),
-                                moreColor: AppColors.tierVip,
-                                onMoreTap: () =>
-                                    NavState.openSearch(type: 'vip'),
+                    // Every package in one list, one under another (VIP,
+                    // then premium, then economy; the corner ribbon marks
+                    // the tier). The design-your-umrah strip sits after
+                    // the 3rd card.
+                    Padding(
+                      padding: const EdgeInsets.all(14),
+                      child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            Row(children: [
+                              Expanded(
+                                child: Text(
+                                    '${tr('trip.umrah.all_section_title')} (${allTrips.length})',
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: const TextStyle(
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.w800,
+                                        color: AppColors.text)),
                               ),
-                              _goldCardGrid(vipTrips),
-                            ]),
-                      ),
-                    if (vipTrips.isNotEmpty &&
-                        (premiumTrips.isNotEmpty || economyTrips.isNotEmpty))
-                      Container(height: 6, color: AppColors.bg),
-                    if (premiumTrips.isNotEmpty)
-                      Padding(
-                        padding: const EdgeInsets.all(14),
-                        child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              SectionVipHeader(
-                                icon: FontAwesomeIcons.gem,
-                                label: tr('trip.umrah.premium_section_title'),
-                                gradient: AppColors.premiumGradient,
-                                lineColor: const Color(0x80E5E9F2),
-                                moreColor: AppColors.tierPremium,
-                                onMoreTap: () =>
-                                    NavState.openSearch(type: 'premium'),
+                              const SizedBox(width: 8),
+                              GestureDetector(
+                                onTap: () => NavState.openSearch(),
+                                child: Text(tr('common.viewAll'),
+                                    style: const TextStyle(
+                                        fontSize: 11.5,
+                                        fontWeight: FontWeight.w700,
+                                        color: AppColors.brand)),
                               ),
-                              _goldCardGrid(premiumTrips),
                             ]),
-                      ),
-                    const DesignUmrahBanner(),
-                    if (premiumTrips.isNotEmpty && economyTrips.isNotEmpty)
-                      Container(height: 6, color: AppColors.bg),
-                    if (economyTrips.isNotEmpty)
-                      Padding(
-                        padding: const EdgeInsets.all(14),
-                        child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(children: [
-                                Expanded(
-                                    child: GestureDetector(
-                                  onTap: () =>
-                                      NavState.openSearch(type: 'economy'),
-                                  child: Text(
-                                      tr('trip.umrah.economy_section_title'),
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: const TextStyle(
-                                          fontSize: 15,
-                                          fontWeight: FontWeight.w800,
-                                          color: AppColors.text)),
-                                )),
-                                const SizedBox(width: 8),
-                                GestureDetector(
-                                  onTap: () =>
-                                      NavState.openSearch(type: 'economy'),
-                                  child: Text(tr('common.viewAll'),
-                                      style: const TextStyle(
-                                          fontSize: 11.5,
-                                          fontWeight: FontWeight.w700,
-                                          color: AppColors.tierEconomy)),
-                                ),
-                              ]),
-                              const SizedBox(height: 12),
-                              _goldCardGrid(economyTrips),
-                            ]),
-                      ),
+                            const SizedBox(height: 12),
+                            _goldCardGrid(allTrips.take(3).toList()),
+                            const DesignUmrahStrip(),
+                            if (allTrips.length > 3)
+                              _goldCardGrid(allTrips.skip(3).toList()),
+                          ]),
+                    ),
                     if (_providers.isNotEmpty)
                       ProviderScroller(
                           title: tr('trip.umrah.providers_title'),

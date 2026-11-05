@@ -120,3 +120,61 @@ class DesignUmrahBanner extends StatelessWidget {
     );
   }
 }
+
+/// Small one-line "design your umrah" link shown between home trip cards
+/// (replaces the big banner at the top of the home page).
+class DesignUmrahStrip extends StatelessWidget {
+  const DesignUmrahStrip({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () => NavState.tab.value = 1,
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 14),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        decoration: BoxDecoration(
+          color: AppColors.brandSoft,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: AppColors.brandLine),
+        ),
+        child: Row(children: [
+          Container(
+            width: 36,
+            height: 36,
+            alignment: Alignment.center,
+            decoration: const BoxDecoration(
+                color: AppColors.brand, shape: BoxShape.circle),
+            child: const Icon(Icons.auto_fix_high,
+                size: 18, color: Colors.white),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(tr('design.hub.card_title'),
+                    style: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w800,
+                        color: AppColors.text)),
+                Text(tr('design.hub.eyebrow'),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                        fontSize: 11.5, color: AppColors.muted)),
+              ],
+            ),
+          ),
+          Icon(
+              Directionality.of(context) == TextDirection.rtl
+                  ? Icons.chevron_left_rounded
+                  : Icons.chevron_right_rounded,
+              size: 22,
+              color: AppColors.brand),
+        ]),
+      ),
+    );
+  }
+}

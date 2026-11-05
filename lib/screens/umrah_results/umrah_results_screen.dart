@@ -797,7 +797,8 @@ class _ResultCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = result;
     // Same per-tier treatment as the home screen's TripCardUC.
-    final tier = TripTierStyle.of(vip: t.vip, premium: t.premium);
+    // Results page: every card gold; tier only changes the gold's depth.
+    final tier = TripTierStyle.goldOf(vip: t.vip, premium: t.premium);
     final accent = tier.accent;
     final stops = t.stops.length >= 2
         ? t.stops

@@ -71,4 +71,34 @@ class TripTierStyle {
 
   static TripTierStyle of({required bool vip, required bool premium}) =>
       vip ? TripTierStyle.vip : (premium ? TripTierStyle.premium : economy);
+
+  // ── All-gold set (search results page): every card is gold, the tier
+  // only changes how rich the gold is (economy plain → premium → VIP),
+  // plus the corner ribbon on VIP / premium.
+
+  static const goldEconomy = TripTierStyle._(
+    accent: AppColors.brand,
+    cardColor: Colors.white,
+    softBg: Color(0xFFFDF9F0),
+    footerBg: Color(0xFFFDF9F0),
+    footerBorder: AppColors.border,
+  );
+
+  // Premium: espresso brown with gold (matches its black/gold ribbon).
+  static const _espresso = Color(0xFF3B2A18);
+  static final goldPremium = TripTierStyle._(
+    accent: _espresso,
+    gradient: const LinearGradient(
+        colors: [Color(0xFF5A4126), Color(0xFF241911)]),
+    cardColor: const Color(0xFFFFFDF8),
+    borderColor: _espresso.withValues(alpha: 0.35),
+    softBg: const Color(0xFFF5EFE6),
+    footerBg: const Color(0xFFF7F1E7),
+    footerBorder: _espresso.withValues(alpha: 0.2),
+    badgeIcon: FontAwesomeIcons.gem,
+    badgeLabelKey: 'trip.type.premium',
+  );
+
+  static TripTierStyle goldOf({required bool vip, required bool premium}) =>
+      vip ? TripTierStyle.vip : (premium ? goldPremium : goldEconomy);
 }
