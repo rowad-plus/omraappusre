@@ -6,6 +6,7 @@ import '../core/theme/trip_tier_style.dart';
 import '../l10n/translations.dart';
 import '../models/trip.dart';
 import 'vip_ribbon.dart';
+import 'card_media.dart';
 
 /// Home-page trip card in the gold design shared with omraway.com
 /// (`_trip-card-gold.blade.php`): photo on top with the destination chip,
@@ -82,7 +83,10 @@ class TripCardGold extends StatelessWidget {
               child: Stack(
                 fit: StackFit.expand,
                 children: [
-                  _image(),
+                  CardMedia(
+                      video: trip.cardVideo,
+                      photos: trip.gallery,
+                      fallback: _image()),
                   // No "مقترح" badge on home — only search / all-trips lists.
                   PositionedDirectional(
                     bottom: 12,

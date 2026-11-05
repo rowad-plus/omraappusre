@@ -62,6 +62,9 @@ class ApiTrip {
   final String? busType;
   /// Company-uploaded trip videos (detail endpoint only).
   final List<String> videos;
+  /// List endpoint: card photos (up to 6) and the first video, if any.
+  final List<String> gallery;
+  final String? cardVideo;
 
   const ApiTrip({
     required this.id,
@@ -100,6 +103,8 @@ class ApiTrip {
     this.madinahDays = 0,
     this.busType,
     this.videos = const [],
+    this.gallery = const [],
+    this.cardVideo,
   });
 
   factory ApiTrip.fromJson(Map<String, dynamic> j) {
@@ -152,6 +157,8 @@ class ApiTrip {
       madinahDays: (j['madinah_days'] as num?)?.toInt() ?? 0,
       busType: j['bus_type']?.toString(),
       videos: (j['videos'] as List<dynamic>? ?? []).map((e) => '$e').toList(),
+      gallery: (j['gallery'] as List<dynamic>? ?? []).map((e) => '$e').toList(),
+      cardVideo: j['card_video'] as String?,
     );
   }
 
@@ -245,6 +252,8 @@ class ApiTrip {
         ],
         departureCityId: departureCityId,
         busType: busType,
+        gallery: gallery,
+        cardVideo: cardVideo,
       );
 }
 

@@ -51,6 +51,9 @@ class Trip {
   final String programType; // 'trip.program.umrah' | 'umrahHajj' | 'hajj'
   /// '32' | '49' passengers, or null.
   final String? busType;
+  /// Card photos (swipe strip) and the first company video (muted autoplay).
+  final List<String> gallery;
+  final String? cardVideo;
   /// The trip's real backend departure city id — used to sort a country's
   /// trip list so the customer's selected departure city (if any) comes
   /// first, without excluding the rest of the country's trips. Null for
@@ -85,6 +88,8 @@ class Trip {
     this.countryCode = 'EG',
     this.programType = 'trip.program.umrah',
     this.busType,
+    this.gallery = const [],
+    this.cardVideo,
     this.departureCityId,
   });
 }
