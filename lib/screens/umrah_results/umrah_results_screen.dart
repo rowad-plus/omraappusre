@@ -258,6 +258,7 @@ class _UmrahResultsScreenState extends State<UmrahResultsScreen> {
         _ => 'اقتصادية',
       },
       days: '${t.durationDays}',
+      busType: t.busType,
       travelers: t.type,
       price: t.price.toInt(),
       currency: t.currency,
@@ -894,6 +895,19 @@ class _ResultCard extends StatelessWidget {
                               Text(tr(t.days),
                                   style: const TextStyle(
                                       fontSize: 11, color: AppColors.muted)),
+                              if (t.busType != null) ...[
+                                const Text('·',
+                                    style: TextStyle(color: AppColors.muted)),
+                                FaIcon(FontAwesomeIcons.bus,
+                                    size: 10, color: accent),
+                                Text(
+                                    tr('trip.detail.bus_type')
+                                        .replaceAll(':n', t.busType!),
+                                    style: const TextStyle(
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.w700,
+                                        color: AppColors.text)),
+                              ],
                             ]),
                         const SizedBox(height: 6),
                         Wrap(spacing: 5, runSpacing: 5, children: [

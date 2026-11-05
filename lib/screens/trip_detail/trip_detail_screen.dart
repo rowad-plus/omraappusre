@@ -1,5 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import '../../widgets/trip_video_player.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
@@ -268,6 +269,18 @@ class _TripDetailScreenState extends State<TripDetailScreen> {
                       ],
                     ),
                   ),
+                  if ((_detail?.videos ?? const []).isNotEmpty)
+                    _section(
+                      icon: FontAwesomeIcons.video,
+                      title: tr('trip.detail.section_videos'),
+                      child: Column(children: [
+                        for (final v in _detail!.videos)
+                          Padding(
+                            padding: const EdgeInsets.only(bottom: 10),
+                            child: TripVideoPlayer(url: v),
+                          ),
+                      ]),
+                    ),
                   _section(
                     icon: FontAwesomeIcons.solidStar,
                     title: tr('trip.detail.section_features'),

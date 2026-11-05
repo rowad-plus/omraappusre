@@ -138,6 +138,12 @@ class TripCardGold extends StatelessWidget {
                           FontAwesomeIcons.solidClock,
                           '${_dayNumber(tr(trip.days))} ${tr('trip.days.unit')}',
                           accent),
+                      if (trip.busType != null)
+                        _meta(
+                            FontAwesomeIcons.bus,
+                            tr('trip.detail.bus_type')
+                                .replaceAll(':n', trip.busType!),
+                            accent),
                       if (trip.provider.isNotEmpty)
                         _meta(FontAwesomeIcons.solidBuilding, tr(trip.provider),
                             accent),

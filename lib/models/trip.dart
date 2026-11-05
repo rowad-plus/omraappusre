@@ -49,6 +49,8 @@ class Trip {
   final List<String> feats;
   final String countryCode; // home/departure-market country, e.g. 'EG', 'SA'
   final String programType; // 'trip.program.umrah' | 'umrahHajj' | 'hajj'
+  /// '32' | '49' passengers, or null.
+  final String? busType;
   /// The trip's real backend departure city id — used to sort a country's
   /// trip list so the customer's selected departure city (if any) comes
   /// first, without excluding the rest of the country's trips. Null for
@@ -82,6 +84,7 @@ class Trip {
     this.feats = const [],
     this.countryCode = 'EG',
     this.programType = 'trip.program.umrah',
+    this.busType,
     this.departureCityId,
   });
 }

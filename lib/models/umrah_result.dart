@@ -37,6 +37,8 @@ class UmrahResult {
   final List<TripStop> stops;
   final String countryCode;
   final String programType; // 'trip.program.umrah' | 'umrahHajj' | 'hajj'
+  /// '32' | '49' passengers, or null.
+  final String? busType;
 
   const UmrahResult({
     this.apiId,
@@ -64,6 +66,7 @@ class UmrahResult {
     this.stops = const [],
     this.countryCode = 'EG',
     this.programType = 'trip.program.umrah',
+    this.busType,
   });
 
   Trip toTrip({required String date}) => Trip(
