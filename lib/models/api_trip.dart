@@ -55,6 +55,9 @@ class ApiTrip {
   /// Whether the authenticated user has this trip in their comparison
   /// list — same null-when-not-computed convention as [isFavorited].
   final bool? isCompared;
+  /// Saudi trips: 'visit' (Madinah day trip, no nights) | 'overnight'; null otherwise.
+  final String? madinahStay;
+  final int madinahDays;
 
   const ApiTrip({
     required this.id,
@@ -89,6 +92,8 @@ class ApiTrip {
     this.distanceFromHaram,
     this.isFavorited,
     this.isCompared,
+    this.madinahStay,
+    this.madinahDays = 0,
   });
 
   factory ApiTrip.fromJson(Map<String, dynamic> j) {
@@ -137,6 +142,8 @@ class ApiTrip {
       distanceFromHaram: j['distance_from_haram'] as int?,
       isFavorited: j['is_favorited'] as bool?,
       isCompared: j['is_compared'] as bool?,
+      madinahStay: j['madinah_stay'] as String?,
+      madinahDays: (j['madinah_days'] as num?)?.toInt() ?? 0,
     );
   }
 

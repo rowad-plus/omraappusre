@@ -226,7 +226,32 @@ class _TripDetailScreenState extends State<TripDetailScreen> {
                   _section(
                     icon: FontAwesomeIcons.route,
                     title: tr('trip.detail.section_route'),
-                    child: CardRouteRow(trip: t),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        CardRouteRow(trip: t),
+                        // Saudi trips: Madinah day visit vs overnight stay.
+                        if (_detail?.madinahStay != null) ...[
+                          const SizedBox(height: 10),
+                          Row(children: [
+                            const FaIcon(FontAwesomeIcons.mosque,
+                                size: 13, color: AppColors.brand),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                  _detail!.madinahStay == 'visit'
+                                      ? tr('trip.detail.madinah_visit')
+                                      : tr('trip.detail.madinah_stay').replaceAll(
+                                          ':n', '${_detail!.madinahDays}'),
+                                  style: const TextStyle(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w700,
+                                      color: AppColors.text)),
+                            ),
+                          ]),
+                        ],
+                      ],
+                    ),
                   ),
                   _section(
                     icon: FontAwesomeIcons.solidStar,
