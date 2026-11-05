@@ -269,6 +269,17 @@ class _TripDetailScreenState extends State<TripDetailScreen> {
                       ],
                     ),
                   ),
+                  if (_detail?.priceGoOnly != null || _detail?.priceReturnOnly != null)
+                    _section(
+                      icon: FontAwesomeIcons.bus,
+                      title: tr('trip.detail.one_way_title'),
+                      child: Column(children: [
+                        if (_detail!.priceGoOnly != null)
+                          _oneWayRow(tr('trip.detail.one_way_go'), _detail!.priceGoOnly!, _detail!.currency),
+                        if (_detail!.priceReturnOnly != null)
+                          _oneWayRow(tr('trip.detail.one_way_back'), _detail!.priceReturnOnly!, _detail!.currency),
+                      ]),
+                    ),
                   if ((_detail?.videos ?? const []).isNotEmpty)
                     _section(
                       icon: FontAwesomeIcons.video,
@@ -930,4 +941,17 @@ class _TripDetailScreenState extends State<TripDetailScreen> {
       ),
     );
   }
+
+  Widget _oneWayRow(String label, double price, String currency) => Padding(
+        padding: const EdgeInsets.symmetric(vertical: 6),
+        child: Row(children: [
+          Expanded(
+            child: Text(label,
+                style: const TextStyle(fontSize: 13, color: AppColors.text)),
+          ),
+          Text('${price.toStringAsFixed(0)} $currency',
+              style: const TextStyle(
+                  fontSize: 14, fontWeight: FontWeight.w800, color: AppColors.brand)),
+        ]),
+      );
 }

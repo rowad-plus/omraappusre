@@ -62,6 +62,9 @@ class ApiTrip {
   final String? busType;
   /// Company-uploaded trip videos (detail endpoint only).
   final List<String> videos;
+  /// Saudi trips: optional one-way prices (detail endpoint).
+  final double? priceGoOnly;
+  final double? priceReturnOnly;
   /// List endpoint: card photos (up to 6) and the first video, if any.
   final List<String> gallery;
   final String? cardVideo;
@@ -103,6 +106,8 @@ class ApiTrip {
     this.madinahDays = 0,
     this.busType,
     this.videos = const [],
+    this.priceGoOnly,
+    this.priceReturnOnly,
     this.gallery = const [],
     this.cardVideo,
   });
@@ -157,6 +162,8 @@ class ApiTrip {
       madinahDays: (j['madinah_days'] as num?)?.toInt() ?? 0,
       busType: j['bus_type']?.toString(),
       videos: (j['videos'] as List<dynamic>? ?? []).map((e) => '$e').toList(),
+      priceGoOnly: (j['price_go_only'] as num?)?.toDouble(),
+      priceReturnOnly: (j['price_return_only'] as num?)?.toDouble(),
       gallery: (j['gallery'] as List<dynamic>? ?? []).map((e) => '$e').toList(),
       cardVideo: j['card_video'] as String?,
     );
