@@ -58,6 +58,8 @@ class ApiTrip {
   /// Saudi trips: 'visit' (Madinah day trip, no nights) | 'overnight'; null otherwise.
   final String? madinahStay;
   final int madinahDays;
+  /// '32' | '49' passengers, or null.
+  final String? busType;
 
   const ApiTrip({
     required this.id,
@@ -94,6 +96,7 @@ class ApiTrip {
     this.isCompared,
     this.madinahStay,
     this.madinahDays = 0,
+    this.busType,
   });
 
   factory ApiTrip.fromJson(Map<String, dynamic> j) {
@@ -144,6 +147,7 @@ class ApiTrip {
       isCompared: j['is_compared'] as bool?,
       madinahStay: j['madinah_stay'] as String?,
       madinahDays: (j['madinah_days'] as num?)?.toInt() ?? 0,
+      busType: j['bus_type']?.toString(),
     );
   }
 

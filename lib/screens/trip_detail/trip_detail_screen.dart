@@ -250,6 +250,21 @@ class _TripDetailScreenState extends State<TripDetailScreen> {
                             ),
                           ]),
                         ],
+                        if (_detail?.busType != null) ...[
+                          const SizedBox(height: 8),
+                          Row(children: [
+                            const FaIcon(FontAwesomeIcons.bus,
+                                size: 13, color: AppColors.brand),
+                            const SizedBox(width: 8),
+                            Text(
+                                tr('trip.detail.bus_type')
+                                    .replaceAll(':n', _detail!.busType!),
+                                style: const TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w700,
+                                    color: AppColors.text)),
+                          ]),
+                        ],
                       ],
                     ),
                   ),
