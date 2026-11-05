@@ -49,13 +49,14 @@ class TripCardGold extends StatelessWidget {
         : '${date.day}/${date.month}/${date.year}';
 
 
-    // Each tier keeps its own colour (VIP gold, premium purple, economy
-    // green) for the tag, icons, price, outline and button.
-    final style = TripTierStyle.of(vip: trip.vip, premium: trip.premium);
+    // Same all-gold set as the search results: economy gold, premium
+    // espresso + gold, VIP rich gold (icons, price, outline and button).
+    final style = TripTierStyle.goldOf(vip: trip.vip, premium: trip.premium);
     final accent = style.accent;
     final buttonGradient = trip.vip
         ? _goldGradient
-        : (style.gradient ?? AppColors.economyGradient);
+        : (style.gradient ??
+            const LinearGradient(colors: [AppColors.brand, AppColors.brandDark]));
     final buttonText = trip.vip ? const Color(0xFF1A1408) : Colors.white;
 
     return GestureDetector(
