@@ -1036,13 +1036,16 @@ class _ResultCard extends StatelessWidget {
                 GestureDetector(
                   onTap: onBook,
                   child: Container(
+                    // Wide button; the label itself stays a plain word.
+                    constraints: const BoxConstraints(minWidth: 120),
                     padding:
-                        const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                        const EdgeInsets.symmetric(horizontal: 22, vertical: 9),
                     decoration: BoxDecoration(
                         color: tier.gradient == null ? accent : null,
                         gradient: tier.gradient,
                         borderRadius: BorderRadius.circular(9)),
-                    child: Text(tr('trip.card.view'),
+                    child: Text(tr('trip.card.book'),
+                        textAlign: TextAlign.center,
                         style: const TextStyle(
                             color: Colors.white,
                             fontSize: 15,
