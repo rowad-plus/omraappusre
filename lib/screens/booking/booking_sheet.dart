@@ -96,6 +96,14 @@ class _BookingSheetState extends State<BookingSheet> {
   bool _quoteLoading = false;
   int _quoteSeq = 0;
 
+  /// Extra rooms: the company's flat price per extra room (null = the trip
+  /// doesn't offer it). The base price covers one room → at most persons−1.
+  double? _extraRoomPrice;
+  int _extraRooms = 0;
+  int get _maxExtraRooms => _personsCount > 1 ? _personsCount - 1 : 0;
+  double get _extraRoomsCost =>
+      (_extraRoomPrice ?? 0) > 0 ? _extraRooms * _extraRoomPrice! : 0;
+
   int get _personsCount => _adults + (_showChildren ? _children : 0);
 
   /// Children counter only outside Saudi Arabia.
@@ -106,6 +114,7 @@ class _BookingSheetState extends State<BookingSheet> {
   void _onPersonsChanged() {
     _syncTravelerEntries();
     if (_personsCount < 2) _privateRoom = false;
+    if (_extraRooms > _maxExtraRooms) _extraRooms = _maxExtraRooms;
     // Called from inside a setState callback — defer the quote refresh
     // (which calls setState itself) until after this frame's update.
     Future.microtask(_refreshPrivateRoomQuote);
@@ -173,6 +182,7 @@ class _BookingSheetState extends State<BookingSheet> {
         ];
       }
       _datesAreComputed = detail?.datesAreComputed ?? false;
+      _extraRoomPrice = (detail?.extraRoomPrice ?? 0) > 0 ? detail!.extraRoomPrice : null;
       _datesLoading = false;
       if (_dates.length == 1) {
         _selectedDate = _dates.first;
@@ -284,6 +294,7 @@ class _BookingSheetState extends State<BookingSheet> {
           tripDateId: _selectedDate?.id ?? '',
           notes: _notesCtrl.text.trim(),
           privateRoom: _privateRoomApplies,
+          extraRooms: _extraRoomPrice != null ? _extraRooms : 0,
         );
     if (!mounted) return;
     if (result.unauthorized) {
@@ -427,6 +438,13 @@ class _BookingSheetState extends State<BookingSheet> {
                                     _onPersonsChanged();
                                   })),
                         if (_personsCount > 1) _privateRoomRow(),
+                        if (_personsCount > 1 && _extraRoomPrice != null)
+                          _counterRow(
+                              tr('booking.travelers.extraRoomsLabel'),
+                              '${tr('booking.travelers.extraRoomsHint')} +${NumberFormat('#,##0', 'en').format(_extraRoomPrice)}',
+                              _extraRooms,
+                              (v) => setState(() =>
+                                  _extraRooms = v.clamp(0, _maxExtraRooms))),
                       ]),
                     ),
                     const SizedBox(height: 14),
@@ -814,10 +832,14 @@ class _BookingSheetState extends State<BookingSheet> {
     final currency =
         widget.trip.price.replaceAll(RegExp(r'[0-9.,]'), '').trim();
     final usePrivate = _privateRoomApplies && _privateRoomTotal != null;
-    final total = usePrivate ? _privateRoomTotal! : unitPrice * _personsCount;
-    final label = usePrivate
+    final total = (usePrivate ? _privateRoomTotal! : unitPrice * _personsCount) +
+        _extraRoomsCost;
+    var label = usePrivate
         ? '${tr('booking.summary.privateRoomPrice')} ($_personsCount)'
         : '${tr('booking.summary.price')} (×$_personsCount)';
+    if (_extraRoomsCost > 0) {
+      label += ' + ${tr('booking.summary.extraRooms')} ×$_extraRooms';
+    }
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(

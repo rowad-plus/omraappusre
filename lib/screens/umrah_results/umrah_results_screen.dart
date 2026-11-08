@@ -20,6 +20,7 @@ import '../../widgets/app_header.dart';
 import '../../widgets/h_scroll_auto.dart';
 import '../../widgets/trip_card_parts.dart';
 import '../trip_detail/trip_detail_screen.dart';
+import '../booking/booking_sheet.dart';
 import '../../widgets/vip_ribbon.dart';
 
 enum _SortMode {
@@ -589,8 +590,10 @@ class _UmrahResultsScreenState extends State<UmrahResultsScreen> {
                   onTap: () => Navigator.of(context).push(MaterialPageRoute(
                       builder: (_) => TripDetailScreen(
                           trip: trip, initialDate: _selectedDate))),
+                  // "احجز الآن" on the card → straight to the booking form
+                  // (same as the home/list cards), carrying the searched date.
                   onBook: () => Navigator.of(context).push(MaterialPageRoute(
-                      builder: (_) => TripDetailScreen(
+                      builder: (_) => BookingSheet(
                           trip: trip, initialDate: _selectedDate))),
                 );
               },

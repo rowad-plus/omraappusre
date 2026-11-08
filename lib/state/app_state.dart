@@ -638,9 +638,11 @@ class AppState extends ChangeNotifier {
     required String tripDateId,
     String? notes,
     bool privateRoom = false,
+    int extraRooms = 0,
   }) async {
     try {
       final res = await api.post('/bookings', {
+        if (extraRooms > 0) 'extra_rooms': extraRooms,
         'trip_id': tripId,
         'persons_count': personsCount,
         'country_code': countryCode,

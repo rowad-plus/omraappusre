@@ -65,6 +65,8 @@ class ApiTrip {
   /// Saudi trips: optional one-way prices (detail endpoint).
   final double? priceGoOnly;
   final double? priceReturnOnly;
+  /// Company's flat price per extra room for the whole trip (detail endpoint).
+  final double? extraRoomPrice;
   /// List endpoint: card photos (up to 6) and the first video, if any.
   final List<String> gallery;
   final String? cardVideo;
@@ -108,6 +110,7 @@ class ApiTrip {
     this.videos = const [],
     this.priceGoOnly,
     this.priceReturnOnly,
+    this.extraRoomPrice,
     this.gallery = const [],
     this.cardVideo,
   });
@@ -164,6 +167,7 @@ class ApiTrip {
       videos: (j['videos'] as List<dynamic>? ?? []).map((e) => '$e').toList(),
       priceGoOnly: (j['price_go_only'] as num?)?.toDouble(),
       priceReturnOnly: (j['price_return_only'] as num?)?.toDouble(),
+      extraRoomPrice: (j['extra_room_price'] as num?)?.toDouble(),
       gallery: (j['gallery'] as List<dynamic>? ?? []).map((e) => '$e').toList(),
       cardVideo: j['card_video'] as String?,
     );
