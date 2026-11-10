@@ -616,7 +616,9 @@ class _BookingSheetState extends State<BookingSheet> {
               onPressed: _submitting ? null : () => _submit(),
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.blue,
-                padding: const EdgeInsets.symmetric(vertical: 15),
+                // Same height as the WhatsApp button beside it.
+                minimumSize: const Size.fromHeight(54),
+                padding: EdgeInsets.zero,
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12)),
               ),
@@ -648,7 +650,7 @@ class _BookingSheetState extends State<BookingSheet> {
             message: tr('booking.whatsapp.button'),
             child: SizedBox(
               width: 54,
-              height: 50,
+              height: 54,
               child: ElevatedButton(
                 onPressed:
                     _submitting ? null : () => _submit(viaWhatsapp: true),
