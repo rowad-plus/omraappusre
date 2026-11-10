@@ -610,52 +610,59 @@ class _BookingSheetState extends State<BookingSheet> {
           border: Border(top: BorderSide(color: AppColors.border))),
       child: SafeArea(
         top: false,
-        child: Column(mainAxisSize: MainAxisSize.min, children: [
-          ElevatedButton(
-            onPressed: _submitting ? null : () => _submit(),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.blue,
-              padding: const EdgeInsets.symmetric(vertical: 15),
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12)),
+        child: Row(children: [
+          Expanded(
+            child: ElevatedButton(
+              onPressed: _submitting ? null : () => _submit(),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.blue,
+                padding: const EdgeInsets.symmetric(vertical: 15),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12)),
+              ),
+              child: _submitting
+                  ? const SizedBox(
+                      width: 18,
+                      height: 18,
+                      child: CircularProgressIndicator(
+                          strokeWidth: 2, color: Colors.white))
+                  : Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const FaIcon(FontAwesomeIcons.check,
+                            size: 14, color: Colors.white),
+                        const SizedBox(width: 8),
+                        Text(tr('booking.step.confirm'),
+                            style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 15,
+                                fontWeight: FontWeight.w800)),
+                      ],
+                    ),
             ),
-            child: _submitting
-                ? const SizedBox(
-                    width: 18,
-                    height: 18,
-                    child: CircularProgressIndicator(
-                        strokeWidth: 2, color: Colors.white))
-                : Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const FaIcon(FontAwesomeIcons.check,
-                          size: 14, color: Colors.white),
-                      const SizedBox(width: 8),
-                      Text(tr('booking.step.confirm'),
-                          style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 15,
-                              fontWeight: FontWeight.w800)),
-                    ],
-                  ),
           ),
-          const SizedBox(height: 8),
-          // "احجز عبر واتساب": saves the booking (no online payment) and
-          // opens WhatsApp with its details — same as the website.
-          OutlinedButton.icon(
-            onPressed: _submitting ? null : () => _submit(viaWhatsapp: true),
-            icon: const FaIcon(FontAwesomeIcons.whatsapp,
-                size: 17, color: AppColors.whatsapp),
-            label: Text(tr('booking.whatsapp.button'),
-                style: const TextStyle(
-                    color: AppColors.whatsapp,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w800)),
-            style: OutlinedButton.styleFrom(
-              minimumSize: const Size.fromHeight(46),
-              side: const BorderSide(color: AppColors.whatsapp, width: 1.5),
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12)),
+          const SizedBox(width: 10),
+          // "احجز عبر واتساب": small button beside confirm — saves the booking
+          // (no online payment) and opens WhatsApp with its details.
+          Tooltip(
+            message: tr('booking.whatsapp.button'),
+            child: SizedBox(
+              width: 54,
+              height: 50,
+              child: ElevatedButton(
+                onPressed:
+                    _submitting ? null : () => _submit(viaWhatsapp: true),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.whatsapp,
+                  disabledBackgroundColor:
+                      AppColors.whatsapp.withValues(alpha: 0.5),
+                  padding: EdgeInsets.zero,
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12)),
+                ),
+                child: const FaIcon(FontAwesomeIcons.whatsapp,
+                    size: 26, color: Colors.white),
+              ),
             ),
           ),
         ]),
