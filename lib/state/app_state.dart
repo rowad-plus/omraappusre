@@ -21,7 +21,8 @@ class LoginOtpResult {
   final bool success;
   final bool notRegistered;
   final String? error;
-  const LoginOtpResult({required this.success, this.notRegistered = false, this.error});
+  const LoginOtpResult(
+      {required this.success, this.notRegistered = false, this.error});
 }
 
 /// Result of creating a booking — carries the new booking's id (needed to
@@ -31,11 +32,23 @@ class BookingCreateResult {
   final int? bookingId;
   final String? paymentOption;
   final String? error;
+
   /// True when the server rejected the token (401) — the local session has
   /// already been cleared, so the caller should open the login sheet.
   final bool unauthorized;
+
+  /// "BK-00123" — quoted in the WhatsApp message.
+  final String? ref;
+  final String? whatsappNumber;
+  final String? tripUrl;
   const BookingCreateResult(
-      {this.bookingId, this.paymentOption, this.error, this.unauthorized = false});
+      {this.bookingId,
+      this.paymentOption,
+      this.error,
+      this.unauthorized = false,
+      this.ref,
+      this.whatsappNumber,
+      this.tripUrl});
 }
 
 /// Result of starting a NeoLeap payment — either a hosted payment page URL
@@ -127,7 +140,8 @@ class AppState extends ChangeNotifier {
     PushService.instance.register(
       (token) => api.post('/device-tokens', {
         'token': token,
-        'platform': defaultTargetPlatform == TargetPlatform.iOS ? 'ios' : 'android',
+        'platform':
+            defaultTargetPlatform == TargetPlatform.iOS ? 'ios' : 'android',
         'locale': LocaleState.locale.value.languageCode,
       }),
     );
@@ -150,13 +164,17 @@ class AppState extends ChangeNotifier {
       }
       return LoginOtpResult(success: false, error: e.message);
     } catch (_) {
-      return const LoginOtpResult(success: false, error: 'تعذّر الاتصال بالخادم، تحقق من الإنترنت وحاول مجددًا');
+      return const LoginOtpResult(
+          success: false,
+          error: 'تعذّر الاتصال بالخادم، تحقق من الإنترنت وحاول مجددًا');
     }
   }
 
   Future<String?> verifyLoginOtp(String phone, String code) async {
     try {
-      final res = await api.post('/auth/login/verify-otp', {'phone': phone, 'code': code}) as Map<String, dynamic>;
+      final res = await api
+              .post('/auth/login/verify-otp', {'phone': phone, 'code': code})
+          as Map<String, dynamic>;
       await _persistToken(res['token'] as String);
       _applyUserPayload(res['user'] as Map<String, dynamic>);
       isLoggedIn = true;
@@ -169,7 +187,8 @@ class AppState extends ChangeNotifier {
     }
   }
 
-  Future<String?> sendRegisterOtp({required String name, String? email, required String phone}) async {
+  Future<String?> sendRegisterOtp(
+      {required String name, String? email, required String phone}) async {
     try {
       await api.post('/auth/register/send-otp', {
         'name': name,
@@ -185,7 +204,11 @@ class AppState extends ChangeNotifier {
     }
   }
 
-  Future<String?> verifyRegisterOtp({required String name, String? email, required String phone, required String code}) async {
+  Future<String?> verifyRegisterOtp(
+      {required String name,
+      String? email,
+      required String phone,
+      required String code}) async {
     try {
       final res = await api.post('/auth/register/verify-otp', {
         'name': name,
@@ -345,13 +368,15 @@ class AppState extends ChangeNotifier {
 
   /// Support phone / email / WhatsApp from Admin → Settings
   /// (`/contact-info`); a missing or empty value comes back null.
-  Future<({String? phone, String? email, String? whatsapp})> fetchContactInfo() async {
+  Future<({String? phone, String? email, String? whatsapp})>
+      fetchContactInfo() async {
     try {
       final res = await api.get('/contact-info') as Map<String, dynamic>;
       String? v(String k) {
         final s = (res[k] as String?)?.trim();
         return (s == null || s.isEmpty) ? null : s;
       }
+
       return (phone: v('phone'), email: v('email'), whatsapp: v('whatsapp'));
     } catch (_) {
       return (phone: null, email: null, whatsapp: null);
@@ -387,11 +412,13 @@ class AppState extends ChangeNotifier {
   // ------- Timeline / لقطات feed (real backend; posts are public,
   // likes/comments/creation require auth) -------
 
-  Future<(List<ApiFeaturedCompany>, List<ApiNearbyTrip>)> fetchTimelineHome() async {
+  Future<(List<ApiFeaturedCompany>, List<ApiNearbyTrip>)>
+      fetchTimelineHome() async {
     try {
       final country = CountryState.selected.value?.code;
-      final res = await api.get('/timeline/home',
-          country == null ? null : {'country': country}) as Map<String, dynamic>;
+      final res = await api.get(
+              '/timeline/home', country == null ? null : {'country': country})
+          as Map<String, dynamic>;
       final companies = (res['featured_companies'] as List<dynamic>)
           .map((c) => ApiFeaturedCompany.fromJson(c as Map<String, dynamic>))
           .toList();
@@ -427,7 +454,8 @@ class AppState extends ChangeNotifier {
   /// Returns the new liked state, or null if the request failed.
   Future<bool?> toggleTimelineLike(int postId) async {
     try {
-      final res = await api.post('/timeline/posts/$postId/like') as Map<String, dynamic>;
+      final res = await api.post('/timeline/posts/$postId/like')
+          as Map<String, dynamic>;
       return res['liked'] as bool?;
     } catch (_) {
       return null;
@@ -436,7 +464,8 @@ class AppState extends ChangeNotifier {
 
   Future<List<ApiPostComment>> fetchTimelineComments(int postId) async {
     try {
-      final res = await api.get('/timeline/posts/$postId/comments') as Map<String, dynamic>;
+      final res = await api.get('/timeline/posts/$postId/comments')
+          as Map<String, dynamic>;
       return (res['comments'] as List<dynamic>)
           .map((c) => ApiPostComment.fromJson(c as Map<String, dynamic>))
           .toList();
@@ -447,7 +476,9 @@ class AppState extends ChangeNotifier {
 
   Future<ApiPostComment?> addTimelineComment(int postId, String content) async {
     try {
-      final res = await api.post('/timeline/posts/$postId/comments', {'content': content}) as Map<String, dynamic>;
+      final res = await api
+              .post('/timeline/posts/$postId/comments', {'content': content})
+          as Map<String, dynamic>;
       return ApiPostComment.fromJson(res['comment'] as Map<String, dynamic>);
     } catch (_) {
       return null;
@@ -505,7 +536,8 @@ class AppState extends ChangeNotifier {
   /// تحديثات حجز واحد (تسكين، باص، دفع، تجمّعات الشركة) لصفحة العمرة.
   Future<List<ApiNotification>> fetchBookingUpdates(int bookingId) async {
     try {
-      final res = await api.get('/notifications?booking_id=$bookingId') as Map<String, dynamic>;
+      final res = await api.get('/notifications?booking_id=$bookingId')
+          as Map<String, dynamic>;
       return (res['data'] as List<dynamic>)
           .map((n) => ApiNotification.fromJson(n as Map<String, dynamic>))
           .toList();
@@ -516,7 +548,8 @@ class AppState extends ChangeNotifier {
 
   Future<int> fetchUnreadNotificationsCount() async {
     try {
-      final res = await api.get('/notifications/unread-count') as Map<String, dynamic>;
+      final res =
+          await api.get('/notifications/unread-count') as Map<String, dynamic>;
       return res['unread_count'] as int? ?? 0;
     } catch (_) {
       return 0;
@@ -620,7 +653,8 @@ class AppState extends ChangeNotifier {
   /// /bookings/{id}/track page.
   Future<ApiTracking?> fetchTracking(int id) async {
     try {
-      final res = await api.get('/bookings/$id/tracking') as Map<String, dynamic>;
+      final res =
+          await api.get('/bookings/$id/tracking') as Map<String, dynamic>;
       return ApiTracking.fromJson(res);
     } catch (_) {
       return null;
@@ -639,9 +673,13 @@ class AppState extends ChangeNotifier {
     String? notes,
     bool privateRoom = false,
     int extraRooms = 0,
+    bool payAtBus = false,
+    bool viaWhatsapp = false,
   }) async {
     try {
       final res = await api.post('/bookings', {
+        if (payAtBus) 'pay_method': 'on_bus',
+        if (viaWhatsapp) 'via_whatsapp': true,
         if (extraRooms > 0) 'extra_rooms': extraRooms,
         'trip_id': tripId,
         'persons_count': personsCount,
@@ -656,6 +694,9 @@ class AppState extends ChangeNotifier {
       return BookingCreateResult(
         bookingId: res['booking_id'] as int?,
         paymentOption: res['payment_option'] as String?,
+        ref: res['ref'] as String?,
+        whatsappNumber: res['whatsapp_number'] as String?,
+        tripUrl: res['trip_url'] as String?,
       );
     } on ApiException catch (e) {
       if (e.statusCode == 401) {
@@ -795,7 +836,8 @@ class AppState extends ChangeNotifier {
   /// (hotel_pref / transport / extra / room_type). Null on failure.
   Future<Map<String, List<DesignOption>>?> fetchDesignOptions() async {
     try {
-      final res = await api.get('/design-umrah/options') as Map<String, dynamic>;
+      final res =
+          await api.get('/design-umrah/options') as Map<String, dynamic>;
       return {
         for (final e in res.entries)
           e.key: [
@@ -864,7 +906,8 @@ class AppState extends ChangeNotifier {
         'days_in_madinah': daysInMadinah,
         if (has(hotelStarsMakkah)) 'hotel_stars_makkah': hotelStarsMakkah,
         if (has(hotelStarsMadinah)) 'hotel_stars_madinah': hotelStarsMadinah,
-        if (hotelPrefs != null && hotelPrefs.isNotEmpty) 'hotel_prefs': hotelPrefs,
+        if (hotelPrefs != null && hotelPrefs.isNotEmpty)
+          'hotel_prefs': hotelPrefs,
         if (transport != null && transport.isNotEmpty) 'transport': transport,
         if (has(departureCountry)) 'departure_country': departureCountry,
         if (has(departureCity)) 'departure_city': departureCity,
@@ -909,7 +952,8 @@ class AppState extends ChangeNotifier {
   }
 
   Future<void> logout() async {
-    await PushService.instance.unregister((token) => api.delete('/device-tokens', {'token': token}));
+    await PushService.instance
+        .unregister((token) => api.delete('/device-tokens', {'token': token}));
     try {
       await api.post('/logout');
     } catch (_) {

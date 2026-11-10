@@ -23,8 +23,10 @@ class ApiTrip {
   final bool hasVisits;
   final String scheduleType;
   final String? nextDate;
+
   /// Weekly recurring trips: departure weekdays (0 = Sunday … 6 = Saturday).
   final List<int> recurrenceDays;
+
   /// Monthly recurring trips: day of the month they depart on.
   final int? recurrenceDayOfMonth;
   final String? thumbnail;
@@ -41,6 +43,7 @@ class ApiTrip {
   final List<String>? images;
   final List<String>? routeCityNames;
   final List<ApiTripDate>? dates;
+
   /// True when [dates] came from `computeAvailableDepartureDates()`
   /// (a 'daily'/'recurring' trip with no real `umrah_trip_dates` rows yet)
   /// rather than real fixed rows — see `ApiTripDate.id`.
@@ -49,24 +52,35 @@ class ApiTrip {
   final String? hotelName;
   final String? hotelLocation;
   final int? distanceFromHaram;
+
   /// Whether the authenticated user has favorited this trip — null (not
   /// false) when built from the list endpoint, which doesn't compute it.
   final bool? isFavorited;
+
   /// Whether the authenticated user has this trip in their comparison
   /// list — same null-when-not-computed convention as [isFavorited].
   final bool? isCompared;
+
   /// Saudi trips: 'visit' (Madinah day trip, no nights) | 'overnight'; null otherwise.
   final String? madinahStay;
   final int madinahDays;
+
   /// '32' | '49' passengers, or null.
   final String? busType;
+
   /// Company-uploaded trip videos (detail endpoint only).
   final List<String> videos;
+
   /// Saudi trips: optional one-way prices (detail endpoint).
   final double? priceGoOnly;
   final double? priceReturnOnly;
+
   /// Company's flat price per extra room for the whole trip (detail endpoint).
   final double? extraRoomPrice;
+
+  /// Admin enabled "الدفع عند الباص" for this trip's company.
+  final bool payAtBus;
+
   /// List endpoint: card photos (up to 6) and the first video, if any.
   final List<String> gallery;
   final String? cardVideo;
@@ -111,6 +125,7 @@ class ApiTrip {
     this.priceGoOnly,
     this.priceReturnOnly,
     this.extraRoomPrice,
+    this.payAtBus = false,
     this.gallery = const [],
     this.cardVideo,
   });
@@ -168,6 +183,7 @@ class ApiTrip {
       priceGoOnly: (j['price_go_only'] as num?)?.toDouble(),
       priceReturnOnly: (j['price_return_only'] as num?)?.toDouble(),
       extraRoomPrice: (j['extra_room_price'] as num?)?.toDouble(),
+      payAtBus: j['pay_at_bus'] == true || j['pay_at_bus'] == 1,
       gallery: (j['gallery'] as List<dynamic>? ?? []).map((e) => '$e').toList(),
       cardVideo: j['card_video'] as String?,
     );
@@ -182,10 +198,8 @@ class ApiTrip {
         : name.contains('المدينة')
             ? 'city.madinah'
             : name;
-    final dests = (routeCityNames ?? [])
-        .where((n) => n.isNotEmpty)
-        .map(key)
-        .toList();
+    final dests =
+        (routeCityNames ?? []).where((n) => n.isNotEmpty).map(key).toList();
     final cities = [
       if (departureCityName != null) departureCityName!,
       ...(dests.isNotEmpty
@@ -195,11 +209,13 @@ class ApiTrip {
     return [
       for (var i = 0; i < cities.length; i++)
         TripStop(cities[i],
-            transportToNext: i < cities.length - 1 ? RouteTransport.flight : null),
+            transportToNext:
+                i < cities.length - 1 ? RouteTransport.flight : null),
     ];
   }
 
-  bool get visitsMadinah => (routeCityNames ?? []).any((c) => c.contains('المدينة'));
+  bool get visitsMadinah =>
+      (routeCityNames ?? []).any((c) => c.contains('المدينة'));
 
   String get _typeKey => switch (type) {
         'vip' => 'trip.type.umrahVip',
@@ -208,14 +224,17 @@ class ApiTrip {
         _ => 'trip.type.umrah',
       };
 
-  String get _starGlyphs => '★' * hotelStars.clamp(0, 5) + '☆' * (5 - hotelStars.clamp(0, 5));
+  String get _starGlyphs =>
+      '★' * hotelStars.clamp(0, 5) + '☆' * (5 - hotelStars.clamp(0, 5));
 
   Trip toTrip() => Trip(
         apiId: id,
         title: title,
         emoji: '🕋',
-        bg: const LinearGradient(colors: [Color(0xFF8E6A28), Color(0xFFB8892F)]),
-        networkImage: thumbnail ?? (images != null && images!.isNotEmpty ? images!.first : null),
+        bg: const LinearGradient(
+            colors: [Color(0xFF8E6A28), Color(0xFFB8892F)]),
+        networkImage: thumbnail ??
+            (images != null && images!.isNotEmpty ? images!.first : null),
         hotel: hotelName ?? companyName,
         stars: _starGlyphs,
         type: _typeKey,
@@ -277,7 +296,8 @@ class ApiTripDate {
   final String id;
   final String departureDate;
   final String? bookingDeadline;
-  const ApiTripDate({required this.id, required this.departureDate, this.bookingDeadline});
+  const ApiTripDate(
+      {required this.id, required this.departureDate, this.bookingDeadline});
 
   factory ApiTripDate.fromJson(Map<String, dynamic> j) => ApiTripDate(
         id: j['id'] as String,
@@ -291,9 +311,14 @@ class ApiTripProgramDay {
   final String? title;
   final String? location;
   final List<String> steps;
-  const ApiTripProgramDay({required this.dayNumber, this.title, this.location, required this.steps});
+  const ApiTripProgramDay(
+      {required this.dayNumber,
+      this.title,
+      this.location,
+      required this.steps});
 
-  factory ApiTripProgramDay.fromJson(Map<String, dynamic> j) => ApiTripProgramDay(
+  factory ApiTripProgramDay.fromJson(Map<String, dynamic> j) =>
+      ApiTripProgramDay(
         dayNumber: j['day_number'] as int? ?? 0,
         title: j['title'] as String?,
         location: j['location'] as String?,

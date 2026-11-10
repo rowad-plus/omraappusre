@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:intl/intl.dart' show NumberFormat;
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../core/theme/app_colors.dart';
 import '../../l10n/translations.dart';
 import '../../models/api_booking.dart';
@@ -10,6 +11,7 @@ import '../../models/api_trip.dart';
 import '../../models/trip.dart';
 import '../../state/app_state.dart';
 import '../../state/country_state.dart';
+import '../../state/locale_state.dart';
 import '../../utils/western_digits_formatter.dart';
 import '../../widgets/app_dropdown.dart';
 import '../../widgets/app_toast.dart';
@@ -104,6 +106,14 @@ class _BookingSheetState extends State<BookingSheet> {
   double get _extraRoomsCost =>
       (_extraRoomPrice ?? 0) > 0 ? _extraRooms * _extraRoomPrice! : 0;
 
+  /// "الدفع عند الباص" — only when the admin enabled it for this trip's
+  /// company (same rule as the website's booking form).
+  bool _payAtBusAvailable = false;
+  bool _payAtBus = false;
+
+  /// Site WhatsApp number (the server sends it back with the booking).
+  static const _waNumber = '966552920858';
+
   int get _personsCount => _adults + (_showChildren ? _children : 0);
 
   /// Children counter only outside Saudi Arabia.
@@ -182,7 +192,10 @@ class _BookingSheetState extends State<BookingSheet> {
         ];
       }
       _datesAreComputed = detail?.datesAreComputed ?? false;
-      _extraRoomPrice = (detail?.extraRoomPrice ?? 0) > 0 ? detail!.extraRoomPrice : null;
+      _extraRoomPrice =
+          (detail?.extraRoomPrice ?? 0) > 0 ? detail!.extraRoomPrice : null;
+      _payAtBusAvailable = detail?.payAtBus ?? false;
+      if (!_payAtBusAvailable) _payAtBus = false;
       _datesLoading = false;
       if (_dates.length == 1) {
         _selectedDate = _dates.first;
@@ -240,7 +253,7 @@ class _BookingSheetState extends State<BookingSheet> {
     return true;
   }
 
-  Future<void> _submit() async {
+  Future<void> _submit({bool viaWhatsapp = false}) async {
     if (_submitting) return;
 
     if (_datesLoading) return;
@@ -295,12 +308,16 @@ class _BookingSheetState extends State<BookingSheet> {
           notes: _notesCtrl.text.trim(),
           privateRoom: _privateRoomApplies,
           extraRooms: _extraRoomPrice != null ? _extraRooms : 0,
+          payAtBus: _payAtBusAvailable && _payAtBus,
+          viaWhatsapp: viaWhatsapp,
         );
     if (!mounted) return;
     if (result.unauthorized) {
       setState(() => _submitting = false);
       await openLoginSheet(context);
-      if (mounted && context.read<AppState>().isLoggedIn) await _submit();
+      if (mounted && context.read<AppState>().isLoggedIn) {
+        await _submit(viaWhatsapp: viaWhatsapp);
+      }
       return;
     }
     if (result.error != null) {
@@ -315,6 +332,24 @@ class _BookingSheetState extends State<BookingSheet> {
     // 'unconfirmed' (no online payment configured for this country) just
     // stays a plain booking request, same as before this payment flow existed.
     final bookingId = result.bookingId;
+
+    // WhatsApp booking: saved as a real booking (no gateway) — open the
+    // chat with every detail, then land on tracking like the website does.
+    if (viaWhatsapp) {
+      final opened = await _openWhatsApp(result);
+      if (!mounted) return;
+      setState(() => _submitting = false);
+      if (!opened) {
+        showAppToast(context, '⚠️ ${tr('booking.whatsapp.openError')}');
+      }
+      if (bookingId != null) {
+        _openTracking(bookingId);
+      } else {
+        Navigator.of(context).pop();
+      }
+      return;
+    }
+
     final payable =
         result.paymentOption == 'full' || result.paymentOption == 'commission';
 
@@ -329,6 +364,67 @@ class _BookingSheetState extends State<BookingSheet> {
     } else {
       Navigator.of(context).pop();
       showAppToast(context, '✅ ${tr('booking.success.requestSent')}');
+    }
+  }
+
+  /// Same message as the website's WhatsApp button (booking.blade.php).
+  String _whatsAppMessage(BookingCreateResult result) {
+    final isAr = LocaleState.locale.value.languageCode == 'ar';
+    final app = context.read<AppState>();
+    final names = _travelerEntries
+        .map((e) => e.nameCtrl.text.trim())
+        .where((n) => n.isNotEmpty)
+        .toList();
+    final d = _selectedDate != null
+        ? DateTime.tryParse(_selectedDate!.departureDate)
+        : null;
+    final dateText = d != null
+        ? '${d.day} ${_monthShort[d.month]} ${d.year}'
+        : (_selectedDate?.departureDate ?? '');
+    final lines = <String>[
+      '🕋 ${isAr ? 'طلب حجز عمرة' : 'Umrah booking request'}${result.ref != null ? ' — ${result.ref}' : ''}',
+      '${isAr ? 'الرحلة: ' : 'Trip: '}${widget.trip.title}',
+      '${isAr ? 'تاريخ الانطلاق: ' : 'Departure: '}$dateText',
+    ];
+    var p = '${isAr ? 'عدد الأفراد: ' : 'Persons: '}$_personsCount';
+    if (_privateRoomApplies) p += isAr ? ' (غرفة خاصة)' : ' (private room)';
+    if (_extraRoomPrice != null && _extraRooms > 0) {
+      p += isAr
+          ? ' + $_extraRooms غرفة إضافية'
+          : ' + $_extraRooms extra room(s)';
+    }
+    lines.add(p);
+    if (names.isNotEmpty) {
+      lines.add(
+          '${isAr ? 'المعتمرون: ' : 'Travelers: '}${names.join(isAr ? '، ' : ', ')}');
+    }
+    final customer = [app.userName, app.userPhone ?? '']
+        .where((v) => v.trim().isNotEmpty)
+        .join(' — ');
+    if (customer.isNotEmpty) {
+      lines.add('${isAr ? 'العميل: ' : 'Customer: '}$customer');
+    }
+    if (_payAtBusAvailable && _payAtBus) {
+      lines.add(
+          '${isAr ? 'طريقة الدفع: ' : 'Payment: '}${isAr ? 'الدفع عند الباص' : 'Pay at the bus'}');
+    }
+    final total = _totalText();
+    if (total.isNotEmpty) lines.add('${isAr ? 'الإجمالي: ' : 'Total: '}$total');
+    final notes = _notesCtrl.text.trim();
+    if (notes.isNotEmpty) lines.add('${isAr ? 'ملاحظات: ' : 'Notes: '}$notes');
+    if (result.tripUrl != null) lines.add(result.tripUrl!);
+    return lines.join('\n');
+  }
+
+  Future<bool> _openWhatsApp(BookingCreateResult result) async {
+    final number =
+        (result.whatsappNumber ?? _waNumber).replaceAll(RegExp(r'\D'), '');
+    final uri = Uri.parse(
+        'https://wa.me/$number?text=${Uri.encodeComponent(_whatsAppMessage(result))}');
+    try {
+      return await launchUrl(uri, mode: LaunchMode.externalApplication);
+    } catch (_) {
+      return false;
     }
   }
 
@@ -464,6 +560,14 @@ class _BookingSheetState extends State<BookingSheet> {
                       title: tr('booking.dateRoom.departureDateLabel'),
                       child: _dateSection(),
                     ),
+                    if (_payAtBusAvailable) ...[
+                      const SizedBox(height: 14),
+                      _sectionCard(
+                        icon: FontAwesomeIcons.wallet,
+                        title: tr('booking.payMethod.title'),
+                        child: _payMethodSection(),
+                      ),
+                    ],
                     const SizedBox(height: 14),
                     _sectionCard(
                       icon: FontAwesomeIcons.noteSticky,
@@ -506,34 +610,55 @@ class _BookingSheetState extends State<BookingSheet> {
           border: Border(top: BorderSide(color: AppColors.border))),
       child: SafeArea(
         top: false,
-        child: ElevatedButton(
-          onPressed: _submitting ? null : _submit,
-          style: ElevatedButton.styleFrom(
-            backgroundColor: AppColors.blue,
-            padding: const EdgeInsets.symmetric(vertical: 15),
-            shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        child: Column(mainAxisSize: MainAxisSize.min, children: [
+          ElevatedButton(
+            onPressed: _submitting ? null : () => _submit(),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.blue,
+              padding: const EdgeInsets.symmetric(vertical: 15),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12)),
+            ),
+            child: _submitting
+                ? const SizedBox(
+                    width: 18,
+                    height: 18,
+                    child: CircularProgressIndicator(
+                        strokeWidth: 2, color: Colors.white))
+                : Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const FaIcon(FontAwesomeIcons.check,
+                          size: 14, color: Colors.white),
+                      const SizedBox(width: 8),
+                      Text(tr('booking.step.confirm'),
+                          style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 15,
+                              fontWeight: FontWeight.w800)),
+                    ],
+                  ),
           ),
-          child: _submitting
-              ? const SizedBox(
-                  width: 18,
-                  height: 18,
-                  child: CircularProgressIndicator(
-                      strokeWidth: 2, color: Colors.white))
-              : Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const FaIcon(FontAwesomeIcons.check,
-                        size: 14, color: Colors.white),
-                    const SizedBox(width: 8),
-                    Text(tr('booking.step.confirm'),
-                        style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 15,
-                            fontWeight: FontWeight.w800)),
-                  ],
-                ),
-        ),
+          const SizedBox(height: 8),
+          // "احجز عبر واتساب": saves the booking (no online payment) and
+          // opens WhatsApp with its details — same as the website.
+          OutlinedButton.icon(
+            onPressed: _submitting ? null : () => _submit(viaWhatsapp: true),
+            icon: const FaIcon(FontAwesomeIcons.whatsapp,
+                size: 17, color: AppColors.whatsapp),
+            label: Text(tr('booking.whatsapp.button'),
+                style: const TextStyle(
+                    color: AppColors.whatsapp,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w800)),
+            style: OutlinedButton.styleFrom(
+              minimumSize: const Size.fromHeight(46),
+              side: const BorderSide(color: AppColors.whatsapp, width: 1.5),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12)),
+            ),
+          ),
+        ]),
       ),
     );
   }
@@ -822,6 +947,76 @@ class _BookingSheetState extends State<BookingSheet> {
     );
   }
 
+  /// The summary card's total as text ("" while the private quote loads).
+  String _totalText() {
+    final unitPrice =
+        double.tryParse(widget.trip.price.replaceAll(RegExp(r'[^0-9.]'), '')) ??
+            0;
+    final currency =
+        widget.trip.price.replaceAll(RegExp(r'[0-9.,]'), '').trim();
+    if (_privateRoomApplies && _privateRoomTotal == null) return '';
+    final total =
+        (_privateRoomApplies ? _privateRoomTotal! : unitPrice * _personsCount) +
+            _extraRoomsCost;
+    if (total <= 0) return '';
+    return '${NumberFormat('#,##0', 'en').format(total)} $currency';
+  }
+
+  /// "ادفع الآن / ادفع عند الباص" — same two options as the website.
+  Widget _payMethodSection() {
+    Widget option(bool onBus, FaIconData icon, String title, String hint) {
+      final selected = _payAtBus == onBus;
+      return Padding(
+        padding: const EdgeInsets.only(bottom: 8),
+        child: InkWell(
+          onTap: () => setState(() => _payAtBus = onBus),
+          borderRadius: BorderRadius.circular(10),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+            decoration: BoxDecoration(
+                color: selected ? AppColors.blueLight : Colors.white,
+                border: Border.all(
+                    color: selected ? AppColors.blue : AppColors.border,
+                    width: selected ? 2 : 1.5),
+                borderRadius: BorderRadius.circular(10)),
+            child: Row(children: [
+              Icon(
+                  selected
+                      ? Icons.radio_button_checked
+                      : Icons.radio_button_off,
+                  size: 20,
+                  color: selected ? AppColors.blue : AppColors.muted),
+              const SizedBox(width: 8),
+              FaIcon(icon, size: 15, color: AppColors.blue),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(title,
+                          style: const TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w700,
+                              color: AppColors.text)),
+                      Text(hint,
+                          style: const TextStyle(
+                              fontSize: 10.5, color: AppColors.muted)),
+                    ]),
+              ),
+            ]),
+          ),
+        ),
+      );
+    }
+
+    return Column(children: [
+      option(false, FontAwesomeIcons.creditCard, tr('booking.payMethod.now'),
+          tr('booking.payMethod.nowHint')),
+      option(true, FontAwesomeIcons.bus, tr('booking.payMethod.onBus'),
+          tr('booking.payMethod.onBusHint')),
+    ]);
+  }
+
   /// Shared room (default): per-person price × persons — computed locally,
   /// same rule as the server. Private room: the server's quoted family price.
   Widget _priceSummaryCard() {
@@ -832,8 +1027,9 @@ class _BookingSheetState extends State<BookingSheet> {
     final currency =
         widget.trip.price.replaceAll(RegExp(r'[0-9.,]'), '').trim();
     final usePrivate = _privateRoomApplies && _privateRoomTotal != null;
-    final total = (usePrivate ? _privateRoomTotal! : unitPrice * _personsCount) +
-        _extraRoomsCost;
+    final total =
+        (usePrivate ? _privateRoomTotal! : unitPrice * _personsCount) +
+            _extraRoomsCost;
     var label = usePrivate
         ? '${tr('booking.summary.privateRoomPrice')} ($_personsCount)'
         : '${tr('booking.summary.price')} (×$_personsCount)';
