@@ -6,20 +6,19 @@ import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../core/theme/app_colors.dart';
 import '../../l10n/translations.dart';
-import '../../models/api_booking.dart';
 import '../../models/api_trip.dart';
 import '../../models/trip.dart';
 import '../../state/app_state.dart';
 import '../../state/country_state.dart';
 import '../../state/locale_state.dart';
 import '../../utils/western_digits_formatter.dart';
-import '../../widgets/app_dropdown.dart';
 import '../../widgets/app_toast.dart';
 import '../../widgets/country_picker_sheet.dart';
 import '../../services/payment_launcher.dart';
 import '../auth/login_sheet.dart';
 import 'trip_tracking_screen.dart';
 import '../../widgets/instant_date_picker.dart';
+import '../../widgets/trip_media_grid.dart';
 
 const _monthShort = [
   '',
@@ -36,21 +35,6 @@ const _monthShort = [
   'نوفمبر',
   'ديسمبر',
 ];
-
-const _documentTypes = ['national_id', 'iqama', 'passport'];
-
-/// One traveler's document form entry — sized to `_personsCount` and kept
-/// in sync with it via `_syncTravelerEntries`.
-class _TravelerEntry {
-  String documentType = 'national_id';
-  final nameCtrl = TextEditingController();
-  final numberCtrl = TextEditingController();
-
-  void dispose() {
-    nameCtrl.dispose();
-    numberCtrl.dispose();
-  }
-}
 
 /// Mirrors the website's own `/trip/{type}/{id}/book` page exactly: one
 /// single scrollable form (personal info, persons count, traveler
@@ -86,7 +70,12 @@ class _BookingSheetState extends State<BookingSheet> {
   int _children = 0;
   ApiTripDate? _selectedDate;
   final _notesCtrl = TextEditingController();
-  final List<_TravelerEntry> _travelerEntries = [];
+  // 2026-11-12: name + WhatsApp at booking (required); travelers' names and
+  // documents are entered after payment on the tracking screen.
+  final _nameCtrl = TextEditingController();
+  final _waCtrl = TextEditingController();
+  List<String> _images = const [];
+  List<String> _videos = const [];
   bool _submitting = false;
   String? _error;
 
@@ -122,7 +111,6 @@ class _BookingSheetState extends State<BookingSheet> {
   bool get _privateRoomApplies => _privateRoom && _personsCount > 1;
 
   void _onPersonsChanged() {
-    _syncTravelerEntries();
     if (_personsCount < 2) _privateRoom = false;
     if (_extraRooms > _maxExtraRooms) _extraRooms = _maxExtraRooms;
     // Called from inside a setState callback — defer the quote refresh
@@ -159,7 +147,7 @@ class _BookingSheetState extends State<BookingSheet> {
   @override
   void initState() {
     super.initState();
-    _syncTravelerEntries();
+    _prefillContact();
     _loadDates();
   }
 
@@ -195,6 +183,10 @@ class _BookingSheetState extends State<BookingSheet> {
       _extraRoomPrice =
           (detail?.extraRoomPrice ?? 0) > 0 ? detail!.extraRoomPrice : null;
       _payAtBusAvailable = detail?.payAtBus ?? false;
+      _images = (detail?.images ?? const <String>[])
+          .where((u) => u.isNotEmpty)
+          .toList();
+      _videos = detail?.videos ?? const [];
       if (!_payAtBusAvailable) _payAtBus = false;
       _datesLoading = false;
       if (_dates.length == 1) {
@@ -213,45 +205,28 @@ class _BookingSheetState extends State<BookingSheet> {
   @override
   void dispose() {
     _notesCtrl.dispose();
-    for (final e in _travelerEntries) {
-      e.dispose();
-    }
+    _nameCtrl.dispose();
+    _waCtrl.dispose();
     super.dispose();
   }
 
-  void _syncTravelerEntries() {
-    final wasEmpty = _travelerEntries.isEmpty;
-    while (_travelerEntries.length < _personsCount) {
-      _travelerEntries.add(_TravelerEntry());
+  /// Name + WhatsApp start from the account (editable). An account whose
+  /// "name" is just its phone number starts with an empty name.
+  void _prefillContact() {
+    final app = context.read<AppState>();
+    final phone = (app.userPhone ?? '').trim();
+    var name = app.userName.trim();
+    final digits = phone.replaceAll(RegExp(r'\D'), '');
+    if (digits.isNotEmpty && name.replaceAll(RegExp(r'\D'), '') == digits) {
+      name = '';
     }
-    while (_travelerEntries.length > _personsCount) {
-      _travelerEntries.removeLast().dispose();
-    }
-    // Mirrors the website's own booking page exactly: traveler #1's name
-    // is pre-filled from the logged-in account (`accountName` in
-    // `booking.blade.php`'s JS) whenever that field is still empty — not
-    // controlled by the "I am the traveler" toggle at all (that toggle
-    // only changes what the *Personal Information* section shows; the
-    // website's own `submit()` never reads its manual-entry fields, so
-    // there's nothing functional there to mirror — see the memory note).
-    if (wasEmpty && _travelerEntries.isNotEmpty) {
-      final accountName = context.read<AppState>().userName;
-      if (accountName.isNotEmpty &&
-          _travelerEntries.first.nameCtrl.text.isEmpty) {
-        _travelerEntries.first.nameCtrl.text = accountName;
-      }
-    }
+    if (_nameCtrl.text.isEmpty) _nameCtrl.text = name;
+    if (_waCtrl.text.isEmpty) _waCtrl.text = phone;
   }
 
-  bool _travelerDocsValid() {
-    if (_travelerEntries.isEmpty) return false;
-    for (final e in _travelerEntries) {
-      if (e.nameCtrl.text.trim().isEmpty || e.numberCtrl.text.trim().isEmpty) {
-        return false;
-      }
-    }
-    return true;
-  }
+  bool get _contactValid =>
+      _nameCtrl.text.trim().isNotEmpty &&
+      _waCtrl.text.replaceAll(RegExp(r'\D'), '').length >= 8;
 
   Future<void> _submit({bool viaWhatsapp = false}) async {
     if (_submitting) return;
@@ -265,9 +240,12 @@ class _BookingSheetState extends State<BookingSheet> {
       showAppToast(context, '⚠️ ${tr('booking.validation.selectDate')}');
       return;
     }
-    if (!_travelerDocsValid()) {
-      showAppToast(
-          context, '⚠️ ${tr('booking.validation.completeTravelerDocs')}');
+    if (!_contactValid) {
+      final isAr = LocaleState.locale.value.languageCode == 'ar';
+      final msg = _nameCtrl.text.trim().isEmpty
+          ? (isAr ? 'يرجى كتابة الاسم' : 'Please enter your name')
+          : (isAr ? 'يرجى كتابة رقم الواتساب' : 'Please enter your WhatsApp number');
+      showAppToast(context, '⚠️ $msg');
       return;
     }
 
@@ -287,6 +265,7 @@ class _BookingSheetState extends State<BookingSheet> {
       setState(() => _error = null);
       await openLoginSheet(context);
       if (!mounted || !context.read<AppState>().isLoggedIn) return;
+      _prefillContact();
     }
 
     setState(() {
@@ -297,13 +276,8 @@ class _BookingSheetState extends State<BookingSheet> {
           tripId: tripId,
           personsCount: _personsCount,
           countryCode: country.code,
-          travelers: _travelerEntries
-              .map((e) => ApiBookingTraveler(
-                    name: e.nameCtrl.text.trim(),
-                    documentType: e.documentType,
-                    documentNumber: e.numberCtrl.text.trim(),
-                  ))
-              .toList(),
+          contactName: _nameCtrl.text.trim(),
+          contactPhone: _waCtrl.text.trim(),
           tripDateId: _selectedDate?.id ?? '',
           notes: _notesCtrl.text.trim(),
           privateRoom: _privateRoomApplies,
@@ -371,10 +345,6 @@ class _BookingSheetState extends State<BookingSheet> {
   String _whatsAppMessage(BookingCreateResult result) {
     final isAr = LocaleState.locale.value.languageCode == 'ar';
     final app = context.read<AppState>();
-    final names = _travelerEntries
-        .map((e) => e.nameCtrl.text.trim())
-        .where((n) => n.isNotEmpty)
-        .toList();
     final d = _selectedDate != null
         ? DateTime.tryParse(_selectedDate!.departureDate)
         : null;
@@ -394,11 +364,10 @@ class _BookingSheetState extends State<BookingSheet> {
           : ' + $_extraRooms extra room(s)';
     }
     lines.add(p);
-    if (names.isNotEmpty) {
-      lines.add(
-          '${isAr ? 'المعتمرون: ' : 'Travelers: '}${names.join(isAr ? '، ' : ', ')}');
-    }
-    final customer = [app.userName, app.userPhone ?? '']
+    final customer = [
+      _nameCtrl.text.trim().isNotEmpty ? _nameCtrl.text.trim() : app.userName,
+      _waCtrl.text.trim().isNotEmpty ? _waCtrl.text.trim() : (app.userPhone ?? '')
+    ]
         .where((v) => v.trim().isNotEmpty)
         .join(' — ');
     if (customer.isNotEmpty) {
@@ -545,17 +514,6 @@ class _BookingSheetState extends State<BookingSheet> {
                     ),
                     const SizedBox(height: 14),
                     _sectionCard(
-                      icon: FontAwesomeIcons.idCard,
-                      title: tr('booking.travelerDocs.stepTitle'),
-                      child: Column(children: [
-                        for (var i = 0; i < _travelerEntries.length; i++) ...[
-                          if (i > 0) const SizedBox(height: 14),
-                          _travelerEntryCard(i),
-                        ],
-                      ]),
-                    ),
-                    const SizedBox(height: 14),
-                    _sectionCard(
                       icon: FontAwesomeIcons.calendarDays,
                       title: tr('booking.dateRoom.departureDateLabel'),
                       child: _dateSection(),
@@ -591,6 +549,17 @@ class _BookingSheetState extends State<BookingSheet> {
                     ],
                     const SizedBox(height: 14),
                     _priceSummaryCard(),
+                    // 2026-11-12: trip photos + videos as squares at the very bottom.
+                    if (_images.isNotEmpty || _videos.isNotEmpty) ...[
+                      const SizedBox(height: 14),
+                      _sectionCard(
+                        icon: FontAwesomeIcons.images,
+                        title: LocaleState.locale.value.languageCode == 'ar'
+                            ? 'صور وفيديو الرحلة'
+                            : 'Trip photos & videos',
+                        child: TripMediaGrid(images: _images, videos: _videos),
+                      ),
+                    ],
                   ],
                 ),
               ),
@@ -698,40 +667,31 @@ class _BookingSheetState extends State<BookingSheet> {
     );
   }
 
-  /// Read-only display of the account's own data — mirrors the website's
-  /// "Personal Information" section when its traveler-is-me toggle is ON
-  /// (the default). The toggle's OFF state (typing a different name/
-  /// phone/email) is skipped: the website's own `submit()` never actually
-  /// reads those manual-entry fields — its traveler #1 pre-fill always
-  /// comes from `auth()->user()->name` regardless of the toggle (see
-  /// `_syncTravelerEntries`), so the toggle has no real effect there
-  /// either — nothing functional to mirror beyond that pre-fill.
+  /// Name + WhatsApp number (both required) — same as the website's
+  /// booking form. Travelers' names/documents come later, on tracking.
   Widget _personalInfoRows(AppState app) {
-    final rows = [
-      (tr('booking.contact.fullNameLabel'), app.userName),
-      (tr('booking.contact.phoneLabel'), app.userPhone ?? '—'),
-      (tr('more_menu.profile.email_address'), app.userEmail ?? '—'),
-    ];
-    return Column(children: [
-      for (final r in rows)
-        Padding(
-          padding: const EdgeInsets.symmetric(vertical: 5),
-          child: Row(children: [
-            Text(r.$1,
-                style: const TextStyle(fontSize: 12, color: AppColors.muted)),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Text(r.$2,
-                  textAlign: TextAlign.end,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                      fontSize: 12.5,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.text)),
-            ),
-          ]),
-        ),
+    final isAr = LocaleState.locale.value.languageCode == 'ar';
+    return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+      _fieldLabel('${isAr ? 'الاسم' : 'Full name'} *'),
+      const SizedBox(height: 6),
+      _textField(_nameCtrl, isAr ? 'اكتب اسمك' : 'Your name'),
+      const SizedBox(height: 10),
+      _fieldLabel('${isAr ? 'رقم الواتساب' : 'WhatsApp number'} *'),
+      const SizedBox(height: 6),
+      _textField(_waCtrl, '+966 5X XXX XXXX',
+          keyboardType: TextInputType.phone,
+          formatters: [WesternDigitsFormatter()],
+          ltr: true),
+      const SizedBox(height: 8),
+      Text(
+          isAr
+              ? 'بيانات المعتمرين (الأسماء والهويات) تُدخلها بعد الدفع من شاشة تتبع الرحلة.'
+              : "Travelers' names and IDs are entered after payment, on the trip tracking screen.",
+          style: const TextStyle(
+              fontSize: 11.5,
+              color: AppColors.brand,
+              fontWeight: FontWeight.w600,
+              height: 1.5)),
     ]);
   }
 
@@ -856,56 +816,6 @@ class _BookingSheetState extends State<BookingSheet> {
                   color: AppColors.text)),
         ]),
       ),
-    );
-  }
-
-  Widget _travelerEntryCard(int index) {
-    final entry = _travelerEntries[index];
-    // API value `national_id` ↔ translation key `nationalId`.
-    final typeKey =
-        entry.documentType == 'national_id' ? 'nationalId' : entry.documentType;
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-          color: AppColors.bg,
-          border: Border.all(color: AppColors.border),
-          borderRadius: BorderRadius.circular(12)),
-      child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-        Text('${tr('booking.travelerDocs.personLabel')} ${index + 1}',
-            style: const TextStyle(
-                fontSize: 12.5,
-                fontWeight: FontWeight.w800,
-                color: AppColors.text)),
-        const SizedBox(height: 10),
-        AppDropdown<String>(
-          label: tr('booking.travelerDocs.documentTypeLabel'),
-          value: entry.documentType,
-          options: {
-            // API value `national_id` ↔ translation key `nationalId`.
-            for (final t in _documentTypes)
-              t: tr(t == 'national_id'
-                  ? 'booking.travelerDocs.nationalId'
-                  : 'booking.travelerDocs.$t'),
-          },
-          onChanged: (v) =>
-              setState(() => entry.documentType = v ?? entry.documentType),
-        ),
-        const SizedBox(height: 10),
-        _fieldLabel(tr('booking.travelerDocs.nameLabel')),
-        const SizedBox(height: 6),
-        _textField(entry.nameCtrl, tr('booking.travelerDocs.nameHint')),
-        const SizedBox(height: 10),
-        // Label + hint follow the chosen type: "رقم جواز السفر", not "رقم المستند".
-        _fieldLabel(tr('booking.travelerDocs.numberLabel.$typeKey')),
-        const SizedBox(height: 6),
-        _textField(
-            entry.numberCtrl, tr('booking.travelerDocs.numberHint.$typeKey'),
-            keyboardType: entry.documentType == 'passport'
-                ? TextInputType.text
-                : TextInputType.number,
-            formatters: [WesternDigitsFormatter()],
-            ltr: entry.documentType != 'passport'),
-      ]),
     );
   }
 

@@ -661,6 +661,26 @@ class AppState extends ChangeNotifier {
     }
   }
 
+  /// Saves the travelers' names + documents on the tracking screen (after
+  /// payment). Returns null on success, or a display-ready error message.
+  Future<String?> saveTravelers(
+      int bookingId, List<ApiBookingTraveler> travelers) async {
+    try {
+      await api.post('/bookings/$bookingId/travelers', {
+        'travelers': travelers.map((t) => t.toJson()).toList(),
+      });
+      return null;
+    } on ApiException catch (e) {
+      final first = e.errors?.values
+          .expand((v) => v is List ? v : [v])
+          .map((v) => '$v')
+          .firstWhere((v) => v.isNotEmpty, orElse: () => '');
+      return (first != null && first.isNotEmpty) ? first : e.message;
+    } catch (_) {
+      return 'تعذّر الاتصال بالخادم، تحقق من الإنترنت وحاول مجددًا';
+    }
+  }
+
   /// Creates a booking for [tripId]. Returns the new booking's id + payment
   /// option on success, or a display-ready error message (in Arabic, from
   /// the backend) on failure.
@@ -668,9 +688,11 @@ class AppState extends ChangeNotifier {
     required int tripId,
     required int personsCount,
     required String countryCode,
-    required List<ApiBookingTraveler> travelers,
+    List<ApiBookingTraveler> travelers = const [],
     required String tripDateId,
     String? notes,
+    String? contactName,
+    String? contactPhone,
     bool privateRoom = false,
     int extraRooms = 0,
     bool payAtBus = false,
@@ -687,7 +709,13 @@ class AppState extends ChangeNotifier {
         // Private room (2+ persons) → the trip's family price; otherwise the
         // server charges the per-person price × persons.
         'private_room': privateRoom && personsCount > 1,
-        'travelers': travelers.map((t) => t.toJson()).toList(),
+        // 2026-11-12: travelers are entered after payment (tracking screen).
+        if (travelers.isNotEmpty)
+          'travelers': travelers.map((t) => t.toJson()).toList(),
+        if (contactName != null && contactName.isNotEmpty)
+          'contact_name': contactName,
+        if (contactPhone != null && contactPhone.isNotEmpty)
+          'contact_phone': contactPhone,
         'trip_date_id': tripDateId,
         if (notes != null && notes.isNotEmpty) 'notes': notes,
       }) as Map<String, dynamic>;

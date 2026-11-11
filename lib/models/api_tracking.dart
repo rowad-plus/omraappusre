@@ -36,6 +36,15 @@ class ApiTracking {
   final List<TrackingUpdate> updates;
   final Map<String, String> labels;
 
+  /// 2026-11-12: name + WhatsApp typed at booking; travelers' details are
+  /// entered on this screen after payment (or right away with no online payment).
+  final bool showPeople;
+  final bool travelersEditable;
+  final bool travelersComplete;
+  final String? applicantName;
+  final String? applicantPhone;
+  final List<TrackingTraveler> travelers;
+
   const ApiTracking({
     required this.bookingId,
     required this.ref,
@@ -64,6 +73,12 @@ class ApiTracking {
     required this.personsCount,
     required this.updates,
     required this.labels,
+    this.showPeople = false,
+    this.travelersEditable = false,
+    this.travelersComplete = true,
+    this.applicantName,
+    this.applicantPhone,
+    this.travelers = const [],
   });
 
   bool get isTerminated => status == 'cancelled' || status == 'rejected';
@@ -107,8 +122,37 @@ class ApiTracking {
           .toList(),
       labels: ((j['labels'] as Map<String, dynamic>?) ?? const {})
           .map((k, v) => MapEntry(k, '$v')),
+      showPeople: j['show_people'] == true,
+      travelersEditable: j['travelers_editable'] == true,
+      travelersComplete: j['travelers_complete'] != false,
+      applicantName: (j['applicant'] as Map<String, dynamic>?)?['name'] as String?,
+      applicantPhone: (j['applicant'] as Map<String, dynamic>?)?['phone'] as String?,
+      travelers: ((j['travelers'] as List<dynamic>?) ?? const [])
+          .map((t) => TrackingTraveler.fromJson(t as Map<String, dynamic>))
+          .toList(),
     );
   }
+}
+
+class TrackingTraveler {
+  final String name;
+  final String documentType;
+  final String? documentLabel;
+  final String documentNumber;
+
+  const TrackingTraveler({
+    required this.name,
+    required this.documentType,
+    this.documentLabel,
+    required this.documentNumber,
+  });
+
+  factory TrackingTraveler.fromJson(Map<String, dynamic> j) => TrackingTraveler(
+        name: j['name'] as String? ?? '',
+        documentType: j['document_type'] as String? ?? 'national_id',
+        documentLabel: j['document_label'] as String?,
+        documentNumber: j['document_number'] as String? ?? '',
+      );
 }
 
 class TrackingStage {

@@ -1,3 +1,4 @@
+import 'dart:ui' as ui;
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -6,6 +7,7 @@ import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../core/theme/app_colors.dart';
 import '../../l10n/translations.dart';
+import '../../models/api_booking.dart';
 import '../../models/api_tracking.dart';
 import '../../services/live_updates.dart';
 import '../../state/app_state.dart';
@@ -47,6 +49,75 @@ class _TripTrackingScreenState extends State<TripTrackingScreen>
   bool _loading = true;
   bool _paying = false;
 
+  // 2026-11-12: travelers' form (entered after payment).
+  final List<_TravelerForm> _forms = [];
+  bool _savingTravelers = false;
+
+  @override
+  void dispose() {
+    for (final f in _forms) {
+      f.dispose();
+    }
+    super.dispose();
+  }
+
+  /// (Re)builds the form rows from the server's travelers — only when the
+  /// row count changes, so a live refresh never wipes what is being typed.
+  void _syncForms(ApiTracking d) {
+    final n = d.personsCount < 1 ? 1 : d.personsCount;
+    if (_forms.length == n) return;
+    for (final f in _forms) {
+      f.dispose();
+    }
+    _forms
+      ..clear()
+      ..addAll(List.generate(n, (i) {
+        final t = i < d.travelers.length ? d.travelers[i] : null;
+        final f = _TravelerForm();
+        f.name.text = t?.name ?? (i == 0 ? (d.applicantName ?? '') : '');
+        f.number.text = t?.documentNumber ?? '';
+        if (t != null && _docTypes.contains(t.documentType)) {
+          f.type = t.documentType;
+        }
+        return f;
+      }));
+  }
+
+  static const _docTypes = ['national_id', 'iqama', 'passport'];
+
+  String _docLabel(String t) => tr(t == 'national_id'
+      ? 'booking.travelerDocs.nationalId'
+      : 'booking.travelerDocs.$t');
+
+  Future<void> _saveTravelers(ApiTracking d) async {
+    if (_savingTravelers) return;
+    for (final f in _forms) {
+      if (f.name.text.trim().isEmpty || f.number.text.trim().isEmpty) {
+        showAppToast(context,
+            '⚠️ ${d.label('travelers_fill_hint', tr('booking.validation.completeTravelerDocs'))}');
+        return;
+      }
+    }
+    FocusScope.of(context).unfocus();
+    setState(() => _savingTravelers = true);
+    final err = await context.read<AppState>().saveTravelers(
+        widget.bookingId,
+        _forms
+            .map((f) => ApiBookingTraveler(
+                name: f.name.text.trim(),
+                documentType: f.type,
+                documentNumber: f.number.text.trim()))
+            .toList());
+    if (!mounted) return;
+    setState(() => _savingTravelers = false);
+    if (err != null) {
+      showAppToast(context, '⚠️ $err');
+      return;
+    }
+    showAppToast(context, '✅ ${d.label('travelers_saved', '✓')}');
+    await _load();
+  }
+
   @override
   void initState() {
     super.initState();
@@ -58,7 +129,10 @@ class _TripTrackingScreenState extends State<TripTrackingScreen>
     if (!mounted) return;
     setState(() {
       // Keep what's on screen if a refresh fails.
-      if (data != null) _data = data;
+      if (data != null) {
+        _data = data;
+        if (data.travelersEditable) _syncForms(data);
+      }
       _loading = false;
     });
   }
@@ -121,6 +195,7 @@ class _TripTrackingScreenState extends State<TripTrackingScreen>
                         _successBanner(d),
                       _hero(d),
                       const SizedBox(height: 14),
+                      _peopleCard(d),
                       _stagesCard(d),
                       _updatesCard(d),
                       _detailsCard(d),
@@ -334,6 +409,157 @@ class _TripTrackingScreenState extends State<TripTrackingScreen>
           ...children,
         ]),
       );
+
+  /// Name + WhatsApp from the booking, then the travelers: a form once the
+  /// booking is paid (or has no online payment), a read-only list after
+  /// departure, and a note before payment.
+  Widget _peopleCard(ApiTracking d) {
+    final isAr = LocaleState.locale.value.languageCode == 'ar';
+    final count = d.personsCount < 1 ? 1 : d.personsCount;
+    return _card(
+      title: d.label('people_title', isAr ? 'بيانات الحجز والمسافرين' : 'Applicant & travelers'),
+      icon: FontAwesomeIcons.users,
+      children: [
+        _row(d.label('applicant_name', isAr ? 'اسم مقدم الطلب' : 'Applicant name'), d.applicantName),
+        _row(d.label('applicant_phone', isAr ? 'رقم الواتساب' : 'WhatsApp number'),
+            d.applicantPhone == null ? null : '\u200E${d.applicantPhone}'),
+        const SizedBox(height: 8),
+        Text('${d.label('travelers_title', isAr ? 'المسافرون' : 'Travelers')} ($count)',
+            style: const TextStyle(
+                fontSize: 13, fontWeight: FontWeight.w900, color: AppColors.text)),
+        const SizedBox(height: 8),
+        if (d.travelersEditable) ...[
+          if (!d.travelersComplete)
+            Container(
+              width: double.infinity,
+              margin: const EdgeInsets.only(bottom: 10),
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                  color: const Color(0xFFFFFBEB),
+                  border: Border.all(color: const Color(0xFFFDE68A), width: 1.5),
+                  borderRadius: BorderRadius.circular(10)),
+              child: Text(d.label('travelers_fill_hint'),
+                  style: const TextStyle(
+                      fontSize: 12.5,
+                      fontWeight: FontWeight.w700,
+                      color: Color(0xFF92400E))),
+            ),
+          for (var i = 0; i < _forms.length; i++) _travelerFormRow(d, i),
+          const SizedBox(height: 4),
+          SizedBox(
+            width: double.infinity,
+            height: 46,
+            child: ElevatedButton(
+              onPressed: _savingTravelers ? null : () => _saveTravelers(d),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.brand,
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12)),
+              ),
+              child: _savingTravelers
+                  ? const SizedBox(
+                      width: 18,
+                      height: 18,
+                      child: CircularProgressIndicator(
+                          strokeWidth: 2, color: Colors.white))
+                  : Text(d.label('save_travelers', isAr ? 'حفظ بيانات المعتمرين' : 'Save travelers'),
+                      style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w800)),
+            ),
+          ),
+        ] else if (d.showPeople && d.travelers.isNotEmpty) ...[
+          for (var i = 0; i < d.travelers.length; i++)
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 6),
+              child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                CircleAvatar(
+                  radius: 14,
+                  backgroundColor: AppColors.bg,
+                  child: Text('${i + 1}',
+                      style: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w900,
+                          color: AppColors.brand)),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                    Text(d.travelers[i].name.isEmpty ? '—' : d.travelers[i].name,
+                        style: const TextStyle(
+                            fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.text)),
+                    if (d.travelers[i].documentNumber.isNotEmpty)
+                      Text(
+                          '${d.travelers[i].documentLabel ?? _docLabel(d.travelers[i].documentType)}: \u200E${d.travelers[i].documentNumber}',
+                          style: const TextStyle(fontSize: 12, color: AppColors.muted)),
+                  ]),
+                ),
+              ]),
+            ),
+        ] else if (!d.showPeople && !d.isTerminated)
+          _empty(d.label('travelers_after_payment',
+              isAr ? 'بيانات المعتمرين تُدخل هنا بعد إتمام الدفع.' : "Travelers' details are entered here after payment."))
+        else
+          _empty('—'),
+      ],
+    );
+  }
+
+  Widget _travelerFormRow(ApiTracking d, int i) {
+    final f = _forms[i];
+    InputDecoration deco(String label) => InputDecoration(
+          labelText: label,
+          isDense: true,
+          filled: true,
+          fillColor: Colors.white,
+          border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+              borderSide: const BorderSide(color: AppColors.border)),
+          enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+              borderSide: const BorderSide(color: AppColors.border)),
+        );
+    return Container(
+      margin: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+          color: AppColors.bg,
+          border: Border.all(color: AppColors.border),
+          borderRadius: BorderRadius.circular(12)),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+        Text(d.label('traveler_n', 'المعتمر :n').replaceAll(':n', '${i + 1}'),
+            style: const TextStyle(
+                fontSize: 12.5, fontWeight: FontWeight.w800, color: AppColors.text)),
+        const SizedBox(height: 8),
+        TextField(
+          controller: f.name,
+          textInputAction: TextInputAction.next,
+          decoration: deco(d.label('traveler_name', tr('booking.travelerDocs.nameLabel'))),
+        ),
+        const SizedBox(height: 8),
+        DropdownButtonFormField<String>(
+          initialValue: f.type,
+          isExpanded: true,
+          decoration: deco(d.label('doc_type', tr('booking.travelerDocs.documentTypeLabel'))),
+          items: [
+            for (final t in _docTypes)
+              DropdownMenuItem(value: t, child: Text(_docLabel(t))),
+          ],
+          onChanged: (v) => setState(() => f.type = v ?? f.type),
+        ),
+        const SizedBox(height: 8),
+        TextField(
+          controller: f.number,
+          textDirection: ui.TextDirection.ltr,
+          keyboardType: f.type == 'passport' ? TextInputType.text : TextInputType.number,
+          decoration: deco(d.label('doc_number', isArabic ? 'رقم المستند' : 'Document number')),
+        ),
+      ]),
+    );
+  }
+
+  bool get isArabic => LocaleState.locale.value.languageCode == 'ar';
 
   Widget _stagesCard(ApiTracking d) => _card(
         title: d.label('stages_title'),
@@ -780,4 +1006,15 @@ class _TripTrackingScreenState extends State<TripTrackingScreen>
           ],
         ],
       );
+}
+
+class _TravelerForm {
+  String type = 'national_id';
+  final name = TextEditingController();
+  final number = TextEditingController();
+
+  void dispose() {
+    name.dispose();
+    number.dispose();
+  }
 }
