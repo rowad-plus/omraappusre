@@ -81,7 +81,8 @@ class _UmrahScreenState extends State<UmrahScreen> {
     // branch): the customer still sees every trip in their country, with
     // whichever one(s) depart from their chosen city surfaced first
     // instead of the rest of the country being hidden entirely.
-    final apiTrips = await state.fetchTrips(countryCode: code);
+    final apiTrips =
+        await state.fetchTrips(countryCode: code, priorityCityId: cityId);
     if (!mounted) return;
 
     final companiesById = <int, ProviderCompany>{};
@@ -107,20 +108,16 @@ class _UmrahScreenState extends State<UmrahScreen> {
     }
 
     final trips = apiTrips.map((t) => t.toTrip()).toList();
-    // Selected-city trips first, then the rest of the country — a stable
-    // partition (not a sort) so relative order is otherwise unchanged.
-    final byCity = cityId == null
+    // The server already ranks the user's city first (chosen city, else the
+    // phone's location), then the nearest cities, featured companies first
+    // inside each city — keep that order; never put another city's
+    // featured trips ahead of the user's own city.
+    final prioritized = cityId == null
         ? trips
         : [
             ...trips.where((t) => t.departureCityId == cityId),
             ...trips.where((t) => t.departureCityId != cityId),
           ];
-    // Featured companies' trips lead every section, ahead of the city
-    // priority (which still orders trips within each group).
-    final prioritized = [
-      ...byCity.where((t) => t.featured),
-      ...byCity.where((t) => !t.featured),
-    ];
 
     setState(() {
       _loadedForCode = key;
@@ -201,7 +198,20 @@ class _UmrahScreenState extends State<UmrahScreen> {
     final vipTrips = _trips.where((t) => t.vip).toList();
     final premiumTrips = _trips.where((t) => t.premium).toList();
     final economyTrips = _trips.where((t) => !t.vip && !t.premium).toList();
-    final allTrips = [...vipTrips, ...premiumTrips, ...economyTrips];
+    // Trips from the user's own city (or within 150 km) come first —
+    // VIP, premium, economy among them — and only then other cities.
+    final cityId = CountryState.selectedCityId.value;
+    bool isLocal(Trip t) =>
+        t.nearYou ?? (cityId != null && t.departureCityId == cityId);
+    List<Trip> tiered(Iterable<Trip> list) => [
+          ...list.where((t) => t.vip),
+          ...list.where((t) => !t.vip && t.premium),
+          ...list.where((t) => !t.vip && !t.premium),
+        ];
+    final allTrips = [
+      ...tiered(_trips.where(isLocal)),
+      ...tiered(_trips.where((t) => !isLocal(t))),
+    ];
 
     return Scaffold(
       backgroundColor: AppColors.bg,

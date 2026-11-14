@@ -59,6 +59,9 @@ class Trip {
   /// first, without excluding the rest of the country's trips. Null for
   /// local seed/demo trips.
   final int? departureCityId;
+  /// Server flag: departs from the user's city or one within 150 km
+  /// (null = the server couldn't tell where the user is).
+  final bool? nearYou;
 
   const Trip({
     this.apiId,
@@ -91,5 +94,6 @@ class Trip {
     this.gallery = const [],
     this.cardVideo,
     this.departureCityId,
+    this.nearYou,
   });
 }

@@ -32,6 +32,8 @@ class TripCardGold extends StatelessWidget {
         trip.stops.length > 1 ? trip.stops.skip(1).toList() : trip.stops;
     final placeLabel =
         destinations.isNotEmpty ? tr(destinations.first.city) : tr(trip.dest);
+    // Departure city ("من الرياض") on the photo, opposite the destination.
+    final fromLabel = trip.stops.length > 1 ? tr(trip.stops.first.city) : '';
 
     // trip.price is "<amount> <currency>", where the currency may be a
     // long name like "Saudi Riyal (SAR)" — show the ISO code when present.
@@ -80,7 +82,7 @@ class TripCardGold extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             SizedBox(
-              height: 165,
+              height: 210,
               child: Stack(
                 fit: StackFit.expand,
                 children: [
@@ -107,6 +109,29 @@ class TripCardGold extends StatelessWidget {
                               fontWeight: FontWeight.w700)),
                     ),
                   ),
+                  if (fromLabel.isNotEmpty)
+                    PositionedDirectional(
+                      bottom: 12,
+                      end: 14,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 10, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: const Color(0xEEFFFFFF),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Row(mainAxisSize: MainAxisSize.min, children: [
+                          const FaIcon(FontAwesomeIcons.bus,
+                              size: 11, color: Color(0xFF1A1408)),
+                          const SizedBox(width: 6),
+                          Text('${tr('trip.card.from')} $fromLabel',
+                              style: const TextStyle(
+                                  color: Color(0xFF1A1408),
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w800)),
+                        ]),
+                      ),
+                    ),
                 ],
               ),
             ),

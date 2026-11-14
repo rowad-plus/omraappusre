@@ -246,7 +246,11 @@ class AppState extends ChangeNotifier {
   /// type ('vip' | 'premium' | 'economy'). Returns an empty list on any
   /// failure rather than throwing, since browsing should degrade quietly.
   Future<List<ApiTrip>> fetchTrips(
-      {String? countryCode, String? type, int? companyId, int? cityId}) async {
+      {String? countryCode,
+      String? type,
+      int? companyId,
+      int? cityId,
+      int? priorityCityId}) async {
     try {
       final res = await api.get('/umrah-trips', {
         if (countryCode != null) 'country_code': countryCode,
@@ -256,6 +260,9 @@ class AppState extends ChangeNotifier {
         // entirely (not just null) means "every city in the country",
         // matching `departure_city` being genuinely absent server-side.
         if (cityId != null) 'departure_city': cityId,
+        // Ranking only (not a filter): this city's trips first, then the
+        // nearest. Without it the server uses the phone's IP location.
+        if (priorityCityId != null) 'cities[]': priorityCityId,
       }) as Map<String, dynamic>;
       return (res['trips'] as List<dynamic>)
           .map((t) => ApiTrip.fromJson(t as Map<String, dynamic>))

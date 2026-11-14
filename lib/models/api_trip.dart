@@ -38,6 +38,7 @@ class ApiTrip {
   final bool companyFeatured;
   final int? departureCityId;
   final String? departureCityName;
+  final bool? nearYou;
 
   // Detail-only fields (null when built from the list endpoint).
   final List<String>? images;
@@ -108,6 +109,7 @@ class ApiTrip {
     this.companyFeatured = false,
     this.departureCityId,
     this.departureCityName,
+    this.nearYou,
     this.images,
     this.routeCityNames,
     this.dates,
@@ -160,6 +162,7 @@ class ApiTrip {
       companyFeatured: company?['rank'] == 'featured',
       departureCityId: departureCity?['id'] as int?,
       departureCityName: departureCity?['name'] as String?,
+      nearYou: j['near_you'] as bool?,
       images: (j['images'] as List<dynamic>?)?.cast<String>(),
       routeCityNames: (j['routes'] as List<dynamic>?)
           ?.map((r) => (r as Map<String, dynamic>)['name'] as String? ?? '')
@@ -281,6 +284,7 @@ class ApiTrip {
           if (hotelStars >= 5) 'feat.hotel5star',
         ],
         departureCityId: departureCityId,
+        nearYou: nearYou,
         busType: busType,
         gallery: gallery,
         cardVideo: cardVideo,
