@@ -90,6 +90,9 @@ class _BookingSheetState extends State<BookingSheet> {
   /// Extra rooms: the company's flat price per extra room (null = the trip
   /// doesn't offer it). The base price covers one room → at most persons−1.
   double? _extraRoomPrice;
+
+  /// One person alone in a private room (company price; null = not offered).
+  double? _singleRoomPrice;
   int _extraRooms = 0;
   int get _maxExtraRooms => _personsCount > 1 ? _personsCount - 1 : 0;
   double get _extraRoomsCost =>
@@ -108,10 +111,11 @@ class _BookingSheetState extends State<BookingSheet> {
   /// Children counter only outside Saudi Arabia.
   bool get _showChildren =>
       CountryState.selected.value?.code.toUpperCase() != 'SA';
-  bool get _privateRoomApplies => _privateRoom && _personsCount > 1;
+  bool get _privateRoomOffered => _personsCount > 1 || _singleRoomPrice != null;
+  bool get _privateRoomApplies => _privateRoom && _privateRoomOffered;
 
   void _onPersonsChanged() {
-    if (_personsCount < 2) _privateRoom = false;
+    if (!_privateRoomOffered) _privateRoom = false;
     if (_extraRooms > _maxExtraRooms) _extraRooms = _maxExtraRooms;
     // Called from inside a setState callback — defer the quote refresh
     // (which calls setState itself) until after this frame's update.
@@ -182,6 +186,8 @@ class _BookingSheetState extends State<BookingSheet> {
       _datesAreComputed = detail?.datesAreComputed ?? false;
       _extraRoomPrice =
           (detail?.extraRoomPrice ?? 0) > 0 ? detail!.extraRoomPrice : null;
+      _singleRoomPrice =
+          (detail?.privateRoomPrice ?? 0) > 0 ? detail!.privateRoomPrice : null;
       _payAtBusAvailable = detail?.payAtBus ?? false;
       _images = (detail?.images ?? const <String>[])
           .where((u) => u.isNotEmpty)
@@ -502,7 +508,7 @@ class _BookingSheetState extends State<BookingSheet> {
                                     _children = v;
                                     _onPersonsChanged();
                                   })),
-                        if (_personsCount > 1) _privateRoomRow(),
+                        if (_privateRoomOffered) _privateRoomRow(),
                         if (_personsCount > 1 && _extraRoomPrice != null)
                           _counterRow(
                               tr('booking.travelers.extraRoomsLabel'),
@@ -855,7 +861,10 @@ class _BookingSheetState extends State<BookingSheet> {
                             fontSize: 13,
                             fontWeight: FontWeight.w700,
                             color: AppColors.text)),
-                    Text(tr('booking.travelers.privateRoomHint'),
+                    Text(
+                        _personsCount == 1 && _singleRoomPrice != null
+                            ? '${tr('booking.travelers.privateRoomSingleHint')} ${NumberFormat('#,##0', 'en').format(_singleRoomPrice)}'
+                            : tr('booking.travelers.privateRoomHint'),
                         style: const TextStyle(
                             fontSize: 10.5, color: AppColors.muted)),
                   ]),

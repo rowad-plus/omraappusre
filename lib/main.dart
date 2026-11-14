@@ -7,6 +7,7 @@ import 'l10n/translations.dart';
 import 'state/app_state.dart';
 import 'state/locale_state.dart';
 import 'app_shell.dart';
+import 'services/force_update.dart';
 import 'services/live_updates.dart';
 import 'services/notification_router.dart';
 import 'services/push_service.dart';
@@ -71,7 +72,14 @@ class RihlatyApp extends StatelessWidget {
           // reactively with the selected language now.
           builder: (context, child) => Directionality(
             textDirection: isRtl ? TextDirection.rtl : TextDirection.ltr,
-            child: safeAppFrame(child!),
+            child: ForceUpdateGate(
+              appKey: 'customer',
+              defaultStoreUrls: const {
+                'android': 'https://play.google.com/store/apps/details?id=omraway.com',
+                'ios': 'https://apps.apple.com/app/id6822432852',
+              },
+              child: safeAppFrame(child!),
+            ),
           ),
           // Keying on the locale forces Flutter to tear down and rebuild the
           // whole app subtree on every language switch. Without this key,

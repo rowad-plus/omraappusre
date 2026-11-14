@@ -79,6 +79,9 @@ class ApiTrip {
   /// Company's flat price per extra room for the whole trip (detail endpoint).
   final double? extraRoomPrice;
 
+  /// Price for ONE person alone in a private room (null = not offered).
+  final double? privateRoomPrice;
+
   /// Admin enabled "الدفع عند الباص" for this trip's company.
   final bool payAtBus;
 
@@ -127,6 +130,7 @@ class ApiTrip {
     this.priceGoOnly,
     this.priceReturnOnly,
     this.extraRoomPrice,
+    this.privateRoomPrice,
     this.payAtBus = false,
     this.gallery = const [],
     this.cardVideo,
@@ -186,6 +190,7 @@ class ApiTrip {
       priceGoOnly: (j['price_go_only'] as num?)?.toDouble(),
       priceReturnOnly: (j['price_return_only'] as num?)?.toDouble(),
       extraRoomPrice: (j['extra_room_price'] as num?)?.toDouble(),
+      privateRoomPrice: (j['private_room_price'] as num?)?.toDouble(),
       payAtBus: j['pay_at_bus'] == true || j['pay_at_bus'] == 1,
       gallery: (j['gallery'] as List<dynamic>? ?? []).map((e) => '$e').toList(),
       cardVideo: j['card_video'] as String?,
