@@ -104,8 +104,15 @@ class DesignRequestDetailSheet extends StatelessWidget {
                 tr(request.departureCountry)
               ),
               (tr('design.field.departure_city'), tr(request.departureCity)),
-              (tr('design.field.flight_type'), tr(request.flightType)),
-              (tr('design.field.flight_class'), tr(request.flightClass)),
+              // Bus requests are stored as flight_type 'باص' (2026-11-15).
+              if (request.flightType == 'باص')
+                (tr('design.field.travel_mode'), tr('design.option.bus'))
+              else ...[
+                if (request.flightType.isNotEmpty || request.flightClass.isNotEmpty)
+                  (tr('design.field.travel_mode'), tr('design.option.flight')),
+                (tr('design.field.flight_type'), tr(request.flightType)),
+                (tr('design.field.flight_class'), tr(request.flightClass)),
+              ],
               if (request.transport.isNotEmpty)
                 (
                   tr('design.field.transport_services'),
