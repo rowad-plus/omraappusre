@@ -45,16 +45,18 @@ class _UmrahWizardScreenState extends State<UmrahWizardScreen> {
   int _adults = 1;
   int _children = 0;
   int _infants = 0;
-  int _makkaDays = 7;
-  int _madinaDays = 3;
-  final _makkaDaysCtrl = TextEditingController(text: '7');
-  final _madinaDaysCtrl = TextEditingController(text: '3');
+  // Days start at 0: the customer must set them (like the website, 2026-11-15).
+  int _makkaDays = 0;
+  int _madinaDays = 0;
+  final _makkaDaysCtrl = TextEditingController(text: '0');
+  final _madinaDaysCtrl = TextEditingController(text: '0');
   String _makkaStars = 'لا يهم';
   String _madinaStars = 'لا يهم';
   final _hotelPrefs = <String>{};
   final _transport = <String>{};
   String? _departureCountry;
   final _departureCityCtrl = TextEditingController();
+  String? _travelMode; // طيران | باص (required; flight type + class only for طيران)
   String? _flightType;
   String? _flightClass;
   DateTime? _travelDate;
@@ -148,7 +150,7 @@ class _UmrahWizardScreenState extends State<UmrahWizardScreen> {
 
   // Same limits as the website (and its server validation).
   void _setMakkaDays(int v) {
-    final clamped = v.clamp(3, 21);
+    final clamped = v.clamp(0, 21);
     setState(() => _makkaDays = clamped);
     _makkaDaysCtrl.text = '$clamped';
   }
@@ -163,6 +165,14 @@ class _UmrahWizardScreenState extends State<UmrahWizardScreen> {
   String? _stepError(int step) {
     if (step == 0 && _startPoint == null) {
       return tr('design.error.missing_start');
+    }
+    if (step == 1 && _makkaDays < 1) return tr('design.error.missing_days_makkah');
+    if (step == 1 && !_makkahOnly && _madinaDays < 1) {
+      return tr('design.error.missing_days_madinah');
+    }
+    if (step == 2 && _travelMode == null) return tr('design.error.missing_travel_mode');
+    if (step == 2 && _travelMode == 'طيران' && _flightType == null) {
+      return tr('design.error.missing_flight_type');
     }
     if (step == 3 &&
         (_nameCtrl.text.trim().isEmpty || _phoneCtrl.text.trim().isEmpty)) {
@@ -223,8 +233,9 @@ class _UmrahWizardScreenState extends State<UmrahWizardScreen> {
       transport: _transport.toList(),
       departureCountry: _departureCountry,
       departureCity: _departureCityCtrl.text.trim(),
-      flightType: _flightType,
-      flightClass: _flightClass,
+      // Bus is stored as flight_type 'باص' (same as the website).
+      flightType: _travelMode == 'باص' ? 'باص' : _flightType,
+      flightClass: _travelMode == 'باص' ? null : _flightClass,
       travelDate: _travelDate == null ? null : _isoDate(_travelDate!),
       flexDates: _flexDates,
       adults: _adults,
@@ -537,6 +548,24 @@ class _UmrahWizardScreenState extends State<UmrahWizardScreen> {
       _StepHeader(
           title: tr('design.step3.title'),
           subtitle: tr('design.step3.subtitle')),
+      _Label('${tr('design.field.travel_mode')} *'),
+      _Grid2(children: [
+        for (final m in const [
+          ('طيران', 'design.option.flight'),
+          ('باص', 'design.option.bus'),
+        ])
+          _SelectCard(
+              label: tr(m.$2),
+              selected: _travelMode == m.$1,
+              onTap: () => setState(() {
+                    _travelMode = m.$1;
+                    if (m.$1 == 'باص') {
+                      _flightType = null;
+                      _flightClass = null;
+                    }
+                  })),
+      ]),
+      const SizedBox(height: 12),
       _Label(tr('design.field.departure_country')),
       Container(
         margin: const EdgeInsets.only(bottom: 12),
@@ -565,6 +594,7 @@ class _UmrahWizardScreenState extends State<UmrahWizardScreen> {
       _TextInput(
           controller: _departureCityCtrl,
           hint: tr('design.field.departure_city')),
+      if (_travelMode == 'طيران') ...[
       _Label(tr('design.field.flight_type')),
       _Grid2(children: [
         for (final f in const [
@@ -587,6 +617,7 @@ class _UmrahWizardScreenState extends State<UmrahWizardScreen> {
               selected: _flightClass == f.$1,
               onTap: () => setState(() => _flightClass = f.$1)),
       ]),
+      ],
       const SizedBox(height: 16),
       _Label(tr('design.field.travel_date')),
       InkWell(
@@ -720,6 +751,14 @@ class _UmrahWizardScreenState extends State<UmrahWizardScreen> {
         (tr('design.field.departure_country'), _departureCountry!),
       if (_departureCityCtrl.text.trim().isNotEmpty)
         (tr('design.field.departure_city'), _departureCityCtrl.text.trim()),
+      if (_travelMode != null)
+        (
+          tr('design.field.travel_mode'),
+          pick(_travelMode, const [
+            ('طيران', 'design.option.flight'),
+            ('باص', 'design.option.bus'),
+          ])
+        ),
       if (_flightType != null)
         (
           tr('design.field.flight_type'),
