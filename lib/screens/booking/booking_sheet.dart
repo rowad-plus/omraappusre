@@ -140,6 +140,7 @@ class _BookingSheetState extends State<BookingSheet> {
           personsCount: _personsCount,
           countryCode: CountryState.selected.value?.code ?? 'SA',
           privateRoom: true,
+          leg: widget.trip.oneWayLeg,
         );
     if (!mounted || seq != _quoteSeq) return;
     setState(() {
@@ -170,8 +171,8 @@ class _BookingSheetState extends State<BookingSheet> {
     final state = context.read<AppState>();
     // One silent retry — a dropped request on mobile data shouldn't leave
     // the customer without dates.
-    var detail = await state.fetchTripDetail(tripId);
-    detail ??= await state.fetchTripDetail(tripId);
+    var detail = await state.fetchTripDetail(tripId, leg: widget.trip.oneWayLeg);
+    detail ??= await state.fetchTripDetail(tripId, leg: widget.trip.oneWayLeg);
     if (!mounted) return;
     setState(() {
       _dates = detail?.dates ?? [];
@@ -290,6 +291,7 @@ class _BookingSheetState extends State<BookingSheet> {
           extraRooms: _extraRoomPrice != null ? _extraRooms : 0,
           payAtBus: _payAtBusAvailable && _payAtBus,
           viaWhatsapp: viaWhatsapp,
+          leg: widget.trip.oneWayLeg,
         );
     if (!mounted) return;
     if (result.unauthorized) {

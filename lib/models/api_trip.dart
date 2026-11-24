@@ -39,6 +39,9 @@ class ApiTrip {
   final int? departureCityId;
   final String? departureCityName;
   final bool? nearYou;
+  final String? oneWayLeg; // 'go' | 'return' when listed as a one-way bus
+  final String? oneWayFrom;
+  final String? oneWayTo;
 
   // Detail-only fields (null when built from the list endpoint).
   final List<String>? images;
@@ -126,6 +129,9 @@ class ApiTrip {
     this.madinahStay,
     this.madinahDays = 0,
     this.busType,
+    this.oneWayLeg,
+    this.oneWayFrom,
+    this.oneWayTo,
     this.videos = const [],
     this.priceGoOnly,
     this.priceReturnOnly,
@@ -186,6 +192,9 @@ class ApiTrip {
       madinahStay: j['madinah_stay'] as String?,
       madinahDays: (j['madinah_days'] as num?)?.toInt() ?? 0,
       busType: j['bus_type']?.toString(),
+      oneWayLeg: j['one_way_leg'] as String?,
+      oneWayFrom: j['one_way_from'] as String?,
+      oneWayTo: j['one_way_to'] as String?,
       videos: (j['videos'] as List<dynamic>? ?? []).map((e) => '$e').toList(),
       priceGoOnly: (j['price_go_only'] as num?)?.toDouble(),
       priceReturnOnly: (j['price_return_only'] as num?)?.toDouble(),
@@ -237,7 +246,7 @@ class ApiTrip {
 
   Trip toTrip() => Trip(
         apiId: id,
-        title: title,
+        title: oneWayLeg != null && (oneWayFrom ?? '').isNotEmpty ? '$oneWayFrom ← $oneWayTo' : title,
         emoji: '🕋',
         bg: const LinearGradient(
             colors: [Color(0xFF8E6A28), Color(0xFFB8892F)]),
@@ -291,6 +300,7 @@ class ApiTrip {
         departureCityId: departureCityId,
         nearYou: nearYou,
         busType: busType,
+        oneWayLeg: oneWayLeg,
         gallery: gallery,
         cardVideo: cardVideo,
       );

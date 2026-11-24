@@ -107,7 +107,7 @@ class _TripDetailScreenState extends State<TripDetailScreen> {
     super.initState();
     if (widget.trip.apiId != null) {
       _loadingDetail = true;
-      context.read<AppState>().fetchTripDetail(widget.trip.apiId!).then((d) {
+      context.read<AppState>().fetchTripDetail(widget.trip.apiId!, leg: widget.trip.oneWayLeg).then((d) {
         if (!mounted) return;
         setState(() {
           _detail = d;

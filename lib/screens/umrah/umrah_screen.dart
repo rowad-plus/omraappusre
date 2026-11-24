@@ -130,6 +130,35 @@ class _UmrahScreenState extends State<UmrahScreen> {
 
   bool _visitsMadinah(Trip t) => t.stops.any((s) => s.city == 'city.madinah');
 
+  /// Chip keys for the current country — Saudi gets the two bus chips after VIP.
+  List<String> get _chipKeys {
+    if (CountryState.selected.value?.code != 'SA') return _filterKeys;
+    return [
+      ..._filterKeys.take(4),
+      'trip.filter.bus_go',
+      'trip.filter.bus_return',
+      ..._filterKeys.skip(4),
+    ];
+  }
+
+  void _onChip(int i) {
+    final key = _chipKeys[i];
+    if (key == 'trip.filter.bus_go' || key == 'trip.filter.bus_return') {
+      _openBusLeg(key == 'trip.filter.bus_go' ? 'go' : 'return', tr(key));
+      return;
+    }
+    _openFilterChip(_filterKeys.indexOf(key));
+  }
+
+  /// One-way buses from the API (`?leg=`), priced at the offices' one-way prices.
+  Future<void> _openBusLeg(String leg, String title) async {
+    final state = context.read<AppState>();
+    final api = await state.fetchTrips(
+        countryCode: 'SA', priorityCityId: CountryState.selectedCityId.value, leg: leg);
+    if (!mounted) return;
+    _openList(title, api.map((t) => t.toTrip()).toList());
+  }
+
   void _openFilterChip(int index) {
     late final List<Trip> trips;
     switch (index) {
@@ -235,12 +264,12 @@ class _UmrahScreenState extends State<UmrahScreen> {
                       : '${date.year.toString().padLeft(4, '0')}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}'),
             ),
             FilterChipBar(
-                labels: _filterKeys.map(tr).toList(),
+                labels: _chipKeys.map(tr).toList(),
                 selected: _filter,
                 accent: AppColors.green,
                 onSelect: (i) {
                   setState(() => _filter = i);
-                  _openFilterChip(i);
+                  _onChip(i);
                 }),
             ValueListenableBuilder<bool>(
               valueListenable: CountryState.detecting,

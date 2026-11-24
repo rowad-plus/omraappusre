@@ -250,9 +250,11 @@ class AppState extends ChangeNotifier {
       String? type,
       int? companyId,
       int? cityId,
-      int? priorityCityId}) async {
+      int? priorityCityId,
+      String? leg}) async {
     try {
       final res = await api.get('/umrah-trips', {
+        if (leg != null) 'leg': leg,
         if (countryCode != null) 'country_code': countryCode,
         if (type != null) 'trip_type': type,
         if (companyId != null) 'company_id': companyId,
@@ -318,9 +320,9 @@ class AppState extends ChangeNotifier {
     }
   }
 
-  Future<ApiTrip?> fetchTripDetail(int id) async {
+  Future<ApiTrip?> fetchTripDetail(int id, {String? leg}) async {
     try {
-      final res = await api.get('/umrah-trips/$id') as Map<String, dynamic>;
+      final res = await api.get('/umrah-trips/$id', leg == null ? null : {'leg': leg}) as Map<String, dynamic>;
       return ApiTrip.fromJson(res);
     } catch (_) {
       return null;
@@ -745,9 +747,11 @@ class AppState extends ChangeNotifier {
     int extraRooms = 0,
     bool payAtBus = false,
     bool viaWhatsapp = false,
+    String? leg,
   }) async {
     try {
       final res = await api.post('/bookings', {
+        if (leg != null) 'leg': leg,
         if (payAtBus) 'pay_method': 'on_bus',
         if (viaWhatsapp) 'via_whatsapp': true,
         if (extraRooms > 0) 'extra_rooms': extraRooms,
@@ -851,9 +855,11 @@ class AppState extends ChangeNotifier {
     required int personsCount,
     required String countryCode,
     bool privateRoom = false,
+    String? leg,
   }) async {
     try {
       final res = await api.get('/umrah-trips/$tripId/booking-quote', {
+        if (leg != null) 'leg': leg,
         'persons_count': personsCount,
         'country_code': countryCode,
         if (privateRoom && personsCount > 1) 'private_room': 1,

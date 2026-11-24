@@ -62,6 +62,8 @@ class Trip {
   /// Server flag: departs from the user's city or one within 150 km
   /// (null = the server couldn't tell where the user is).
   final bool? nearYou;
+  /// Saudi «باصات ذهاب / عودة» (2026-11-24): 'go' | 'return', priced at the office's one-way price.
+  final String? oneWayLeg;
 
   const Trip({
     this.apiId,
@@ -95,5 +97,6 @@ class Trip {
     this.cardVideo,
     this.departureCityId,
     this.nearYou,
+    this.oneWayLeg,
   });
 }
