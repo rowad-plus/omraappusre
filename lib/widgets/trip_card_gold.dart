@@ -153,6 +153,28 @@ class TripCardGold extends StatelessWidget {
                               height: 1.35)),
                     ),
                     // Tier is shown only by the corner ribbon (VipRibbon).
+                    // Days in a gold frame at the end of the title row (2026-11-24).
+                    if (trip.oneWayLeg == null &&
+                        _dayNumber(tr(trip.days)).isNotEmpty) ...[
+                      const SizedBox(width: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 9, vertical: 3),
+                        decoration: BoxDecoration(
+                          color: AppColors.brandSoft,
+                          border: Border.all(
+                              color: AppColors.brandLight, width: 1.5),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Text(
+                            '${_dayNumber(tr(trip.days))} ${tr('trip.days.unit')}',
+                            style: const TextStyle(
+                                fontSize: 12.5,
+                                fontWeight: FontWeight.w800,
+                                color: AppColors.brandDark,
+                                height: 1.3)),
+                      ),
+                    ],
                   ]),
                   const SizedBox(height: 6),
                   Wrap(
@@ -164,10 +186,6 @@ class TripCardGold extends StatelessWidget {
                             FontAwesomeIcons.locationDot,
                             destinations.map((s) => tr(s.city)).join(' + '),
                             accent),
-                      _meta(
-                          FontAwesomeIcons.solidClock,
-                          '${_dayNumber(tr(trip.days))} ${tr('trip.days.unit')}',
-                          accent),
                       if (trip.busType != null)
                         _meta(
                             FontAwesomeIcons.bus,
