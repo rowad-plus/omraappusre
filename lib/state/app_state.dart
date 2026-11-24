@@ -403,6 +403,34 @@ class AppState extends ChangeNotifier {
     }
   }
 
+  /// «مكاتب العمرة» directory: all active offices in the selected country,
+  /// optionally one city (based there or departing from there) and a name
+  /// search. Null on failure so the screen can show a retry state.
+  Future<({List<ApiDirectoryCompany> companies, List<ApiDirectoryCity> cities, int total, bool hasMore})?>
+      fetchCompaniesDirectory({int? cityId, String search = '', int page = 1}) async {
+    try {
+      final country = CountryState.selected.value?.code;
+      final res = await api.get('/companies-directory', {
+        if (country != null) 'country': country,
+        if (cityId != null) 'city_id': cityId,
+        if (search.isNotEmpty) 'search': search,
+        'page': page,
+      }) as Map<String, dynamic>;
+      return (
+        companies: (res['companies'] as List<dynamic>)
+            .map((c) => ApiDirectoryCompany.fromJson(c as Map<String, dynamic>))
+            .toList(),
+        cities: ((res['cities'] as List<dynamic>?) ?? const [])
+            .map((c) => ApiDirectoryCity.fromJson(c as Map<String, dynamic>))
+            .toList(),
+        total: (res['total'] as num?)?.toInt() ?? 0,
+        hasMore: res['has_more'] as bool? ?? false,
+      );
+    } catch (_) {
+      return null;
+    }
+  }
+
   /// A provider company's public profile — powers the company profile page
   /// opened from a featured-company card or the provider scroller. Returns
   /// null on any failure (missing/inactive company, network error) so the

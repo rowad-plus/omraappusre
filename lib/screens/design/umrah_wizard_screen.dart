@@ -202,7 +202,7 @@ class _UmrahWizardScreenState extends State<UmrahWizardScreen> {
     if (_submitting) return;
     final appState = context.read<AppState>();
     if (!appState.isLoggedIn) {
-      openLoginSheet(context);
+      openLoginSheet(context, toSearch: false);
       return;
     }
     // Signed in from this screen (login sheet above): fill what's still

@@ -277,7 +277,7 @@ class _TrustItem extends StatelessWidget {
 /// website's design page opening its auth popup.
 Future<void> _openForUser(BuildContext context, Widget page) async {
   if (!context.read<AppState>().isLoggedIn) {
-    await openLoginSheet(context);
+    await openLoginSheet(context, toSearch: false);
     if (!context.mounted || !context.read<AppState>().isLoggedIn) return;
   }
   Navigator.of(context).push(MaterialPageRoute(builder: (_) => page));

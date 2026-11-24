@@ -5,6 +5,7 @@ import 'dart:async';
 import '../../core/theme/app_colors.dart';
 import '../../l10n/translations.dart';
 import '../../state/app_state.dart';
+import '../../state/nav_state.dart';
 import '../../state/country_state.dart';
 import '../../utils/western_digits_formatter.dart';
 import '../../widgets/app_toast.dart';
@@ -570,11 +571,21 @@ class _LoginSheetState extends State<LoginSheet> {
   }
 }
 
-Future<void> openLoginSheet(BuildContext context) {
-  return showModalBottomSheet<void>(
+/// Opens the login sheet. After a successful sign-in the user lands on the
+/// search tab (2026-11-24), except when [toSearch] is false — logins asked
+/// for in the middle of an action (booking, comment, like, design request…)
+/// keep the user where they were so the action can continue.
+Future<void> openLoginSheet(BuildContext context, {bool toSearch = true}) async {
+  final wasLoggedIn = context.read<AppState>().isLoggedIn;
+  final nav = Navigator.of(context);
+  await showModalBottomSheet<void>(
     context: context,
     isScrollControlled: true,
     backgroundColor: Colors.transparent,
     builder: (_) => const LoginSheet(),
   );
+  if (!toSearch || wasLoggedIn || !context.mounted) return;
+  if (!context.read<AppState>().isLoggedIn) return;
+  nav.popUntil((r) => r.isFirst);
+  NavState.openSearch();
 }

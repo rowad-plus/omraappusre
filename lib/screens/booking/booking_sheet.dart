@@ -269,7 +269,7 @@ class _BookingSheetState extends State<BookingSheet> {
     // Guests log in from here and the booking continues with the same form.
     if (!context.read<AppState>().isLoggedIn) {
       setState(() => _error = null);
-      await openLoginSheet(context);
+      await openLoginSheet(context, toSearch: false);
       if (!mounted || !context.read<AppState>().isLoggedIn) return;
       _prefillContact();
     }
@@ -294,7 +294,7 @@ class _BookingSheetState extends State<BookingSheet> {
     if (!mounted) return;
     if (result.unauthorized) {
       setState(() => _submitting = false);
-      await openLoginSheet(context);
+      await openLoginSheet(context, toSearch: false);
       if (mounted && context.read<AppState>().isLoggedIn) {
         await _submit(viaWhatsapp: viaWhatsapp);
       }

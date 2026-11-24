@@ -49,3 +49,43 @@ class ApiCompany {
         tripsCount: j['trips_count'] as int? ?? 0,
       );
 }
+
+/// One row of the «مكاتب العمرة» directory (`GET /companies-directory`).
+class ApiDirectoryCompany {
+  final int id;
+  final String name;
+  final String? logo;
+  final bool featured;
+  final String? cityName;
+  final int tripsCount;
+
+  const ApiDirectoryCompany({
+    required this.id,
+    required this.name,
+    this.logo,
+    this.featured = false,
+    this.cityName,
+    this.tripsCount = 0,
+  });
+
+  factory ApiDirectoryCompany.fromJson(Map<String, dynamic> j) =>
+      ApiDirectoryCompany(
+        id: j['id'] as int,
+        name: j['name'] as String? ?? '',
+        logo: j['logo'] as String?,
+        featured: j['rank'] == 'featured',
+        cityName: j['city_name'] as String?,
+        tripsCount: (j['trips_count'] as num?)?.toInt() ?? 0,
+      );
+}
+
+/// A city chip in the directory filter, with its number of offices.
+class ApiDirectoryCity {
+  final int id;
+  final String name;
+  final int count;
+  const ApiDirectoryCity(this.id, this.name, this.count);
+
+  factory ApiDirectoryCity.fromJson(Map<String, dynamic> j) => ApiDirectoryCity(
+      j['id'] as int, j['name'] as String? ?? '', (j['count'] as num?)?.toInt() ?? 0);
+}

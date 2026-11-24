@@ -61,7 +61,7 @@ class _ContactScreenState extends State<ContactScreen> {
     if (_sending) return;
     final appState = context.read<AppState>();
     if (!appState.isLoggedIn) {
-      openLoginSheet(context);
+      openLoginSheet(context, toSearch: false);
       return;
     }
     if (_messageCtrl.text.trim().isEmpty) {

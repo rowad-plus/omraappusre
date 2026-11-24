@@ -121,7 +121,7 @@ class _TripDetailScreenState extends State<TripDetailScreen> {
 
   Future<void> _toggleSaved() async {
     if (!context.read<AppState>().isLoggedIn) {
-      openLoginSheet(context);
+      openLoginSheet(context, toSearch: false);
       return;
     }
     final tripId = widget.trip.apiId;
@@ -141,7 +141,7 @@ class _TripDetailScreenState extends State<TripDetailScreen> {
   /// instead of silently failing.
   Future<void> _toggleCompared() async {
     if (!context.read<AppState>().isLoggedIn) {
-      openLoginSheet(context);
+      openLoginSheet(context, toSearch: false);
       return;
     }
     final tripId = widget.trip.apiId;
@@ -163,7 +163,7 @@ class _TripDetailScreenState extends State<TripDetailScreen> {
 
   void _openBooking() {
     if (!context.read<AppState>().isLoggedIn) {
-      openLoginSheet(context);
+      openLoginSheet(context, toSearch: false);
       return;
     }
     Navigator.of(context).push(MaterialPageRoute(

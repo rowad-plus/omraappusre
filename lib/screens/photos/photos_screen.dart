@@ -140,7 +140,7 @@ class _PhotosScreenState extends State<PhotosScreen> {
 
   Future<void> _toggleLike(Post post) async {
     if (!context.read<AppState>().isLoggedIn) {
-      openLoginSheet(context);
+      openLoginSheet(context, toSearch: false);
       return;
     }
     setState(() {
@@ -159,7 +159,7 @@ class _PhotosScreenState extends State<PhotosScreen> {
 
   void _openPostModal() {
     if (!context.read<AppState>().isLoggedIn) {
-      openLoginSheet(context);
+      openLoginSheet(context, toSearch: false);
       return;
     }
     showModalBottomSheet(

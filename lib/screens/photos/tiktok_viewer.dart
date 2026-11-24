@@ -193,7 +193,7 @@ class _SlideState extends State<_Slide> {
   Future<void> _toggleLike() async {
     final post = widget.post;
     if (!context.read<AppState>().isLoggedIn) {
-      openLoginSheet(context);
+      openLoginSheet(context, toSearch: false);
       return;
     }
     setState(() {

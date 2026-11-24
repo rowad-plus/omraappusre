@@ -10,6 +10,7 @@ import '../../widgets/app_header.dart';
 import '../auth/login_sheet.dart';
 import '../../state/nav_state.dart';
 import 'comparisons_screen.dart';
+import 'companies_directory_screen.dart';
 import 'favorites_screen.dart';
 import 'my_trips_screen.dart';
 import 'orders_screen.dart';
@@ -131,6 +132,11 @@ class _MoreScreenState extends State<MoreScreen> with LiveReload<MoreScreen> {
               ]),
             ),
           ),
+          _MenuSection(items: [
+            _MenuItem(FontAwesomeIcons.kaaba, const Color(0xFFFBF5E8),
+                const Color(0xFFB8892F), tr('more_menu.companies'),
+                onTap: () => _push(context, const CompaniesDirectoryScreen())),
+          ]),
           _MenuSection(items: [
             _MenuItem(FontAwesomeIcons.solidHeart, const Color(0xFFFFE4E4),
                 const Color(0xFFE84040), tr('more_menu.favorites'),

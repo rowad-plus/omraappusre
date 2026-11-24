@@ -51,7 +51,7 @@ class _CommentsSheetState extends State<CommentsSheet> {
     if (text.isEmpty || _sending) return;
 
     if (!context.read<AppState>().isLoggedIn) {
-      openLoginSheet(context);
+      openLoginSheet(context, toSearch: false);
       return;
     }
 
