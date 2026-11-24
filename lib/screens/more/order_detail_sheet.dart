@@ -41,6 +41,7 @@ class _OrderDetailSheetState extends State<OrderDetailSheet>
   bool _showAllUpdates = false;
   bool _payingNow = false;
   bool _cancelling = false;
+  Map<String, dynamic>? _ext; // «تمديد الإقامة»
 
   @override
   void initState() {
@@ -60,7 +61,10 @@ class _OrderDetailSheetState extends State<OrderDetailSheet>
     if (!mounted) return;
     final detail = results[0] as ApiBooking?;
     setState(() {
-      if (detail != null) _order = detail.toOrder();
+      if (detail != null) {
+        _order = detail.toOrder();
+        _ext = detail.extension;
+      }
       _updates = results[1] as List<ApiNotification>;
       _loadingDetail = false;
     });
@@ -92,6 +96,145 @@ class _OrderDetailSheetState extends State<OrderDetailSheet>
     if (!mounted) return;
     setState(() => _cancelling = false);
     if (cancelled) await _loadDetail();
+  }
+
+  /// Bottom sheet: pick days, see the price, send the request.
+  Future<void> _openExtend() async {
+    final ext = _ext;
+    final apiId = widget.order.apiId;
+    if (ext == null || apiId == null) return;
+    final rate = (ext['rate'] as num?)?.toDouble() ?? 0;
+    final persons = (ext['persons'] as num?)?.toInt() ?? 1;
+    final maxDays = (ext['max_days'] as num?)?.toInt() ?? 30;
+    final currency = '${ext['currency'] ?? ''}';
+    final isFamily = ext['is_family'] == true;
+    var days = 1;
+    var sending = false;
+    String f(num v) => v.toStringAsFixed(0);
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setSheet) => Padding(
+          padding: EdgeInsets.fromLTRB(20, 18, 20, 20 + MediaQuery.of(ctx).viewInsets.bottom),
+          child: Column(mainAxisSize: MainAxisSize.min, children: [
+            Text('📅 ${tr('orders.extend.title')}',
+                style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w800, color: AppColors.text)),
+            const SizedBox(height: 4),
+            Text(order.trip, textAlign: TextAlign.center, style: const TextStyle(fontSize: 12, color: AppColors.muted)),
+            const SizedBox(height: 16),
+            Text(tr('orders.extend.days'), style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700)),
+            const SizedBox(height: 8),
+            Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+              IconButton.filledTonal(
+                  onPressed: days > 1 ? () => setSheet(() => days--) : null, icon: const Icon(Icons.remove)),
+              SizedBox(
+                  width: 70,
+                  child: Text('$days',
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(fontSize: 26, fontWeight: FontWeight.w800))),
+              IconButton.filledTonal(
+                  onPressed: days < maxDays ? () => setSheet(() => days++) : null, icon: const Icon(Icons.add)),
+            ]),
+            const SizedBox(height: 12),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(color: AppColors.brandSoft, borderRadius: BorderRadius.circular(12)),
+              child: Column(children: [
+                Text(
+                    '$persons ${tr('orders.extend.persons')} × $days × ${f(rate)} $currency'
+                    '${isFamily ? ' (${tr('orders.extend.family')})' : ''}',
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(fontSize: 12.5, color: AppColors.muted)),
+                const SizedBox(height: 4),
+                Text('${tr('orders.extend.total')}: ${f(rate * persons * days)} $currency',
+                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: AppColors.brandDark)),
+              ]),
+            ),
+            const SizedBox(height: 8),
+            Text(tr('orders.extend.note'),
+                textAlign: TextAlign.center, style: const TextStyle(fontSize: 11.5, color: AppColors.muted)),
+            const SizedBox(height: 14),
+            SizedBox(
+              width: double.infinity,
+              height: 48,
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.brand,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
+                onPressed: sending
+                    ? null
+                    : () async {
+                        setSheet(() => sending = true);
+                        final (err, fresh) = await context.read<AppState>().requestBookingExtension(apiId, days);
+                        if (!ctx.mounted) return;
+                        Navigator.of(ctx).pop();
+                        if (!mounted) return;
+                        showAppToast(context, err ?? '✅ ${tr('orders.extend.sent')}');
+                        if (err == null) {
+                          setState(() => _ext = fresh ?? _ext);
+                          _loadDetail();
+                        }
+                      },
+                child: sending
+                    ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                    : Text(tr('orders.extend.send'), style: const TextStyle(fontWeight: FontWeight.w800)),
+              ),
+            ),
+          ]),
+        ),
+      ),
+    );
+  }
+
+  /// Extend button / pending request / confirmed days.
+  Widget _extensionBlock() {
+    final ext = _ext;
+    if (ext == null) return const SizedBox.shrink();
+    final pending = ext['pending'] as Map<String, dynamic>?;
+    final confirmedDays = (ext['confirmed_days'] as num?)?.toInt() ?? 0;
+    final rows = <Widget>[];
+    if (pending != null) {
+      rows.add(Container(
+        width: double.infinity,
+        margin: const EdgeInsets.only(top: 10),
+        padding: const EdgeInsets.all(10),
+        decoration: BoxDecoration(color: const Color(0xFFFFF7ED), borderRadius: BorderRadius.circular(10)),
+        child: Text(
+            '⏳ ${tr('orders.extend.pending')} — ${pending['days']} · ${((pending['amount'] as num?) ?? 0).toStringAsFixed(0)} ${pending['currency'] ?? ''}',
+            style: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.w700, color: Color(0xFF9A3412))),
+      ));
+    }
+    if (confirmedDays > 0) {
+      rows.add(Padding(
+        padding: const EdgeInsets.only(top: 8),
+        child: Text('✅ +$confirmedDays ${tr('orders.extend.confirmed_days')}',
+            style: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.w700, color: Color(0xFF15803D))),
+      ));
+    }
+    if (ext['available'] == true) {
+      rows.add(Padding(
+        padding: const EdgeInsets.only(top: 10),
+        child: SizedBox(
+          width: double.infinity,
+          child: OutlinedButton.icon(
+            style: OutlinedButton.styleFrom(
+                foregroundColor: AppColors.brandDark,
+                side: const BorderSide(color: AppColors.brandLine),
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
+            onPressed: _openExtend,
+            icon: const FaIcon(FontAwesomeIcons.calendarPlus, size: 14),
+            label: Text(tr('orders.extend.title'), style: const TextStyle(fontWeight: FontWeight.w800)),
+          ),
+        ),
+      ));
+    }
+    return Column(children: rows);
   }
 
   static Map<OrderStatus, (Color, Color, String)> get _statusStyle => {
@@ -258,6 +401,7 @@ class _OrderDetailSheetState extends State<OrderDetailSheet>
                 ),
               ),
             ],
+            _extensionBlock(),
             if (order.canCancel) ...[
               const SizedBox(height: 10),
               Center(

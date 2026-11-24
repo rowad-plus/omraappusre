@@ -33,6 +33,8 @@ class ApiBooking {
   final String? paymentStatus; // unpaid | pending | captured | failed
   final double? commissionAmount;
   final List<ApiBookingTraveler>? travelers;
+  /// «تمديد الإقامة» (2026-11-24): available, rate, is_family, persons, currency, max_days, pending, items, confirmed_days.
+  final Map<String, dynamic>? extension;
 
   const ApiBooking({
     required this.id,
@@ -61,6 +63,7 @@ class ApiBooking {
     this.paymentStatus,
     this.commissionAmount,
     this.travelers,
+    this.extension,
   });
 
   factory ApiBooking.fromJson(Map<String, dynamic> j) => ApiBooking(
@@ -92,6 +95,7 @@ class ApiBooking {
         travelers: (j['travelers'] as List<dynamic>?)
             ?.map((t) => ApiBookingTraveler.fromJson(t as Map<String, dynamic>))
             .toList(),
+        extension: j['extension'] is Map<String, dynamic> ? j['extension'] as Map<String, dynamic> : null,
       );
 
   /// True once the trip's departure date has passed for a confirmed

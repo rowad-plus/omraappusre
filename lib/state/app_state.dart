@@ -675,6 +675,19 @@ class AppState extends ChangeNotifier {
     }
   }
 
+  /// «تمديد الإقامة»: asks the company to extend the booking by [days].
+  /// Returns (error message or null, fresh extension payload).
+  Future<(String?, Map<String, dynamic>?)> requestBookingExtension(int bookingId, int days) async {
+    try {
+      final res = await api.post('/bookings/$bookingId/extend', {'days': days}) as Map<String, dynamic>;
+      return (null, res['extension'] as Map<String, dynamic>?);
+    } on ApiException catch (e) {
+      return (e.message, null);
+    } catch (_) {
+      return ('تعذّر الاتصال بالخادم، تحقق من الإنترنت وحاول مجددًا', null);
+    }
+  }
+
   Future<ApiBooking?> fetchBookingDetail(int id) async {
     try {
       final res = await api.get('/bookings/$id') as Map<String, dynamic>;
