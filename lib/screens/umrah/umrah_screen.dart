@@ -16,6 +16,7 @@ import '../booking/booking_sheet.dart';
 import '../../state/nav_state.dart';
 import '../trip_list/trip_list_screen.dart';
 import '../company/company_profile_screen.dart';
+import '../more/companies_directory_screen.dart';
 import '../../models/trip.dart';
 import '../../data/country_catalog.dart';
 import '../../state/app_state.dart';
@@ -295,6 +296,10 @@ class _UmrahScreenState extends State<UmrahScreen> {
                           title: tr('trip.umrah.providers_title'),
                           providers: _providers,
                           moreColor: AppColors.green,
+                          onMoreTap: () => Navigator.of(context).push(
+                              MaterialPageRoute(
+                                  builder: (_) =>
+                                      const CompaniesDirectoryScreen())),
                           onProviderTap: (p) {
                             if (p.id == null) return;
                             Navigator.of(context).push(MaterialPageRoute(
