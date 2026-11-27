@@ -232,7 +232,9 @@ class _TripDetailScreenState extends State<TripDetailScreen> {
                       children: [
                         CardRouteRow(trip: t),
                         // Saudi trips: Madinah day visit vs overnight stay.
-                        if (_detail?.madinahStay != null) ...[
+                        // 2026-11-27: no type chosen but Madinah days → overnight.
+                        if (_detail?.madinahStay != null ||
+                            (_detail?.madinahDays ?? 0) > 0) ...[
                           const SizedBox(height: 10),
                           Row(children: [
                             const FaIcon(FontAwesomeIcons.mosque,
@@ -240,7 +242,7 @@ class _TripDetailScreenState extends State<TripDetailScreen> {
                             const SizedBox(width: 8),
                             Expanded(
                               child: Text(
-                                  _detail!.madinahStay == 'visit'
+                                  (_detail!.madinahStay ?? 'overnight') == 'visit'
                                       ? tr('trip.detail.madinah_visit')
                                       : tr('trip.detail.madinah_stay').replaceAll(
                                           ':n', '${_detail!.madinahDays}'),
