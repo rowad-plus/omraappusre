@@ -158,11 +158,13 @@ class Trip {
       );
 }
 
-/// Each trip followed by one card per private room it offers (2026-11-27).
-List<Trip> expandRoomCards(Iterable<Trip> trips) => [
-      for (final t in trips) ...[
-        t,
-        if (t.roomPersons == null && t.oneWayLeg == null)
-          for (final r in t.roomOptions) t.withRoom(r),
-      ],
-    ];
+/// All the trips first, then one card per private room they offer (2026-11-27).
+List<Trip> expandRoomCards(Iterable<Trip> trips) {
+  final list = trips.toList();
+  return [
+    ...list,
+    for (final t in list)
+      if (t.roomPersons == null && t.oneWayLeg == null)
+        for (final r in t.roomOptions) t.withRoom(r),
+  ];
+}

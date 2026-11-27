@@ -108,17 +108,16 @@ class TripCardUC extends StatelessWidget {
                           const SizedBox(height: 3),
                         ],
                         // Tier shown only by the corner ribbon (VipRibbon).
-                        Text(tr(trip.title),
+                        Text(
+                            trip.roomPersons == null
+                                ? tr(trip.title)
+                                : '${tr(trip.title)} ${RoomBadge.label(trip.roomPersons!)}',
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
                             style: const TextStyle(
                                 fontSize: 13,
                                 fontWeight: FontWeight.w900,
                                 color: AppColors.text)),
-                        if (trip.roomPersons != null) ...[
-                          const SizedBox(height: 4),
-                          RoomBadge(persons: trip.roomPersons!, accent: tier.accent),
-                        ],
                         const SizedBox(height: 5),
                         _metaItem(FontAwesomeIcons.solidBuilding,
                             starRatingLabel(trip.stars)),

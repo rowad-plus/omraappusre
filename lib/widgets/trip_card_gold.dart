@@ -144,7 +144,10 @@ class TripCardGold extends StatelessWidget {
                   // Title at the start (right in Arabic), trip type at the end.
                   Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
                     Expanded(
-                      child: Text(tr(trip.title),
+                      child: Text(
+                          trip.roomPersons == null
+                              ? tr(trip.title)
+                              : '${tr(trip.title)} ${RoomBadge.label(trip.roomPersons!)}',
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                           style: const TextStyle(
@@ -177,13 +180,6 @@ class TripCardGold extends StatelessWidget {
                       ),
                     ],
                   ]),
-                  if (trip.roomPersons != null) ...[
-                    const SizedBox(height: 8),
-                    Align(
-                      alignment: AlignmentDirectional.centerStart,
-                      child: RoomBadge(persons: trip.roomPersons!, accent: accent),
-                    ),
-                  ],
                   const SizedBox(height: 6),
                   Wrap(
                     spacing: 14,
