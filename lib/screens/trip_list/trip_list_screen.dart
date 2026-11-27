@@ -105,6 +105,7 @@ class _TripListScreenState extends State<TripListScreen> {
       case _SortMode.starsLowToHigh:
         list.sort((a, b) => _starCount(a).compareTo(_starCount(b)));
     }
+    list = expandRoomCards(list);
 
     Widget row(List<Widget> cells) => Row(children: [
           Expanded(child: cells[0]),

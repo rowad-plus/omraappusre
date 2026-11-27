@@ -90,7 +90,7 @@ class _CompanyProfileScreenState extends State<CompanyProfileScreen> {
                                 style: const TextStyle(color: AppColors.muted))),
                       )
                     else
-                      for (final t in _trips)
+                      for (final t in expandRoomCards(_trips))
                         TripCardUC(trip: t, onTap: () => _openDetail(t), onBook: () => _openBooking(t)),
                   ],
                 ),

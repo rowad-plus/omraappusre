@@ -8,6 +8,7 @@ import '../l10n/translations.dart';
 import '../models/trip.dart';
 import 'trip_card_parts.dart';
 import 'vip_ribbon.dart';
+import 'room_badge.dart';
 
 /// Mirrors `.uc` — the side-image trip card style used on the Umrah tab
 /// and the home page's umrah VIP section.
@@ -114,6 +115,10 @@ class TripCardUC extends StatelessWidget {
                                 fontSize: 13,
                                 fontWeight: FontWeight.w900,
                                 color: AppColors.text)),
+                        if (trip.roomPersons != null) ...[
+                          const SizedBox(height: 4),
+                          RoomBadge(persons: trip.roomPersons!, accent: tier.accent),
+                        ],
                         const SizedBox(height: 5),
                         _metaItem(FontAwesomeIcons.solidBuilding,
                             starRatingLabel(trip.stars)),

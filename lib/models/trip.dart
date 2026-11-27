@@ -12,6 +12,16 @@ class TripStop {
   const TripStop(this.city, {this.transportToNext = RouteTransport.flight});
 }
 
+/// 2026-11-27: a private room the company priced (1-4 people), shown as its
+/// own card next to the trip's normal (shared room) card.
+class RoomOption {
+  final int persons;
+
+  /// "<amount> <currency>", same format as [Trip.price] (whole room).
+  final String price;
+  const RoomOption(this.persons, this.price);
+}
+
 /// Generic trip/program shown on cards and the detail page.
 /// Mirrors the `data` object passed into `openDetail()` in rehlaty.html.
 class Trip {
@@ -65,6 +75,13 @@ class Trip {
   /// Saudi «باصات ذهاب / عودة» (2026-11-24): 'go' | 'return', priced at the office's one-way price.
   final String? oneWayLeg;
 
+  /// Private rooms the company priced (from the API's room_options).
+  final List<RoomOption> roomOptions;
+
+  /// Set on a private-room card: the room size; booking opens with that many
+  /// people and «غرفة خاصة» ticked (the customer can still change both).
+  final int? roomPersons;
+
   const Trip({
     this.apiId,
     required this.title,
@@ -98,5 +115,54 @@ class Trip {
     this.departureCityId,
     this.nearYou,
     this.oneWayLeg,
+    this.roomOptions = const [],
+    this.roomPersons,
   });
+
+  /// The same trip as a private-room card for [r].
+  Trip withRoom(RoomOption r) => Trip(
+        apiId: apiId,
+        title: title,
+        emoji: emoji,
+        bg: bg,
+        imageAsset: imageAsset,
+        iconAsset: iconAsset,
+        networkImage: networkImage,
+        hotel: hotel,
+        stars: stars,
+        type: type,
+        days: days,
+        travelers: travelers,
+        price: r.price,
+        date: date,
+        provider: provider,
+        providerLogo: providerLogo,
+        dest: dest,
+        vip: vip,
+        premium: premium,
+        featured: featured,
+        isGreen: isGreen,
+        accent: accent,
+        stops: stops,
+        feats: feats,
+        countryCode: countryCode,
+        programType: programType,
+        busType: busType,
+        gallery: gallery,
+        cardVideo: cardVideo,
+        departureCityId: departureCityId,
+        nearYou: nearYou,
+        oneWayLeg: oneWayLeg,
+        roomOptions: roomOptions,
+        roomPersons: r.persons,
+      );
 }
+
+/// Each trip followed by one card per private room it offers (2026-11-27).
+List<Trip> expandRoomCards(Iterable<Trip> trips) => [
+      for (final t in trips) ...[
+        t,
+        if (t.roomPersons == null && t.oneWayLeg == null)
+          for (final r in t.roomOptions) t.withRoom(r),
+      ],
+    ];

@@ -7,6 +7,7 @@ import '../l10n/translations.dart';
 import '../models/trip.dart';
 import 'vip_ribbon.dart';
 import 'card_media.dart';
+import 'room_badge.dart';
 
 /// Home-page trip card in the gold design shared with omraway.com
 /// (`_trip-card-gold.blade.php`): photo on top with the destination chip,
@@ -176,6 +177,13 @@ class TripCardGold extends StatelessWidget {
                       ),
                     ],
                   ]),
+                  if (trip.roomPersons != null) ...[
+                    const SizedBox(height: 8),
+                    Align(
+                      alignment: AlignmentDirectional.centerStart,
+                      child: RoomBadge(persons: trip.roomPersons!, accent: accent),
+                    ),
+                  ],
                   const SizedBox(height: 6),
                   Wrap(
                     spacing: 14,
@@ -224,6 +232,12 @@ class TripCardGold extends StatelessWidget {
                                       fontSize: 12,
                                       fontWeight: FontWeight.w700,
                                       color: accent)),
+                            ],
+                            if (trip.roomPersons != null) ...[
+                              const SizedBox(width: 4),
+                              Text('/ ${tr('trip.room.per_room')}',
+                                  style: const TextStyle(
+                                      fontSize: 11.5, color: AppColors.muted)),
                             ],
                           ],
                         ),

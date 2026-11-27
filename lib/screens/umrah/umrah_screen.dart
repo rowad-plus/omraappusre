@@ -193,7 +193,8 @@ class _UmrahScreenState extends State<UmrahScreen> {
 
   /// Home gold cards: one per row on phones, two side by side on wide
   /// screens (tablets / iPad / an unfolded Galaxy Fold, 600px+).
-  Widget _goldCardGrid(List<Trip> trips) {
+  Widget _goldCardGrid(List<Trip> baseTrips) {
+    final trips = expandRoomCards(baseTrips);
     return LayoutBuilder(builder: (context, c) {
       Widget card(Trip t) => TripCardGold(
           trip: t, onTap: () => _openDetail(t), onBook: () => _openBooking(t));

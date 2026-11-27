@@ -152,6 +152,13 @@ class _BookingSheetState extends State<BookingSheet> {
   @override
   void initState() {
     super.initState();
+    // Private-room card (2026-11-27): start with its size and the room ticked;
+    // the customer can still change both.
+    final roomPersons = widget.trip.roomPersons;
+    if (roomPersons != null && roomPersons > 0) {
+      _adults = roomPersons;
+      _privateRoom = true;
+    }
     _prefillContact();
     _loadDates();
   }
@@ -196,6 +203,7 @@ class _BookingSheetState extends State<BookingSheet> {
       _videos = detail?.videos ?? const [];
       if (!_payAtBusAvailable) _payAtBus = false;
       _datesLoading = false;
+      if (_privateRoom) Future.microtask(_refreshPrivateRoomQuote);
       if (_dates.length == 1) {
         _selectedDate = _dates.first;
       } else if (widget.initialDate != null) {

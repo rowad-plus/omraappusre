@@ -88,6 +88,9 @@ class ApiTrip {
   /// Admin enabled "الدفع عند الباص" for this trip's company.
   final bool payAtBus;
 
+  /// 2026-11-27: private rooms the company priced, {persons: whole-room price}, 1-4 people.
+  final Map<int, double> roomOptions;
+
   /// List endpoint: card photos (up to 6) and the first video, if any.
   final List<String> gallery;
   final String? cardVideo;
@@ -140,6 +143,7 @@ class ApiTrip {
     this.payAtBus = false,
     this.gallery = const [],
     this.cardVideo,
+    this.roomOptions = const {},
   });
 
   factory ApiTrip.fromJson(Map<String, dynamic> j) {
@@ -203,6 +207,11 @@ class ApiTrip {
       payAtBus: j['pay_at_bus'] == true || j['pay_at_bus'] == 1,
       gallery: (j['gallery'] as List<dynamic>? ?? []).map((e) => '$e').toList(),
       cardVideo: j['card_video'] as String?,
+      roomOptions: {
+        for (final r in (j['room_options'] as List<dynamic>? ?? const []))
+          if (r is Map && r['persons'] is num && (r['price'] as num? ?? 0) > 0)
+            (r['persons'] as num).toInt(): (r['price'] as num).toDouble(),
+      },
     );
   }
 
@@ -303,6 +312,10 @@ class ApiTrip {
         oneWayLeg: oneWayLeg,
         gallery: gallery,
         cardVideo: cardVideo,
+        roomOptions: [
+          for (final e in (roomOptions.entries.toList()..sort((a, b) => a.key.compareTo(b.key))))
+            RoomOption(e.key, '${NumberFormat('#,##0', 'en').format(e.value)} $currency'),
+        ],
       );
 }
 
