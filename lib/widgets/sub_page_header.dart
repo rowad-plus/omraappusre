@@ -10,12 +10,16 @@ class SubPageHeader extends StatelessWidget implements PreferredSizeWidget {
   final VoidCallback? onAction;
   final Widget? trailing;
 
+  /// false on a bottom-bar tab (nothing to go back to).
+  final bool showBack;
+
   const SubPageHeader(
       {super.key,
       required this.title,
       this.actionLabel,
       this.onAction,
-      this.trailing});
+      this.trailing,
+      this.showBack = true});
 
   @override
   Size get preferredSize => const Size.fromHeight(54);
@@ -31,7 +35,7 @@ class SubPageHeader extends StatelessWidget implements PreferredSizeWidget {
       ),
       child: Row(
         children: [
-          GestureDetector(
+          if (!showBack) const SizedBox(width: 34) else GestureDetector(
             onTap: () => Navigator.of(context).maybePop(),
             child: Container(
               width: 34,

@@ -18,6 +18,7 @@ import '../../state/nav_state.dart';
 import '../../widgets/app_dropdown.dart';
 import '../../widgets/app_header.dart';
 import '../../widgets/h_scroll_auto.dart';
+import '../../widgets/room_badge.dart';
 import '../../widgets/trip_card_parts.dart';
 import '../trip_detail/trip_detail_screen.dart';
 import '../booking/booking_sheet.dart';
@@ -164,6 +165,12 @@ class _UmrahResultsScreenState extends State<UmrahResultsScreen> {
   }
 
   List<UmrahResult> _apiResults = [];
+
+  /// «المقترح» from the server (one trip per featured company, rotating).
+  List<UmrahResult> _apiSuggested = [];
+
+  /// Days filter: '' | '1' | '2-3' | '4-7' | '8+'.
+  String _duration = '';
   bool _loading = false;
   String? _loadedForCode;
 
@@ -234,6 +241,7 @@ class _UmrahResultsScreenState extends State<UmrahResultsScreen> {
       if (result != null) {
         _dateStrip = result.dateStrip;
         _apiResults = result.trips.map((t) => _fromApiTrip(t, code)).toList();
+        _apiSuggested = result.suggested.map((t) => _fromApiTrip(t, code)).toList();
       }
     });
     _scrollToSelectedDate();
@@ -279,6 +287,7 @@ class _UmrahResultsScreenState extends State<UmrahResultsScreen> {
       ],
       stops: t.routeStops,
       countryCode: countryCode,
+      roomOptions: t.roomOptions,
     );
   }
 
@@ -296,9 +305,58 @@ class _UmrahResultsScreenState extends State<UmrahResultsScreen> {
   /// *destination* (Makkah vs Madinah) within that already-scoped list.
   List<UmrahResult> get _baseResults => _apiResults;
 
+  bool _durationOk(UmrahResult t) {
+    if (_duration.isEmpty) return true;
+    final d = int.tryParse(t.days) ?? 0;
+    return switch (_duration) {
+      '1' => d == 1,
+      '2-3' => d >= 2 && d <= 3,
+      '4-7' => d >= 4 && d <= 7,
+      '8+' => d >= 8,
+      _ => true,
+    };
+  }
+
+  /// «المقترح» after the same filters (shown only on the default order).
+  List<UmrahResult> get _suggested =>
+      _sort == _SortMode.nearest ? _filter(_apiSuggested) : const [];
+
+  /// Main list, then one card per private room of every shown trip (as on the home page).
+  List<UmrahResult> get _listWithRooms {
+    final main = _results;
+    final bases = [..._suggested, ...main];
+    return [
+      ...main,
+      for (final t in bases)
+        for (final e in (t.roomOptions.entries.toList()..sort((a, b) => a.key.compareTo(b.key))))
+          t.withRoom(e.key, e.value),
+    ];
+  }
+
+  List<UmrahResult> _filter(List<UmrahResult> src) {
+    final query = _searchQuery.trim().toLowerCase();
+    return src.where((t) {
+      if (!_durationOk(t)) return false;
+      if (_type != _kAll && t.type != _type) return false;
+      if (_country != _kAll && _destCountry(t) != _country) return false;
+      if (_city != _kAll && _destCity(t) != _city) return false;
+      if (_route == 'makkah_only' && _visitsMadinah(t)) return false;
+      if (_route == 'makkah_madinah' && !_visitsMadinah(t)) return false;
+      if (_program != _kAll && t.programType != _program) return false;
+      if (query.isNotEmpty) {
+        final haystack = '${tr(t.name)} ${tr(t.hotel)} ${tr(t.provider)}'.toLowerCase();
+        if (!haystack.contains(query)) return false;
+      }
+      return true;
+    }).toList();
+  }
+
   List<UmrahResult> get _results {
     final query = _searchQuery.trim().toLowerCase();
-    var list = _baseResults.where((t) {
+    // Other sorts: «المقترح» trips go back into the one list.
+    final src = _sort == _SortMode.nearest ? _baseResults : [..._apiSuggested, ..._baseResults];
+    var list = src.where((t) {
+      if (!_durationOk(t)) return false;
       if (_type != _kAll && t.type != _type) return false;
       if (_country != _kAll && _destCountry(t) != _country) return false;
       if (_city != _kAll && _destCity(t) != _city) return false;
@@ -545,7 +603,7 @@ class _UmrahResultsScreenState extends State<UmrahResultsScreen> {
           child: Row(children: [
             Expanded(
               child: Text(
-                  '${_results.length} ${tr('trip.results.trips_available')}',
+                  '${_results.length + _suggested.length} ${tr('trip.results.trips_available')}',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
@@ -561,6 +619,7 @@ class _UmrahResultsScreenState extends State<UmrahResultsScreen> {
                 style: const TextStyle(fontSize: 11, color: AppColors.muted)),
           ]),
         )),
+        SliverToBoxAdapter(child: _durationChips()),
         if (_loading)
           const SliverFillRemaining(
               hasScrollBody: false,
@@ -569,7 +628,7 @@ class _UmrahResultsScreenState extends State<UmrahResultsScreen> {
                       width: 22,
                       height: 22,
                       child: CircularProgressIndicator(strokeWidth: 2))))
-        else if (_results.isEmpty)
+        else if (_results.isEmpty && _suggested.isEmpty)
           SliverFillRemaining(
               hasScrollBody: false,
               child: Center(
@@ -578,28 +637,86 @@ class _UmrahResultsScreenState extends State<UmrahResultsScreen> {
         else
           SliverPadding(
             padding: const EdgeInsets.fromLTRB(14, 0, 14, 14),
-            sliver: SliverList.builder(
-              itemCount: _results.length,
-              itemBuilder: (context, i) {
-                final trip = _results[i].toTrip(
-                    date: intl.DateFormat('d MMMM yyyy',
-                            LocaleState.locale.value.languageCode)
-                        .format(selectedDate));
-                return _ResultCard(
-                  result: _results[i],
-                  onTap: () => Navigator.of(context).push(MaterialPageRoute(
-                      builder: (_) => TripDetailScreen(
-                          trip: trip, initialDate: _selectedDate))),
-                  // "احجز الآن" on the card → straight to the booking form
-                  // (same as the home/list cards), carrying the searched date.
-                  onBook: () => Navigator.of(context).push(MaterialPageRoute(
-                      builder: (_) => BookingSheet(
-                          trip: trip, initialDate: _selectedDate))),
-                );
-              },
-            ),
+            sliver: Builder(builder: (context) {
+              final sugg = _suggested;
+              final rest = _listWithRooms;
+              final items = <Object>[
+                if (sugg.isNotEmpty) '⭐ ${tr('trip.results.suggested')}',
+                ...sugg,
+                if (sugg.isNotEmpty && rest.isNotEmpty) tr('trip.results.all_trips'),
+                ...rest,
+              ];
+              return SliverList.builder(
+                itemCount: items.length,
+                itemBuilder: (context, i) {
+                  final item = items[i];
+                  if (item is String) {
+                    return Padding(
+                      padding: const EdgeInsets.fromLTRB(2, 10, 2, 8),
+                      child: Text(item,
+                          style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w900,
+                              color: item.startsWith('⭐') ? const Color(0xFF8A6420) : AppColors.text)),
+                    );
+                  }
+                  final r = item as UmrahResult;
+                  final trip = r.toTrip(
+                      date: intl.DateFormat('d MMMM yyyy',
+                              LocaleState.locale.value.languageCode)
+                          .format(selectedDate));
+                  return _ResultCard(
+                    result: r,
+                    onTap: () => Navigator.of(context).push(MaterialPageRoute(
+                        builder: (_) => TripDetailScreen(
+                            trip: trip, initialDate: _selectedDate))),
+                    // "احجز الآن" → booking form; a room card opens with its size + «غرفة خاصة» ticked.
+                    onBook: () => Navigator.of(context).push(MaterialPageRoute(
+                        builder: (_) => BookingSheet(
+                            trip: trip, initialDate: _selectedDate))),
+                  );
+                },
+              );
+            }),
           ),
       ]),
+    );
+  }
+
+  Widget _durationChips() {
+    final opts = <String, String>{
+      '': tr('trip.results.dur_all'),
+      '1': tr('trip.results.dur_1'),
+      '2-3': tr('trip.results.dur_2_3'),
+      '4-7': tr('trip.results.dur_4_7'),
+      '8+': tr('trip.results.dur_8'),
+    };
+    return SizedBox(
+      height: 40,
+      child: ListView(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 14),
+        children: [
+          for (final e in opts.entries)
+            Padding(
+              padding: const EdgeInsetsDirectional.only(end: 6, bottom: 6),
+              child: ChoiceChip(
+                label: Text(e.key.isEmpty ? '⏱ ${e.value}' : e.value,
+                    style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                        color: _duration == e.key ? Colors.white : AppColors.text)),
+                selected: _duration == e.key,
+                selectedColor: const Color(0xFFB8892F),
+                backgroundColor: Colors.white,
+                side: BorderSide(color: _duration == e.key ? const Color(0xFFB8892F) : AppColors.border),
+                showCheckmark: false,
+                visualDensity: VisualDensity.compact,
+                onSelected: (_) => setState(() => _duration = e.key),
+              ),
+            ),
+        ],
+      ),
     );
   }
 
@@ -868,7 +985,7 @@ class _ResultCard extends StatelessWidget {
                           const SizedBox(height: 4),
                         ],
                         // Tier shown only by the corner ribbon.
-                        Text(tr(t.name),
+                        Text(t.roomPersons == null ? tr(t.name) : '${tr(t.name)} ${RoomBadge.label(t.roomPersons!)}',
                             style: const TextStyle(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w900,

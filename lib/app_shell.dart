@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'screens/umrah/umrah_screen.dart';
 import 'screens/umrah_results/umrah_results_screen.dart';
-import 'screens/design/design_hub_screen.dart';
+import 'screens/more/bookings_tab.dart';
 import 'screens/photos/photos_screen.dart';
 import 'screens/more/more_screen.dart';
 import 'widgets/bottom_nav_bar.dart';
@@ -140,7 +140,7 @@ class _AppShellState extends State<AppShell> {
   Widget build(BuildContext context) {
     final screens = [
       const UmrahScreen(),
-      const DesignHubScreen(),
+      const BookingsTab(), // 2026-11-28: was DesignHubScreen
       const PhotosScreen(),
       const MoreScreen(),
       const UmrahResultsScreen(), // NavState.searchTab

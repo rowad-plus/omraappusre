@@ -293,6 +293,7 @@ class AppState extends ChangeNotifier {
           'date':
               '${date.year.toString().padLeft(4, '0')}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}',
         if (type != null) 'trip_type': type,
+        'with_suggested': 1,
       }) as Map<String, dynamic>;
       return ScheduleResult.fromJson(res);
     } catch (_) {

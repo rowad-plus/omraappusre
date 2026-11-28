@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../core/theme/app_colors.dart';
 import '../l10n/translations.dart';
-import '../state/nav_state.dart';
+import '../screens/design/design_hub_screen.dart';
 
 /// Home-page "design your umrah" block, same layout as omraway.com's
 /// `.custom-umrah`: heading + text, the wizard's first three numbered
@@ -9,12 +9,13 @@ import '../state/nav_state.dart';
 class DesignUmrahBanner extends StatelessWidget {
   const DesignUmrahBanner({super.key});
 
-  void _open() => NavState.tab.value = 1;
+  void _open(BuildContext context) =>
+      Navigator.of(context).push(MaterialPageRoute(builder: (_) => const DesignHubScreen()));
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: _open,
+      onTap: () => _open(context),
       child: Container(
         margin: const EdgeInsets.fromLTRB(14, 8, 14, 14),
         padding: const EdgeInsets.all(20),
@@ -129,7 +130,7 @@ class DesignUmrahStrip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () => NavState.tab.value = 1,
+      onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const DesignHubScreen())),
       child: Container(
         margin: const EdgeInsets.only(bottom: 14),
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),

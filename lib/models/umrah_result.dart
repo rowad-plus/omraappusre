@@ -40,6 +40,10 @@ class UmrahResult {
   /// '32' | '49' passengers, or null.
   final String? busType;
 
+  /// Private-room prices by head count, and — on a room card — its size (2026-11-28).
+  final Map<int, double> roomOptions;
+  final int? roomPersons;
+
   const UmrahResult({
     this.apiId,
     required this.id,
@@ -67,7 +71,41 @@ class UmrahResult {
     this.countryCode = 'EG',
     this.programType = 'trip.program.umrah',
     this.busType,
+    this.roomOptions = const {},
+    this.roomPersons,
   });
+
+  /// The same trip as a «غرفة خاصة لـ n» card at the whole-room price.
+  UmrahResult withRoom(int persons, double roomPrice) => UmrahResult(
+        apiId: apiId,
+        id: '$id-room$persons',
+        name: name,
+        emoji: emoji,
+        bg: bg,
+        networkImage: networkImage,
+        hotel: hotel,
+        stars: stars,
+        rating: rating,
+        type: type,
+        days: days,
+        travelers: travelers,
+        price: roomPrice.toInt(),
+        currency: currency,
+        provider: provider,
+        providerColor: providerColor,
+        providerLetter: providerLetter,
+        providerLogo: providerLogo,
+        vip: vip,
+        premium: premium,
+        featured: featured,
+        feats: feats,
+        stops: stops,
+        countryCode: countryCode,
+        programType: programType,
+        busType: busType,
+        roomOptions: roomOptions,
+        roomPersons: persons,
+      );
 
   Trip toTrip({required String date}) => Trip(
         apiId: apiId,
@@ -98,5 +136,10 @@ class UmrahResult {
         stops: stops,
         feats: feats,
         countryCode: countryCode,
+        roomOptions: [
+          for (final e in (roomOptions.entries.toList()..sort((a, b) => a.key.compareTo(b.key))))
+            RoomOption(e.key, '${NumberFormat('#,##0', 'en').format(e.value)} ${tr(currency)}'),
+        ],
+        roomPersons: roomPersons,
       );
 }

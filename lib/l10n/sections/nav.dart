@@ -6,6 +6,7 @@ const Map<String, Map<String, String>> navTranslations = {
     'nav.design': 'صمم رحلتك',
     'nav.photos': 'لقطات',
     'nav.more': 'المزيد',
+    'nav.login_to_see_bookings': 'سجّل دخولك لعرض حجوزاتك',
     'nav.viewMore': 'المزيد',
   },
   'en': {
@@ -14,6 +15,7 @@ const Map<String, Map<String, String>> navTranslations = {
     'nav.design': 'Plan Your Trip',
     'nav.photos': 'Photos',
     'nav.more': 'More',
+    'nav.login_to_see_bookings': 'Sign in to see your bookings',
     'nav.viewMore': 'More',
   },
   'fr': {
@@ -22,6 +24,7 @@ const Map<String, Map<String, String>> navTranslations = {
     'nav.design': 'Planifiez votre voyage',
     'nav.photos': 'Photos',
     'nav.more': 'Plus',
+    'nav.login_to_see_bookings': 'Connectez-vous pour voir vos réservations',
     'nav.viewMore': 'Plus',
   },
   'tr': {
@@ -30,6 +33,7 @@ const Map<String, Map<String, String>> navTranslations = {
     'nav.design': 'Seyahatini Planla',
     'nav.photos': 'Fotoğraflar',
     'nav.more': 'Diğer',
+    'nav.login_to_see_bookings': 'Rezervasyonlarınızı görmek için giriş yapın',
     'nav.viewMore': 'Daha fazla',
   },
   'id': {
@@ -38,6 +42,7 @@ const Map<String, Map<String, String>> navTranslations = {
     'nav.design': 'Rencanakan Perjalanan',
     'nav.photos': 'Foto',
     'nav.more': 'Lainnya',
+    'nav.login_to_see_bookings': 'Masuk untuk melihat pemesanan Anda',
     'nav.viewMore': 'Selengkapnya',
   },
   'ur': {
@@ -46,6 +51,7 @@ const Map<String, Map<String, String>> navTranslations = {
     'nav.design': 'اپنا سفر بنائیں',
     'nav.photos': 'تصاویر',
     'nav.more': 'مزید',
+    'nav.login_to_see_bookings': 'اپنی بکنگ دیکھنے کے لیے لاگ ان کریں',
     'nav.viewMore': 'مزید دیکھیں',
   },
   'ms': {
@@ -54,6 +60,7 @@ const Map<String, Map<String, String>> navTranslations = {
     'nav.design': 'Rancang Perjalanan Anda',
     'nav.photos': 'Foto',
     'nav.more': 'Lagi',
+    'nav.login_to_see_bookings': 'Log masuk untuk melihat tempahan anda',
     'nav.viewMore': 'Lagi',
   },
 };

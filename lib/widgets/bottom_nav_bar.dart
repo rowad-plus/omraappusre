@@ -22,7 +22,7 @@ class AppBottomNavBar extends StatelessWidget {
             label: tr('nav.home'),
             accent: AppColors.green),
         BottomNavItemData(
-            icon: FontAwesomeIcons.wandMagicSparkles, label: tr('nav.design')),
+            icon: FontAwesomeIcons.solidCalendarCheck, label: tr('orders.title')),
         BottomNavItemData(
             icon: FontAwesomeIcons.solidImages, label: tr('nav.photos')),
         BottomNavItemData(

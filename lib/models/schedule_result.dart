@@ -25,12 +25,16 @@ class ScheduleResult {
   final List<DateStripEntry> dateStrip;
   final List<ApiTrip> trips;
 
+  /// «المقترح» (2026-11-28): one trip per featured company, rotating every visit.
+  final List<ApiTrip> suggested;
+
   const ScheduleResult({
     required this.cityId,
     required this.cityName,
     required this.selectedDate,
     required this.dateStrip,
     required this.trips,
+    this.suggested = const [],
   });
 
   factory ScheduleResult.fromJson(Map<String, dynamic> j) {
@@ -43,6 +47,9 @@ class ScheduleResult {
           .map((e) => DateStripEntry.fromJson(e as Map<String, dynamic>))
           .toList(),
       trips: (j['trips'] as List<dynamic>)
+          .map((t) => ApiTrip.fromJson(t as Map<String, dynamic>))
+          .toList(),
+      suggested: (j['suggested'] as List<dynamic>? ?? const [])
           .map((t) => ApiTrip.fromJson(t as Map<String, dynamic>))
           .toList(),
     );
