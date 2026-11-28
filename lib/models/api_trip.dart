@@ -91,6 +91,12 @@ class ApiTrip {
   /// Admin enabled "الدفع عند الباص" for this trip's company.
   final bool payAtBus;
 
+  /// Seriousness deposit % paid online for «الدفع عند الباص» (0 = none).
+  final double payAtBusDeposit;
+
+  /// «احجز عبر واتساب» switched on by the admin.
+  final bool whatsappBooking;
+
   /// 2026-11-27: private rooms the company priced, {persons: whole-room price}, 1-4 people.
   final Map<int, double> roomOptions;
 
@@ -145,6 +151,8 @@ class ApiTrip {
     this.extraRoomPrice,
     this.privateRoomPrice,
     this.payAtBus = false,
+    this.payAtBusDeposit = 0,
+    this.whatsappBooking = true,
     this.gallery = const [],
     this.cardVideo,
     this.roomOptions = const {},
@@ -214,6 +222,8 @@ class ApiTrip {
       extraRoomPrice: (j['extra_room_price'] as num?)?.toDouble(),
       privateRoomPrice: (j['private_room_price'] as num?)?.toDouble(),
       payAtBus: j['pay_at_bus'] == true || j['pay_at_bus'] == 1,
+      payAtBusDeposit: (j['pay_at_bus_deposit'] as num?)?.toDouble() ?? 0,
+      whatsappBooking: j['whatsapp_booking'] != false && j['whatsapp_booking'] != 0,
       gallery: (j['gallery'] as List<dynamic>? ?? []).map((e) => '$e').toList(),
       cardVideo: j['card_video'] as String?,
       roomOptions: {

@@ -105,6 +105,10 @@ class _BookingSheetState extends State<BookingSheet> {
   /// "الدفع عند الباص" — only when the admin enabled it for this trip's
   /// company (same rule as the website's booking form).
   bool _payAtBusAvailable = false;
+
+  /// 2026-11-28: deposit % paid now for «الدفع عند الباص», and the admin WhatsApp switch.
+  double _busDeposit = 0;
+  bool _waBooking = true;
   bool _payAtBus = false;
 
   /// Site WhatsApp number (the server sends it back with the booking).
@@ -202,6 +206,8 @@ class _BookingSheetState extends State<BookingSheet> {
       _singleRoomPrice =
           (detail?.privateRoomPrice ?? 0) > 0 ? detail!.privateRoomPrice : null;
       _payAtBusAvailable = detail?.payAtBus ?? false;
+      _busDeposit = detail?.payAtBusDeposit ?? 0;
+      _waBooking = detail?.whatsappBooking ?? true;
       _images = (detail?.images ?? const <String>[])
           .where((u) => u.isNotEmpty)
           .toList();
@@ -633,10 +639,10 @@ class _BookingSheetState extends State<BookingSheet> {
                     ),
             ),
           ),
-          const SizedBox(width: 10),
+          if (_waBooking) const SizedBox(width: 10),
           // "احجز عبر واتساب": small button beside confirm — saves the booking
           // (no online payment) and opens WhatsApp with its details.
-          Tooltip(
+          if (_waBooking) Tooltip(
             message: tr('booking.whatsapp.button'),
             child: SizedBox(
               width: 54,
@@ -956,7 +962,9 @@ class _BookingSheetState extends State<BookingSheet> {
       option(false, FontAwesomeIcons.creditCard, tr('booking.payMethod.now'),
           tr('booking.payMethod.nowHint')),
       option(true, FontAwesomeIcons.bus, tr('booking.payMethod.onBus'),
-          tr('booking.payMethod.onBusHint')),
+          _busDeposit > 0
+              ? tr('booking.payMethod.onBusDepositHint').replaceAll(':p', NumberFormat('#.##', 'en').format(_busDeposit))
+              : tr('booking.payMethod.onBusHint')),
     ]);
   }
 
