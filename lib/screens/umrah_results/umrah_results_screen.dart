@@ -641,15 +641,15 @@ class _UmrahResultsScreenState extends State<UmrahResultsScreen> {
               final sugg = _suggested;
               final rest = _listWithRooms;
               final items = <Object>[
-                if (sugg.isNotEmpty) '⭐ ${tr('trip.results.suggested')}',
                 ...sugg,
-                if (sugg.isNotEmpty && rest.isNotEmpty) tr('trip.results.all_trips'),
+                if (sugg.isNotEmpty && rest.isNotEmpty) '',
                 ...rest,
               ];
               return SliverList.builder(
                 itemCount: items.length,
                 itemBuilder: (context, i) {
                   final item = items[i];
+                  if (item is String && item.isEmpty) return const SizedBox(height: 10);
                   if (item is String) {
                     return Padding(
                       padding: const EdgeInsets.fromLTRB(2, 10, 2, 8),
@@ -683,39 +683,84 @@ class _UmrahResultsScreenState extends State<UmrahResultsScreen> {
     );
   }
 
+  /// Two icon dropdown buttons, one each side: «نوع الرحلة» and «مدة الرحلة» (2026-11-28, same as the site).
   Widget _durationChips() {
-    final opts = <String, String>{
+    final durOpts = <String, String>{
       '': tr('trip.results.dur_all'),
       '1': tr('trip.results.dur_1'),
       '2-3': tr('trip.results.dur_2_3'),
       '4-7': tr('trip.results.dur_4_7'),
       '8+': tr('trip.results.dur_8'),
     };
-    return SizedBox(
-      height: 40,
-      child: ListView(
-        scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 14),
-        children: [
-          for (final e in opts.entries)
-            Padding(
-              padding: const EdgeInsetsDirectional.only(end: 6, bottom: 6),
-              child: ChoiceChip(
-                label: Text(e.key.isEmpty ? '⏱ ${e.value}' : e.value,
-                    style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w700,
-                        color: _duration == e.key ? Colors.white : AppColors.text)),
-                selected: _duration == e.key,
-                selectedColor: const Color(0xFFB8892F),
-                backgroundColor: Colors.white,
-                side: BorderSide(color: _duration == e.key ? const Color(0xFFB8892F) : AppColors.border),
-                showCheckmark: false,
-                visualDensity: VisualDensity.compact,
-                onSelected: (_) => setState(() => _duration = e.key),
-              ),
-            ),
-        ],
+    final typeOpts = <String, String>{
+      _kAll: tr('filter.all'),
+      'اقتصادية': tr('trip.filter.chip_economy'),
+      'VIP': 'VIP',
+      'مميزة': tr('trip.filter.chip_golden'),
+    };
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(14, 2, 14, 6),
+      child: Row(children: [
+        _filterPill<String>(
+          icon: Icons.sell_outlined,
+          label: _type == _kAll ? tr('trip.filter.type') : (typeOpts[_type] ?? _type),
+          active: _type != _kAll,
+          value: _type,
+          options: typeOpts,
+          onSelected: (v) => setState(() => _type = v),
+        ),
+        const Spacer(),
+        _filterPill<String>(
+          icon: Icons.schedule_rounded,
+          label: _duration.isEmpty ? tr('trip.results.length') : (durOpts[_duration] ?? _duration),
+          active: _duration.isNotEmpty,
+          value: _duration,
+          options: durOpts,
+          onSelected: (v) => setState(() => _duration = v),
+        ),
+      ]),
+    );
+  }
+
+  Widget _filterPill<T>({
+    required IconData icon,
+    required String label,
+    required bool active,
+    required T value,
+    required Map<T, String> options,
+    required ValueChanged<T> onSelected,
+  }) {
+    const gold = Color(0xFFB8892F);
+    final fg = active ? Colors.white : const Color(0xFF3B2F16);
+    return PopupMenuButton<T>(
+      initialValue: value,
+      onSelected: onSelected,
+      position: PopupMenuPosition.under,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      itemBuilder: (_) => [
+        for (final e in options.entries)
+          PopupMenuItem<T>(
+            value: e.key,
+            child: Text(e.value,
+                style: TextStyle(
+                    fontWeight: e.key == value ? FontWeight.w900 : FontWeight.w600,
+                    color: e.key == value ? gold : AppColors.text)),
+          ),
+      ],
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+        decoration: BoxDecoration(
+          color: active ? gold : Colors.white,
+          borderRadius: BorderRadius.circular(999),
+          border: Border.all(color: active ? gold : const Color(0xFFD6B56D), width: 1.5),
+        ),
+        child: Row(mainAxisSize: MainAxisSize.min, children: [
+          Icon(icon, size: 17, color: fg),
+          const SizedBox(width: 6),
+          Text(label, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w800, color: fg)),
+          const SizedBox(width: 4),
+          Icon(Icons.keyboard_arrow_down_rounded, size: 18, color: fg),
+        ]),
       ),
     );
   }
