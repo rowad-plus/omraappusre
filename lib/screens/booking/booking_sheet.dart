@@ -95,8 +95,12 @@ class _BookingSheetState extends State<BookingSheet> {
   double? _singleRoomPrice;
   int _extraRooms = 0;
   int get _maxExtraRooms => _personsCount > 1 ? _personsCount - 1 : 0;
+  /// Extra rooms only for 3+ persons who chose a private room (hidden otherwise).
+  bool get _extraRoomsOffered =>
+      _personsCount > 2 && _privateRoomApplies && _extraRoomPrice != null;
+  int get _effExtraRooms => _extraRoomsOffered ? _extraRooms : 0;
   double get _extraRoomsCost =>
-      (_extraRoomPrice ?? 0) > 0 ? _extraRooms * _extraRoomPrice! : 0;
+      (_extraRoomPrice ?? 0) > 0 ? _effExtraRooms * _extraRoomPrice! : 0;
 
   /// "الدفع عند الباص" — only when the admin enabled it for this trip's
   /// company (same rule as the website's booking form).
@@ -117,6 +121,7 @@ class _BookingSheetState extends State<BookingSheet> {
   void _onPersonsChanged() {
     if (!_privateRoomOffered) _privateRoom = false;
     if (_extraRooms > _maxExtraRooms) _extraRooms = _maxExtraRooms;
+    if (!_extraRoomsOffered) _extraRooms = 0;
     // Called from inside a setState callback — defer the quote refresh
     // (which calls setState itself) until after this frame's update.
     Future.microtask(_refreshPrivateRoomQuote);
@@ -296,7 +301,7 @@ class _BookingSheetState extends State<BookingSheet> {
           tripDateId: _selectedDate?.id ?? '',
           notes: _notesCtrl.text.trim(),
           privateRoom: _privateRoomApplies,
-          extraRooms: _extraRoomPrice != null ? _extraRooms : 0,
+          extraRooms: _effExtraRooms,
           payAtBus: _payAtBusAvailable && _payAtBus,
           viaWhatsapp: viaWhatsapp,
           leg: widget.trip.oneWayLeg,
@@ -374,7 +379,7 @@ class _BookingSheetState extends State<BookingSheet> {
     ];
     var p = '${isAr ? 'عدد الأفراد: ' : 'Persons: '}$_personsCount';
     if (_privateRoomApplies) p += isAr ? ' (غرفة خاصة)' : ' (private room)';
-    if (_extraRoomPrice != null && _extraRooms > 0) {
+    if (_effExtraRooms > 0) {
       p += isAr
           ? ' + $_extraRooms غرفة إضافية'
           : ' + $_extraRooms extra room(s)';
@@ -519,7 +524,7 @@ class _BookingSheetState extends State<BookingSheet> {
                                     _onPersonsChanged();
                                   })),
                         if (_privateRoomOffered) _privateRoomRow(),
-                        if (_personsCount > 1 && _extraRoomPrice != null)
+                        if (_extraRoomsOffered)
                           _counterRow(
                               tr('booking.travelers.extraRoomsLabel'),
                               '${tr('booking.travelers.extraRoomsHint')} +${NumberFormat('#,##0', 'en').format(_extraRoomPrice)}',
