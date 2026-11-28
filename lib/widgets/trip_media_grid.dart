@@ -71,12 +71,8 @@ class TripMediaGrid extends StatelessWidget {
         ),
       );
 
-  void _openImages(BuildContext context, int start) {
-    Navigator.of(context).push(MaterialPageRoute(
-      fullscreenDialog: true,
-      builder: (_) => _ImageViewer(images: images, start: start),
-    ));
-  }
+  void _openImages(BuildContext context, int start) =>
+      openTripImages(context, images, start);
 
   void _openVideo(BuildContext context, String url) {
     Navigator.of(context).push(MaterialPageRoute(
@@ -89,6 +85,14 @@ class TripMediaGrid extends StatelessWidget {
       ),
     ));
   }
+}
+
+/// Full-screen swipeable photo viewer (pinch to zoom), starting at [start].
+void openTripImages(BuildContext context, List<String> images, int start) {
+  Navigator.of(context).push(MaterialPageRoute(
+    fullscreenDialog: true,
+    builder: (_) => _ImageViewer(images: images, start: start),
+  ));
 }
 
 class _ImageViewer extends StatefulWidget {

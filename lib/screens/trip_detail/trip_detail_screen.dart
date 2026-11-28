@@ -4,6 +4,7 @@ import '../../widgets/trip_video_player.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/trip_tier_style.dart';
 import '../../l10n/translations.dart';
@@ -14,6 +15,8 @@ import '../../state/locale_state.dart';
 import '../../widgets/app_toast.dart';
 import '../../widgets/h_scroll_auto.dart';
 import '../../widgets/trip_card_parts.dart';
+import '../../widgets/trip_media_grid.dart';
+import 'dart:ui' show ImageFilter;
 import '../auth/login_sheet.dart';
 import '../booking/booking_sheet.dart';
 
@@ -294,6 +297,14 @@ class _TripDetailScreenState extends State<TripDetailScreen> {
                           ),
                       ]),
                     ),
+                  if ((_detail?.hotels ?? const []).isNotEmpty)
+                    _section(
+                      icon: FontAwesomeIcons.hotel,
+                      title: tr('trip.detail.section_hotels'),
+                      child: Column(children: [
+                        for (final h in _detail!.hotels) _hotelCard(h),
+                      ]),
+                    ),
                   _section(
                     icon: FontAwesomeIcons.solidStar,
                     title: tr('trip.detail.section_features'),
@@ -391,42 +402,174 @@ class _TripDetailScreenState extends State<TripDetailScreen> {
                 child: CircularProgressIndicator(strokeWidth: 2))),
       );
 
+  /// Card photo first (already cached), then every trip photo from the detail call.
+  List<String> _headerImages(Trip t) {
+    final out = <String>[];
+    void add(String? u) {
+      if (u != null && u.isNotEmpty && !out.contains(u)) out.add(u);
+    }
+    add(t.networkImage);
+    for (final u in _detail?.images ?? const <String>[]) {
+      add(u);
+    }
+    return out;
+  }
+
+  int _headerIndex = 0;
+
+  /// 2026-11-27: like the website — every photo shown WHOLE (contain) over a
+  /// blurred copy of itself, swipeable, tap = full screen with zoom.
+  Widget _headerPhoto(String url, {required bool contain}) => CachedNetworkImage(
+        imageUrl: url,
+        fit: contain ? BoxFit.contain : BoxFit.cover,
+        width: double.infinity,
+        height: double.infinity,
+        fadeInDuration: const Duration(milliseconds: 120),
+        fadeOutDuration: Duration.zero,
+        placeholder: (_, __) => const ColoredBox(color: Color(0xFFE5E7EB)),
+        errorWidget: (_, __, ___) => const ColoredBox(color: Color(0xFFE5E7EB)),
+      );
+
+  /// Hotel card: picture, name, city, stars; tap → its page on the site.
+  Widget _hotelCard(TripHotel h) {
+    final city = h.city == 'makkah'
+        ? tr('trip.detail.hotel_city_makkah')
+        : h.city == 'madinah'
+            ? tr('trip.detail.hotel_city_madinah')
+            : null;
+    final sub = [
+      if (city != null) city,
+      if ((h.stars ?? 0) > 0) '★' * h.stars!.clamp(1, 5),
+      if ((h.distanceHaram ?? '').isNotEmpty) h.distanceHaram!,
+    ].join(' · ');
+    const grey = ColoredBox(
+        color: Color(0xFFE5E7EB),
+        child: Center(child: FaIcon(FontAwesomeIcons.hotel, size: 20, color: AppColors.muted)));
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: Material(
+        color: AppColors.bg,
+        borderRadius: BorderRadius.circular(12),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(12),
+          onTap: h.url == null
+              ? null
+              : () => launchUrl(Uri.parse(h.url!), mode: LaunchMode.inAppBrowserView),
+          child: Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              border: Border.all(color: AppColors.border),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Row(children: [
+              ClipRRect(
+                borderRadius: BorderRadius.circular(9),
+                child: SizedBox(
+                  width: 78,
+                  height: 62,
+                  child: h.image != null
+                      ? CachedNetworkImage(
+                          imageUrl: h.image!,
+                          fit: BoxFit.cover,
+                          placeholder: (_, __) => const ColoredBox(color: Color(0xFFE5E7EB)),
+                          errorWidget: (_, __, ___) => grey,
+                        )
+                      : grey,
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                  Text(h.name,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(fontSize: 13.5, fontWeight: FontWeight.w800, color: AppColors.text)),
+                  if (sub.isNotEmpty)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 3),
+                      child: Text(sub, style: const TextStyle(fontSize: 11.5, color: AppColors.muted)),
+                    ),
+                  if (h.url != null)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 4),
+                      child: Text(tr('trip.detail.hotel_open'),
+                          style: const TextStyle(fontSize: 11.5, fontWeight: FontWeight.w700, color: AppColors.green)),
+                    ),
+                ]),
+              ),
+              if (h.url != null) const FaIcon(FontAwesomeIcons.chevronLeft, size: 13, color: AppColors.muted),
+            ]),
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildImageHeader(Trip t) {
+    final imgs = _headerImages(t);
     return SizedBox(
-      height: 220,
+      height: 270,
       child: Stack(
         fit: StackFit.expand,
         children: [
-          // Same CachedNetworkImage/URL as the trip card, so the photo is
-          // already on disk and shows instantly, filling the whole header.
-          // While it loads (or if it fails) only a neutral grey shows —
-          // no green gradient or emoji peeking from underneath.
-          t.networkImage != null
-              ? CachedNetworkImage(
-                  imageUrl: t.networkImage!,
-                  fit: BoxFit.cover,
-                  width: double.infinity,
-                  height: double.infinity,
-                  fadeInDuration: const Duration(milliseconds: 120),
-                  fadeOutDuration: Duration.zero,
-                  placeholder: (_, __) =>
-                      const ColoredBox(color: Color(0xFFE5E7EB)),
-                  errorWidget: (_, __, ___) =>
-                      const ColoredBox(color: Color(0xFFE5E7EB)),
+          imgs.isNotEmpty
+              ? PageView.builder(
+                  itemCount: imgs.length,
+                  onPageChanged: (i) => setState(() => _headerIndex = i),
+                  itemBuilder: (_, i) => GestureDetector(
+                    onTap: () => openTripImages(context, imgs, i),
+                    child: Stack(fit: StackFit.expand, children: [
+                      ClipRect(
+                        child: ImageFiltered(
+                          imageFilter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+                          child: _headerPhoto(imgs[i], contain: false),
+                        ),
+                      ),
+                      const ColoredBox(color: Color(0x33000000)),
+                      _headerPhoto(imgs[i], contain: true),
+                    ]),
+                  ),
                 )
               : Container(
                   decoration: BoxDecoration(gradient: t.bg),
                   alignment: Alignment.center,
                   child: Text(t.emoji, style: const TextStyle(fontSize: 80)),
                 ),
-          Container(
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                  begin: Alignment.bottomCenter,
-                  end: Alignment.topCenter,
-                  colors: [Color(0x99000000), Colors.transparent]),
+          IgnorePointer(
+            child: Container(
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                    begin: Alignment.bottomCenter,
+                    end: Alignment.topCenter,
+                    stops: [0, 0.35],
+                    colors: [Color(0x99000000), Colors.transparent]),
+              ),
             ),
           ),
+          if (imgs.length > 1)
+            Positioned(
+              bottom: 10,
+              left: 0,
+              right: 0,
+              child: IgnorePointer(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    for (var i = 0; i < imgs.length && i < 12; i++)
+                      AnimatedContainer(
+                        duration: const Duration(milliseconds: 200),
+                        margin: const EdgeInsets.symmetric(horizontal: 3),
+                        width: i == _headerIndex.clamp(0, imgs.length - 1) ? 16 : 6,
+                        height: 6,
+                        decoration: BoxDecoration(
+                          color: i == _headerIndex.clamp(0, imgs.length - 1) ? Colors.white : Colors.white54,
+                          borderRadius: BorderRadius.circular(3),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            ),
           PositionedDirectional(
             top: 10,
             start: 14,

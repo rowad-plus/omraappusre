@@ -75,6 +75,9 @@ class ApiTrip {
   /// Company-uploaded trip videos (detail endpoint only).
   final List<String> videos;
 
+  /// Trip hotels with their page (detail endpoint only, 2026-11-28).
+  final List<TripHotel> hotels;
+
   /// Saudi trips: optional one-way prices (detail endpoint).
   final double? priceGoOnly;
   final double? priceReturnOnly;
@@ -136,6 +139,7 @@ class ApiTrip {
     this.oneWayFrom,
     this.oneWayTo,
     this.videos = const [],
+    this.hotels = const [],
     this.priceGoOnly,
     this.priceReturnOnly,
     this.extraRoomPrice,
@@ -200,6 +204,11 @@ class ApiTrip {
       oneWayFrom: j['one_way_from'] as String?,
       oneWayTo: j['one_way_to'] as String?,
       videos: (j['videos'] as List<dynamic>? ?? []).map((e) => '$e').toList(),
+      hotels: (j['hotels'] as List<dynamic>? ?? [])
+          .whereType<Map<String, dynamic>>()
+          .map(TripHotel.fromJson)
+          .where((h) => h.name.isNotEmpty)
+          .toList(),
       priceGoOnly: (j['price_go_only'] as num?)?.toDouble(),
       priceReturnOnly: (j['price_return_only'] as num?)?.toDouble(),
       extraRoomPrice: (j['extra_room_price'] as num?)?.toDouble(),
@@ -355,5 +364,26 @@ class ApiTripProgramDay {
         title: j['title'] as String?,
         location: j['location'] as String?,
         steps: (j['steps'] as List<dynamic>?)?.cast<String>() ?? [],
+      );
+}
+
+/// One hotel of a trip: name, city (makkah / madinah), stars, picture and its page on the site.
+class TripHotel {
+  final String name;
+  final String? city;
+  final int? stars;
+  final String? distanceHaram;
+  final String? image;
+  final String? url;
+
+  const TripHotel({required this.name, this.city, this.stars, this.distanceHaram, this.image, this.url});
+
+  factory TripHotel.fromJson(Map<String, dynamic> j) => TripHotel(
+        name: '${j['name'] ?? ''}'.trim(),
+        city: j['city'] as String?,
+        stars: (j['stars'] as num?)?.toInt(),
+        distanceHaram: j['distance_haram']?.toString(),
+        image: j['image'] as String?,
+        url: j['url'] as String?,
       );
 }
