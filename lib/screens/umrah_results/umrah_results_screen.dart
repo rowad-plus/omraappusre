@@ -667,6 +667,7 @@ class _UmrahResultsScreenState extends State<UmrahResultsScreen> {
                           .format(selectedDate));
                   return _ResultCard(
                     result: r,
+                    suggested: sugg.contains(r),
                     onTap: () => Navigator.of(context).push(MaterialPageRoute(
                         builder: (_) => TripDetailScreen(
                             trip: trip, initialDate: _selectedDate))),
@@ -956,8 +957,11 @@ class _ResultCard extends StatelessWidget {
   final UmrahResult result;
   final VoidCallback onTap;
   final VoidCallback onBook;
+
+  /// «★ مقترح» badge only on the trips picked for «المقترح».
+  final bool suggested;
   const _ResultCard(
-      {required this.result, required this.onTap, required this.onBook});
+      {required this.result, required this.onTap, required this.onBook, this.suggested = false});
 
   @override
   Widget build(BuildContext context) {
@@ -1025,7 +1029,7 @@ class _ResultCard extends StatelessWidget {
                   child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        if (t.featured) ...[
+                        if (suggested) ...[
                           const SuggestedBadge(),
                           const SizedBox(height: 4),
                         ],
